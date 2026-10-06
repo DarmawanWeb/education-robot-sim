@@ -1,0 +1,132 @@
+{
+  "Meta": {
+    "title": "Simulator robot Taksu Edu",
+    "description": "Program Robot Pintar SD dan Robot Modular SMP dengan blok, lalu jalankan misi sesuai kurikulum: maju, ikuti garis, rintangan, radar, suhu, dan suara."
+  },
+  "Sim": {
+    "title": "Simulator robot",
+    "backToSite": "Kembali ke Taksu Edu",
+    "theme": "Ganti tema terang atau gelap",
+    "language": "Bahasa",
+    "robot": "Robot",
+    "robotSd": "Robot Pintar SD",
+    "robotSmp": "Robot Modular SMP",
+    "mission": "Misi",
+    "module": "Modul {n}",
+    "goals": "Tujuan misi",
+    "hint": "Petunjuk",
+    "run": "Jalankan",
+    "stop": "Hentikan",
+    "reset": "Ulang posisi",
+    "speed": "Kecepatan simulasi",
+    "example": "Muat contoh solusi",
+    "restore": "Kembalikan blok awal",
+    "workspaceLabel": "Area menyusun blok",
+    "arenaLabel": "Arena simulasi robot dilihat dari atas",
+    "loading": "Menyiapkan blok",
+    "status": {
+      "idle": "Siap dijalankan",
+      "running": "Berjalan {time} detik",
+      "done": "Program selesai",
+      "free": "Mode bebas"
+    },
+    "panel": {
+      "title": "Panel sensor",
+      "oled": "Layar OLED",
+      "lineLeft": "Garis kiri",
+      "lineRight": "Garis kanan",
+      "distance": "Jarak depan",
+      "lineSensors": "Sensor garis 1 sampai 5",
+      "linePosition": "Posisi garis",
+      "servo": "Servo",
+      "temperature": "Suhu",
+      "humidity": "Kelembapan",
+      "sound": "Suara",
+      "motors": "Motor kiri dan kanan",
+      "buzzer": "Buzzer",
+      "yes": "ya",
+      "no": "tidak",
+      "clap": "Tepuk tangan",
+      "freeNote": "Atur suhu dan kelembapan, atau tepuk tangan, untuk menguji program."
+    },
+    "results": {
+      "success": {
+        "title": "Misi berhasil!",
+        "body": "Semua tujuan tercapai. Coba jelaskan aturan programmu ke teman."
+      },
+      "time": {
+        "title": "Waktu habis",
+        "body": "Robot belum menyelesaikan misi sebelum batas waktu. Cek urutan blok dan kondisinya."
+      },
+      "bump": {
+        "title": "Robot menabrak",
+        "body": "Robot menyentuh rintangan atau dinding. Berhentilah lebih awal atau ubah arah."
+      },
+      "incomplete": {
+        "title": "Belum sampai",
+        "body": "Program selesai, tapi tujuan misi belum tercapai. Ubah angka kecepatan atau durasi, lalu coba lagi."
+      }
+    },
+    "nextMission": "Misi berikutnya",
+    "tryAgain": "Coba lagi",
+    "close": "Tutup",
+    "code": {
+      "title": "Kode C++",
+      "note": "Program yang sama dalam C++ untuk Arduino IDE dengan pustaka TaksuRobot.",
+      "copy": "Salin kode",
+      "copied": "Tersalin",
+      "empty": "Tambahkan blok di bawah blok saat mulai untuk melihat kodenya."
+    },
+    "errors": {
+      "noStart": "Program butuh blok saat mulai. Ambil dari kategori Mulai."
+    }
+  },
+  "Blocks": {
+    "SIM_CAT_START": "Mulai",
+    "SIM_CAT_MOTION": "Gerak",
+    "SIM_CAT_CONTROL": "Kontrol",
+    "SIM_CAT_SENSORS": "Sensor",
+    "SIM_CAT_LOGIC": "Logika dan angka",
+    "SIM_CAT_OUTPUT": "Wajah dan suara",
+    "SIM_CAT_OUTPUT_SMP": "Servo, OLED, suara",
+    "SIM_CAT_VARIABLES": "Variabel",
+    "SIM_START": "saat mulai",
+    "SIM_DRIVE_FOR": "%1 kecepatan %2 %% selama %3 detik",
+    "SIM_DRIVE": "%1 terus kecepatan %2 %%",
+    "SIM_FORWARD": "maju",
+    "SIM_BACKWARD": "mundur",
+    "SIM_LEFT": "belok kiri",
+    "SIM_RIGHT": "belok kanan",
+    "SIM_STOP": "berhenti",
+    "SIM_WAIT": "tunggu %1 detik",
+    "SIM_WAIT_UNTIL": "tunggu sampai %1",
+    "SIM_REPEAT": "ulangi %1 kali",
+    "SIM_FOREVER": "ulangi selamanya",
+    "SIM_LINE_LEFT": "garis kiri terdeteksi",
+    "SIM_LINE_RIGHT": "garis kanan terdeteksi",
+    "SIM_DISTANCE": "jarak depan (cm)",
+    "SIM_LINE_VALUE": "sensor garis %1",
+    "SIM_LINE_POSITION": "posisi garis",
+    "SIM_TEMPERATURE": "suhu (°C)",
+    "SIM_HUMIDITY": "kelembapan (%%)",
+    "SIM_SOUND": "tingkat suara (dB)",
+    "SIM_TIMER": "waktu (detik)",
+    "SIM_MOTORS": "atur motor kiri %1 kanan %2",
+    "SIM_SERVO": "putar servo ke %1 °",
+    "SIM_OLED": "tulis OLED baris %1 %2",
+    "SIM_OLED_CLEAR": "bersihkan OLED",
+    "SIM_TONE": "nada %1 selama %2 detik",
+    "SIM_FACE": "tampilkan wajah %1",
+    "SIM_FACE_NORMAL": "biasa",
+    "SIM_FACE_SENANG": "senang",
+    "SIM_FACE_BINGUNG": "bingung",
+    "SIM_FACE_WASPADA": "waspada",
+    "SIM_FACE_BERHASIL": "berhasil",
+    "SIM_BEEP": "bunyikan bip %1 detik"
+  },
+  "NotFound": {
+    "title": "Halaman tidak ditemukan",
+    "body": "Alamat ini tidak ada di simulator.",
+    "back": "Buka simulator"
+  }
+}

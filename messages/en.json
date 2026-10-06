@@ -1,0 +1,132 @@
+{
+  "Meta": {
+    "title": "Taksu Edu robot simulator",
+    "description": "Program the primary Robot Pintar and the junior high modular robot with blocks, then run curriculum missions: driving, line following, obstacles, radar, temperature, and sound."
+  },
+  "Sim": {
+    "title": "Robot simulator",
+    "backToSite": "Back to Taksu Edu",
+    "theme": "Switch light or dark theme",
+    "language": "Language",
+    "robot": "Robot",
+    "robotSd": "Robot Pintar (primary)",
+    "robotSmp": "Modular robot (junior high)",
+    "mission": "Mission",
+    "module": "Module {n}",
+    "goals": "Mission goals",
+    "hint": "Hint",
+    "run": "Run",
+    "stop": "Stop",
+    "reset": "Reset position",
+    "speed": "Simulation speed",
+    "example": "Load the example solution",
+    "restore": "Restore starter blocks",
+    "workspaceLabel": "Block workspace",
+    "arenaLabel": "Robot simulation arena seen from above",
+    "loading": "Preparing blocks",
+    "status": {
+      "idle": "Ready to run",
+      "running": "Running {time} s",
+      "done": "Program finished",
+      "free": "Free mode"
+    },
+    "panel": {
+      "title": "Sensor panel",
+      "oled": "OLED screen",
+      "lineLeft": "Left line",
+      "lineRight": "Right line",
+      "distance": "Front distance",
+      "lineSensors": "Line sensors 1 to 5",
+      "linePosition": "Line position",
+      "servo": "Servo",
+      "temperature": "Temperature",
+      "humidity": "Humidity",
+      "sound": "Sound",
+      "motors": "Left and right motors",
+      "buzzer": "Buzzer",
+      "yes": "yes",
+      "no": "no",
+      "clap": "Clap",
+      "freeNote": "Set temperature and humidity, or clap, to test your program."
+    },
+    "results": {
+      "success": {
+        "title": "Mission complete!",
+        "body": "Every goal is met. Try explaining your program’s rules to a friend."
+      },
+      "time": {
+        "title": "Time is up",
+        "body": "The robot did not finish the mission in time. Check the block order and conditions."
+      },
+      "bump": {
+        "title": "The robot bumped into something",
+        "body": "The robot touched an obstacle or a wall. Stop earlier or change direction."
+      },
+      "incomplete": {
+        "title": "Not there yet",
+        "body": "The program finished but the goals are not met. Change the speed or duration and try again."
+      }
+    },
+    "nextMission": "Next mission",
+    "tryAgain": "Try again",
+    "close": "Close",
+    "code": {
+      "title": "C++ code",
+      "note": "The same program in C++ for the Arduino IDE with the TaksuRobot library.",
+      "copy": "Copy code",
+      "copied": "Copied",
+      "empty": "Add blocks under the when-started block to see the code."
+    },
+    "errors": {
+      "noStart": "The program needs a when-started block. Find it in Start."
+    }
+  },
+  "Blocks": {
+    "SIM_CAT_START": "Start",
+    "SIM_CAT_MOTION": "Motion",
+    "SIM_CAT_CONTROL": "Control",
+    "SIM_CAT_SENSORS": "Sensors",
+    "SIM_CAT_LOGIC": "Logic and numbers",
+    "SIM_CAT_OUTPUT": "Face and sound",
+    "SIM_CAT_OUTPUT_SMP": "Servo, OLED, sound",
+    "SIM_CAT_VARIABLES": "Variables",
+    "SIM_START": "when started",
+    "SIM_DRIVE_FOR": "%1 at %2 %% for %3 seconds",
+    "SIM_DRIVE": "%1 continuously at %2 %%",
+    "SIM_FORWARD": "forward",
+    "SIM_BACKWARD": "backward",
+    "SIM_LEFT": "turn left",
+    "SIM_RIGHT": "turn right",
+    "SIM_STOP": "stop",
+    "SIM_WAIT": "wait %1 seconds",
+    "SIM_WAIT_UNTIL": "wait until %1",
+    "SIM_REPEAT": "repeat %1 times",
+    "SIM_FOREVER": "repeat forever",
+    "SIM_LINE_LEFT": "line on the left",
+    "SIM_LINE_RIGHT": "line on the right",
+    "SIM_DISTANCE": "front distance (cm)",
+    "SIM_LINE_VALUE": "line sensor %1",
+    "SIM_LINE_POSITION": "line position",
+    "SIM_TEMPERATURE": "temperature (°C)",
+    "SIM_HUMIDITY": "humidity (%%)",
+    "SIM_SOUND": "sound level (dB)",
+    "SIM_TIMER": "time (seconds)",
+    "SIM_MOTORS": "set motors left %1 right %2",
+    "SIM_SERVO": "turn servo to %1 °",
+    "SIM_OLED": "OLED line %1 show %2",
+    "SIM_OLED_CLEAR": "clear OLED",
+    "SIM_TONE": "play %1 for %2 seconds",
+    "SIM_FACE": "show face %1",
+    "SIM_FACE_NORMAL": "neutral",
+    "SIM_FACE_SENANG": "happy",
+    "SIM_FACE_BINGUNG": "puzzled",
+    "SIM_FACE_WASPADA": "alert",
+    "SIM_FACE_BERHASIL": "success",
+    "SIM_BEEP": "beep for %1 seconds"
+  },
+  "NotFound": {
+    "title": "Page not found",
+    "body": "This address does not exist in the simulator.",
+    "back": "Open the simulator"
+  }
+}

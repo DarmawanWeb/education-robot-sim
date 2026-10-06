@@ -1,0 +1,140 @@
+'use client';
+
+import { pick, simMissions, type Locale, type SimRobot } from '@taksu/content';
+import { Logo } from '@taksu/ui/brand/logo';
+import { ThemeToggle } from '@taksu/ui/brand/theme-toggle';
+import { cn } from '@taksu/ui/lib/utils';
+import { useSearchParams } from 'next/navigation';
+import { useLocale, useTranslations } from 'next-intl';
+import { useSyncExternalStore } from 'react';
+import { useRouter } from '@/i18n/navigation';
+import { getMission } from '../engine/missions';
+import { MissionScreen } from './mission-screen';
+
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
+
+function subscribeTheme(onChange: () => void) {
+  const observer = new MutationObserver(onChange);
+  observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+  return () => observer.disconnect();
+}
+
+/** Blockly needs to know the theme to pick its palette. */
+function useDarkMode(): boolean {
+  return useSyncExternalStore(
+    subscribeTheme,
+    () => document.documentElement.classList.contains('dark'),
+    () => false,
+  );
+}
+
+export function SimApp() {
+  const t = useTranslations('Sim');
+  const locale = useLocale() as Locale;
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const dark = useDarkMode();
+
+  const requested = getMission(searchParams.get('mission') ?? '');
+  const robot: SimRobot = requested?.robot ?? (searchParams.get('robot') === 'smp' ? 'smp' : 'sd');
+  const list = simMissions.filter((entry) => entry.robot === robot);
+  const info = (requested && list.find((entry) => entry.id === requested.id)) ?? list[0];
+  const mission = info ? getMission(info.id) : undefined;
+  const index = info ? list.indexOf(info) : -1;
+  const next = list[index + 1];
+
+  const open = (target: { robot: SimRobot; mission?: string }, nextLocale: Locale = locale) => {
+    const query: Record<string, string> = { robot: target.robot };
+    if (target.mission) query.mission = target.mission;
+    router.replace({ pathname: '/', query }, { locale: nextLocale, scroll: false });
+  };
+
+  if (!info || !mission) return null;
+
+  return (
+    <div data-area="edu" className="bg-background text-foreground min-h-dvh">
+      <header className="border-border bg-background/90 sticky top-0 z-20 border-b backdrop-blur">
+        <div className="flex flex-wrap items-center gap-3 px-4 py-3 sm:px-6">
+          <a
+            href={`${siteUrl}/${locale}/education/simulator`}
+            aria-label={t('backToSite')}
+            className="shrink-0"
+          >
+            <Logo />
+          </a>
+          <span className="font-display text-muted-foreground hidden text-lg font-semibold sm:inline">
+            {t('title')}
+          </span>
+          <div
+            role="group"
+            aria-label={t('robot')}
+            className="border-border flex overflow-hidden rounded-md border"
+          >
+            {(['sd', 'smp'] as const).map((id) => (
+              <button
+                key={id}
+                type="button"
+                aria-pressed={robot === id}
+                onClick={() => open({ robot: id })}
+                className={cn(
+                  'px-3 py-2 text-sm font-semibold',
+                  robot === id ? 'bg-primary text-primary-foreground' : 'bg-surface',
+                )}
+              >
+                {id === 'sd' ? t('robotSd') : t('robotSmp')}
+              </button>
+            ))}
+          </div>
+          <label className="flex min-w-0 flex-1 items-center gap-2 text-sm font-semibold sm:flex-none">
+            <span className="sr-only sm:not-sr-only">{t('mission')}</span>
+            <select
+              value={info.id}
+              onChange={(event) => open({ robot, mission: event.target.value })}
+              className="border-border bg-surface h-10 min-w-0 flex-1 rounded-md border px-3"
+            >
+              {list.map((entry) => (
+                <option key={entry.id} value={entry.id}>
+                  {t('module', { n: entry.module })}: {pick(entry.title, locale)}
+                </option>
+              ))}
+            </select>
+          </label>
+          <div className="ml-auto flex items-center gap-2">
+            <div
+              role="group"
+              aria-label={t('language')}
+              className="border-border flex overflow-hidden rounded-md border text-sm font-semibold"
+            >
+              {(['id', 'en'] as const).map((code) => (
+                <button
+                  key={code}
+                  type="button"
+                  aria-pressed={locale === code}
+                  onClick={() => open({ robot, mission: info.id }, code)}
+                  className={cn(
+                    'px-3 py-2 uppercase',
+                    locale === code ? 'bg-primary text-primary-foreground' : 'bg-surface',
+                  )}
+                >
+                  {code}
+                </button>
+              ))}
+            </div>
+            <ThemeToggle label={t('theme')} />
+          </div>
+        </div>
+      </header>
+      <main className="p-4 sm:p-6">
+        <MissionScreen
+          key={mission.id}
+          mission={mission}
+          info={info}
+          locale={locale}
+          dark={dark}
+          hasNext={Boolean(next)}
+          onNext={() => (next ? open({ robot, mission: next.id }) : undefined)}
+        />
+      </main>
+    </div>
+  );
+}
