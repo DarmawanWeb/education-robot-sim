@@ -201,6 +201,7 @@ export function MissionScreen({
           drawRef={sim.draw}
           dark={dark}
           label={t('arenaLabel')}
+          followLabel={t('follow')}
         />
         <SensorPanel
           robot={mission.robot}

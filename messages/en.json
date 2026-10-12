@@ -23,6 +23,7 @@
     "restore": "Restore starter blocks",
     "workspaceLabel": "Block workspace",
     "arenaLabel": "Robot simulation arena seen from above",
+    "follow": "Follow the robot",
     "loading": "Preparing blocks",
     "status": {
       "idle": "Ready to run",

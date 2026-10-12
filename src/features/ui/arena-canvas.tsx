@@ -1,6 +1,8 @@
 'use client';
 
-import { type RefObject, useEffect, useRef } from 'react';
+import { cn } from '@taksu/ui/lib/utils';
+import { ScanSearch } from 'lucide-react';
+import { type RefObject, useEffect, useRef, useState } from 'react';
 import type { Simulation } from '../engine/simulation';
 import { buzzerPosition, drawRobot, silhouette } from './robot-sprite';
 
@@ -10,6 +12,11 @@ const ZONE_STYLE = {
   checkpoint: { fill: 'rgba(76,195,255,0.18)', stroke: '#1593d0' },
 } as const;
 
+/** How much closer the follow camera gets. */
+const FOLLOW_ZOOM = 2.6;
+
+const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
+
 function traceLine(context: CanvasRenderingContext2D, points: readonly { x: number; y: number }[]) {
   points.forEach((point, index) => {
     if (index === 0) context.moveTo(point.x, point.y);
@@ -17,7 +24,12 @@ function traceLine(context: CanvasRenderingContext2D, points: readonly { x: numb
   });
 }
 
-function drawArena(canvas: HTMLCanvasElement, simulation: Simulation, dark: boolean) {
+function drawArena(
+  canvas: HTMLCanvasElement,
+  simulation: Simulation,
+  dark: boolean,
+  follow: boolean,
+) {
   const { arena } = simulation.mission;
   const context = canvas.getContext('2d');
   if (!context) return;
@@ -32,9 +44,14 @@ function drawArena(canvas: HTMLCanvasElement, simulation: Simulation, dark: bool
   }
   const { model, pose } = simulation;
 
-  // Draw in centimetres.
-  const k = ratio * scale;
-  context.setTransform(k, 0, 0, k, 0, 0);
+  // Camera: the whole arena, or a close view that keeps the robot in the middle.
+  const zoom = follow ? FOLLOW_ZOOM : 1;
+  const viewWidth = arena.width / zoom;
+  const viewHeight = arena.height / zoom;
+  const originX = follow ? clamp(pose.x - viewWidth / 2, 0, arena.width - viewWidth) : 0;
+  const originY = follow ? clamp(pose.y - viewHeight / 2, 0, arena.height - viewHeight) : 0;
+  const k = ratio * scale * zoom;
+  context.setTransform(k, 0, 0, k, -originX * k, -originY * k);
   context.lineJoin = 'round';
   context.lineCap = 'round';
 
@@ -107,7 +124,7 @@ function drawArena(canvas: HTMLCanvasElement, simulation: Simulation, dark: bool
   // shadow is shifted back under the robot, so no solid shape shows between the parts.
   const far = canvas.width + 200;
   context.save();
-  context.setTransform(k, 0, 0, k, -far, 0);
+  context.setTransform(k, 0, 0, k, -originX * k - far, -originY * k);
   context.shadowColor = 'rgba(20,20,20,0.32)';
   context.shadowBlur = 0.9 * k;
   context.shadowOffsetX = far + 0.5 * k;
@@ -195,8 +212,8 @@ function drawArena(canvas: HTMLCanvasElement, simulation: Simulation, dark: bool
   }
 
   // Scale bar in screen space, so the size of things on the mat is easy to read.
-  const barCm = 20;
-  const barPx = barCm * scale * ratio;
+  const barCm = follow ? 10 : 20;
+  const barPx = barCm * scale * zoom * ratio;
   const pad = 10 * ratio;
   const baseY = canvas.height - pad;
   context.setTransform(1, 0, 0, 1, 0, 0);
@@ -223,17 +240,20 @@ export function ArenaCanvas({
   drawRef,
   dark,
   label,
+  followLabel,
 }: {
   simulation: Simulation;
   drawRef: RefObject<() => void>;
   dark: boolean;
   label: string;
+  followLabel: string;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [follow, setFollow] = useState(false);
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const redraw = () => drawArena(canvas, simulation, dark);
+    const redraw = () => drawArena(canvas, simulation, dark, follow);
     drawRef.current = redraw;
     const observer = new ResizeObserver(redraw);
     observer.observe(canvas);
@@ -242,16 +262,32 @@ export function ArenaCanvas({
       observer.disconnect();
       drawRef.current = () => {};
     };
-  }, [simulation, drawRef, dark]);
+  }, [simulation, drawRef, dark, follow]);
 
   const { width, height } = simulation.mission.arena;
   return (
-    <canvas
-      ref={canvasRef}
-      role="img"
-      aria-label={label}
-      className="border-border block w-full rounded-lg border"
-      style={{ aspectRatio: `${width} / ${height}` }}
-    />
+    <div className="relative">
+      <canvas
+        ref={canvasRef}
+        role="img"
+        aria-label={label}
+        className="border-border block w-full rounded-lg border"
+        style={{ aspectRatio: `${width} / ${height}` }}
+      />
+      <button
+        type="button"
+        aria-pressed={follow}
+        onClick={() => setFollow((value) => !value)}
+        className={cn(
+          'absolute top-2 right-2 inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs font-semibold shadow-sm',
+          follow
+            ? 'border-primary bg-primary text-primary-foreground'
+            : 'border-border bg-background/90 text-foreground',
+        )}
+      >
+        <ScanSearch className="size-3.5" aria-hidden />
+        {followLabel}
+      </button>
+    </div>
   );
 }

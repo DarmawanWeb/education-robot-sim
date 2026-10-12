@@ -23,6 +23,7 @@
     "restore": "Kembalikan blok awal",
     "workspaceLabel": "Area menyusun blok",
     "arenaLabel": "Arena simulasi robot dilihat dari atas",
+    "follow": "Ikuti robot",
     "loading": "Menyiapkan blok",
     "status": {
       "idle": "Siap dijalankan",
