@@ -1,6 +1,6 @@
 'use client';
 
-import { type Locale, pick, type SimMissionInfo } from '@taksu/content';
+import { type Locale, missionPlace, pick, type SimMissionInfo } from '@taksu/content';
 import { Badge } from '@taksu/ui/components/badge';
 import { Button } from '@taksu/ui/components/button';
 import {
@@ -105,7 +105,9 @@ export function MissionScreen({
       <div className="flex min-w-0 flex-col gap-4">
         <section className="border-border bg-surface rounded-xl border p-5">
           <div className="flex flex-wrap items-center gap-2">
-            <Badge variant={mission.robot}>{t('module', { n: info.module })}</Badge>
+            <Badge variant={mission.robot}>
+              {t('module', { n: missionPlace(info)?.module ?? 0 })}
+            </Badge>
           </div>
           <h1 className="mt-2 text-2xl font-bold [font-stretch:90%]">{pick(info.title, locale)}</h1>
           <p className="text-muted-foreground mt-1">{pick(info.brief, locale)}</p>

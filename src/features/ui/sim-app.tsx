@@ -1,6 +1,6 @@
 'use client';
 
-import { type Locale, names, pick, type SimRobot, simMissions } from '@taksu/content';
+import { type Locale, missionPlace, names, pick, type SimRobot, simMissions } from '@taksu/content';
 import { EduWordmark } from '@taksu/ui/brand/edu-wordmark';
 import { ThemeToggle } from '@taksu/ui/brand/theme-toggle';
 import { cn } from '@taksu/ui/lib/utils';
@@ -94,7 +94,8 @@ export function SimApp() {
             >
               {list.map((entry) => (
                 <option key={entry.id} value={entry.id}>
-                  {t('module', { n: entry.module })}: {pick(entry.title, locale)}
+                  {t('module', { n: missionPlace(entry)?.module ?? 0 })}:{' '}
+                  {pick(entry.title, locale)}
                 </option>
               ))}
             </select>
