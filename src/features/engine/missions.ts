@@ -55,6 +55,7 @@ type StarterBlock = {
   fields?: Record<string, unknown>;
   inputs?: Record<string, unknown>;
   extraState?: object;
+  next?: { block: StarterBlock };
 };
 const shadowNum = (value: number) => ({ shadow: { type: 'math_number', fields: { NUM: value } } });
 /** A block plugged into another block's input. */
@@ -869,6 +870,99 @@ export const missions: readonly Mission[] = [
         wait(1),
         { kind: 'waitUntil', cond: gt(sensor('sound'), n(70)) },
         stop,
+      ],
+    },
+  },
+  {
+    id: 'smp-telemetri',
+    robot: 'smp',
+    arena: { width: 120, height: 80, lines: [], boxes: [], zones: [] },
+    start: { x: 60, y: 40, heading: 0 },
+    timeLimit: 14,
+    failOnBump: false,
+    envTimeline: [
+      { t: 0, temperature: 27, humidity: 68 },
+      { t: 3, temperature: 27.5 },
+      { t: 6, temperature: 28.5 },
+      { t: 9, temperature: 29 },
+    ],
+    wifi: [
+      { t: 4, online: false },
+      { t: 8, online: true },
+    ],
+    goals: [
+      {
+        id: 'send',
+        label: l(
+          'Kirim suhu ke dasbor minimal tiga kali',
+          'Send the temperature to the dashboard at least three times',
+        ),
+        check: (s) =>
+          s.telemetry.filter(
+            (point) => typeof point.value === 'number' && point.value >= 26 && point.value <= 30,
+          ).length >= 3,
+      },
+      {
+        id: 'offline',
+        label: l(
+          'Saat Wi-Fi putus, OLED menulis LURING dan suhu tetap tampil',
+          'While the Wi-Fi is down, the OLED says OFFLINE and still shows the temperature',
+        ),
+        check: (s) =>
+          !s.online &&
+          /luring|offline/i.test(s.oledText) &&
+          showsNear(s.oledText, s.env.temperature, 0.05),
+      },
+      {
+        id: 'back',
+        label: l(
+          'Data masuk lagi setelah Wi-Fi kembali',
+          'Data arrives again once the Wi-Fi is back',
+        ),
+        check: (s) => s.met.has('offline') && s.telemetry.some((point) => point.t >= 8),
+      },
+    ],
+    hint: l(
+      'Ulangi tiap 1 detik. Tulis suhu di OLED baris 1. Jika Wi-Fi tersambung, kirim suhu ke dasbor. Jika tidak, tulis LURING di baris 2.',
+      'Repeat every second. Write the temperature on OLED line 1. If the Wi-Fi is connected, send the temperature to the dashboard. If not, write OFFLINE on line 2.',
+    ),
+    starter: starter({
+      type: 'sim_forever',
+      inputs: {
+        DO: plug({
+          type: 'sim_send',
+          fields: { NAME: 'suhu' },
+          inputs: { VALUE: plug({ type: 'sim_temperature' }) },
+          next: plug({ type: 'sim_wait', fields: { SECONDS: 1 } }),
+        }),
+      },
+    }),
+    solution: {
+      body: [
+        {
+          kind: 'forever',
+          body: [
+            {
+              kind: 'oled',
+              line: 1,
+              value: { kind: 'join', parts: [text('Suhu '), sensor('temperature')] },
+            },
+            {
+              kind: 'if',
+              branches: [
+                {
+                  cond: sensor('wifi'),
+                  body: [
+                    { kind: 'send', key: 'suhu', value: sensor('temperature') },
+                    { kind: 'oled', line: 2, value: text('Wi-Fi OK') },
+                  ],
+                },
+              ],
+              otherwise: [{ kind: 'oled', line: 2, value: text('LURING') }],
+            },
+            wait(1),
+          ],
+        },
       ],
     },
   },
