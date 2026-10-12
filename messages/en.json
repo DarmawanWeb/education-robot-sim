@@ -1,7 +1,7 @@
 {
   "Meta": {
     "title": "SD v1 and SMP v1 robot simulator",
-    "description": "Program SD v1 and SMP v1 with blocks, then run curriculum missions: driving, line following, obstacles, radar, temperature, and sound."
+    "description": "Program SD v1 and SMP v1 with blocks, then run missions that follow the curriculum: driving, turning, line following, obstacles, radar, temperature, sound, and Wi-Fi."
   },
   "Sim": {
     "title": "Robot simulator",
