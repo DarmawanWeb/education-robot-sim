@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { DT, Simulation, type BuzzerEvent } from '../engine/simulation';
+import { type BuzzerEvent, DT, Simulation } from '../engine/simulation';
 import type { Environment, Face, Mission, Outcome, Program } from '../engine/types';
 
 export interface PanelState {

@@ -5,9 +5,9 @@ import * as Blockly from 'blockly/core';
 import 'blockly/blocks';
 import * as En from 'blockly/msg/en';
 import * as Id from 'blockly/msg/id';
-import { useEffect, useRef, type RefObject } from 'react';
+import { type RefObject, useEffect, useRef } from 'react';
 import type { RobotId } from '../engine/types';
-import { compileWorkspace, type CompileResult } from './compile';
+import { type CompileResult, compileWorkspace } from './compile';
 import { buildToolbox, darkTheme, lightTheme, registerBlocks } from './definitions';
 
 export interface WorkspaceApi {

@@ -1,5 +1,5 @@
 import { circleHitsBox, distanceToPath, pointInBox, rayToBox, rayToWalls } from './geometry';
-import { Runner, type RobotIO } from './interpreter';
+import { type RobotIO, Runner } from './interpreter';
 import { robotModels } from './robots';
 import type {
   Environment,
