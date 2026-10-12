@@ -272,35 +272,36 @@ export function buildToolbox(robot: RobotId): Blockly.utils.toolbox.ToolboxDefin
   };
 }
 
+/** Block colours: one hue per category, dark enough for white block text. */
 const palette = {
-  event: '#b5871a',
-  motion: '#2f5fd0',
-  control: '#1d7466',
-  sensor: '#c96a12',
+  event: '#b86e00',
+  motion: '#1f6fd1',
+  control: '#0e6b57',
+  sensor: '#d4471a',
   output: '#7c5cc4',
 };
 
 const blockStyles = {
   event_blocks: {
     colourPrimary: palette.event,
-    colourSecondary: '#d6a93a',
-    colourTertiary: '#8a6512',
+    colourSecondary: '#e0a03a',
+    colourTertiary: '#7a4900',
     hat: 'cap',
   },
   motion_blocks: {
     colourPrimary: palette.motion,
-    colourSecondary: '#5c82e0',
-    colourTertiary: '#1f43a0',
+    colourSecondary: '#5a96e6',
+    colourTertiary: '#144a8f',
   },
   control_blocks: {
     colourPrimary: palette.control,
-    colourSecondary: '#2f9a88',
-    colourTertiary: '#13544a',
+    colourSecondary: '#2f9a80',
+    colourTertiary: '#09463a',
   },
   sensor_blocks: {
     colourPrimary: palette.sensor,
-    colourSecondary: '#e08a3a',
-    colourTertiary: '#94500c',
+    colourSecondary: '#f07a4a',
+    colourTertiary: '#8f2c0c',
   },
   output_blocks: {
     colourPrimary: palette.output,
@@ -318,49 +319,49 @@ const categoryStyles = {
 };
 
 const fontStyle = {
-  family: "'Plus Jakarta Sans Variable', system-ui, sans-serif",
+  family: "'Atkinson Hyperlegible Next Variable', system-ui, sans-serif",
   weight: '700',
   size: 13,
 };
 
-export const lightTheme = Blockly.Theme.defineTheme('taksu-sim-light', {
-  name: 'taksu-sim-light',
+export const lightTheme = Blockly.Theme.defineTheme('edu-sim-light', {
+  name: 'edu-sim-light',
   base: Blockly.Themes.Classic,
   blockStyles,
   categoryStyles,
   fontStyle,
   startHats: true,
   componentStyles: {
-    workspaceBackgroundColour: '#f5f7fb',
+    workspaceBackgroundColour: '#f6f7f4',
     toolboxBackgroundColour: '#ffffff',
-    toolboxForegroundColour: '#0f1b3d',
-    flyoutBackgroundColour: '#e8edf6',
-    flyoutForegroundColour: '#0f1b3d',
+    toolboxForegroundColour: '#000000',
+    flyoutBackgroundColour: '#eef1ec',
+    flyoutForegroundColour: '#000000',
     flyoutOpacity: 1,
-    scrollbarColour: '#d3dbea',
-    insertionMarkerColour: '#1f4fd1',
-    insertionMarkerOpacity: 0.3,
-    cursorColour: '#1f4fd1',
+    scrollbarColour: '#d5d9d2',
+    insertionMarkerColour: '#ff5a1f',
+    insertionMarkerOpacity: 0.35,
+    cursorColour: '#ff5a1f',
   },
 });
 
-export const darkTheme = Blockly.Theme.defineTheme('taksu-sim-dark', {
-  name: 'taksu-sim-dark',
+export const darkTheme = Blockly.Theme.defineTheme('edu-sim-dark', {
+  name: 'edu-sim-dark',
   base: Blockly.Themes.Classic,
   blockStyles,
   categoryStyles,
   fontStyle,
   startHats: true,
   componentStyles: {
-    workspaceBackgroundColour: '#0b1226',
-    toolboxBackgroundColour: '#111b36',
-    toolboxForegroundColour: '#e6ebf8',
-    flyoutBackgroundColour: '#18244a',
-    flyoutForegroundColour: '#e6ebf8',
+    workspaceBackgroundColour: '#0f1a17',
+    toolboxBackgroundColour: '#15241f',
+    toolboxForegroundColour: '#f1f5f2',
+    flyoutBackgroundColour: '#1b2f29',
+    flyoutForegroundColour: '#f1f5f2',
     flyoutOpacity: 1,
-    scrollbarColour: '#253260',
-    insertionMarkerColour: '#8cb0ff',
+    scrollbarColour: '#2b443c',
+    insertionMarkerColour: '#ffd23f',
     insertionMarkerOpacity: 0.4,
-    cursorColour: '#8cb0ff',
+    cursorColour: '#ffd23f',
   },
 });

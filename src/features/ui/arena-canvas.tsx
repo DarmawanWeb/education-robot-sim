@@ -4,9 +4,9 @@ import { type RefObject, useEffect, useRef } from 'react';
 import type { Simulation } from '../engine/simulation';
 
 const ZONE_STYLE = {
-  start: { fill: 'rgba(31,79,209,0.10)', stroke: '#1f4fd1' },
-  finish: { fill: 'rgba(29,116,102,0.16)', stroke: '#1d7466' },
-  checkpoint: { fill: 'rgba(245,158,11,0.12)', stroke: '#d97706' },
+  start: { fill: 'rgba(255,210,63,0.28)', stroke: '#c99700' },
+  finish: { fill: 'rgba(14,107,87,0.16)', stroke: '#0e6b57' },
+  checkpoint: { fill: 'rgba(76,195,255,0.18)', stroke: '#1593d0' },
 } as const;
 
 function traceLine(context: CanvasRenderingContext2D, points: readonly { x: number; y: number }[]) {
