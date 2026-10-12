@@ -121,6 +121,11 @@ export function SensorPanel({
               />
               <Readout label={t('humidity')} part="AHT10" value={`${panel.env.humidity} %`} />
               <Readout label={t('sound')} part={t('microphone')} value={`${panel.env.sound} dB`} />
+              <Readout
+                label={t('wifi')}
+                part="ESP32"
+                value={panel.online ? t('connected') : t('disconnected')}
+              />
             </>
           )}
           <Readout

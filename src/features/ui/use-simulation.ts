@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { type BuzzerEvent, DT, Simulation } from '../engine/simulation';
-import type { Environment, Face, Mission, Outcome, Program } from '../engine/types';
+import type { Environment, Face, Mission, Outcome, Program, TelemetryPoint } from '../engine/types';
 
 export interface PanelState {
   time: number;
@@ -18,6 +18,9 @@ export interface PanelState {
   met: string[];
   outcome: Outcome;
   programDone: boolean;
+  online: boolean;
+  telemetry: TelemetryPoint[];
+  dropped: number;
 }
 
 function panelOf(simulation: Simulation): PanelState {
@@ -35,6 +38,9 @@ function panelOf(simulation: Simulation): PanelState {
     met: [...simulation.met],
     outcome: simulation.outcome,
     programDone: simulation.programDone,
+    online: simulation.online,
+    telemetry: [...simulation.telemetry],
+    dropped: simulation.dropped,
   };
 }
 

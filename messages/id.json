@@ -52,12 +52,22 @@
       "humidity": "Kelembapan",
       "sound": "Suara",
       "microphone": "Mikrofon",
+      "wifi": "Wi-Fi",
+      "connected": "tersambung",
+      "disconnected": "terputus",
       "motors": "Motor kiri dan kanan",
       "buzzer": "Buzzer",
       "yes": "ya",
       "no": "tidak",
       "clap": "Tepuk tangan",
       "freeNote": "Atur suhu dan kelembapan, atau tepuk tangan, untuk menguji program."
+    },
+    "dashboard": {
+      "title": "Dasbor lokal",
+      "online": "Wi-Fi tersambung",
+      "offline": "Wi-Fi terputus",
+      "empty": "Belum ada data. Pakai blok kirim ke dasbor dari kategori Wi-Fi.",
+      "counts": "{received} data diterima, {dropped} hilang saat Wi-Fi putus"
     },
     "results": {
       "success": {

@@ -22,6 +22,7 @@ import type { CompileResult } from '../blocks/compile';
 import type { Mission, Outcome } from '../engine/types';
 import { ArenaCanvas } from './arena-canvas';
 import { CodePanel } from './code-panel';
+import { DashboardPanel } from './dashboard-panel';
 import { markFinished } from './progress';
 import { SensorPanel } from './sensor-panel';
 import { useSimulation } from './use-simulation';
@@ -234,6 +235,14 @@ export function MissionScreen({
           onClap={sim.clap}
           onEnvironment={sim.setEnvironment}
         />
+        {mission.wifi || sim.panel.telemetry.length > 0 || sim.panel.dropped > 0 ? (
+          <DashboardPanel
+            telemetry={sim.panel.telemetry}
+            online={sim.panel.online}
+            dropped={sim.panel.dropped}
+            time={sim.panel.time}
+          />
+        ) : null}
         <CodePanel result={program} robot={mission.robot} />
       </div>
 

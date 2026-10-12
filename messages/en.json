@@ -52,12 +52,22 @@
       "humidity": "Humidity",
       "sound": "Sound",
       "microphone": "Microphone",
+      "wifi": "Wi-Fi",
+      "connected": "connected",
+      "disconnected": "down",
       "motors": "Left and right motors",
       "buzzer": "Buzzer",
       "yes": "yes",
       "no": "no",
       "clap": "Clap",
       "freeNote": "Set temperature and humidity, or clap, to test your program."
+    },
+    "dashboard": {
+      "title": "Local dashboard",
+      "online": "Wi-Fi connected",
+      "offline": "Wi-Fi down",
+      "empty": "No data yet. Use the send to dashboard block from the Wi-Fi category.",
+      "counts": "{received} readings received, {dropped} lost while the Wi-Fi was down"
     },
     "results": {
       "success": {
