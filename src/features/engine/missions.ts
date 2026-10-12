@@ -178,6 +178,43 @@ export const missions: readonly Mission[] = [
     solution: { body: [drive('forward', 60, 7.3)] },
   },
   {
+    id: 'sd-belok',
+    robot: 'sd',
+    arena: {
+      width: 180,
+      height: 140,
+      lines: [],
+      boxes: [{ x: 50, y: 40, w: 45, h: 55 }],
+      zones: [
+        zone('start', 'start', 30, 110, 28, 28),
+        zone('corner', 'checkpoint', 110, 110, 26, 26),
+        zone('finish', 'finish', 110, 30, 26, 26),
+      ],
+    },
+    start: { x: 30, y: 110, heading: 0 },
+    timeLimit: 30,
+    failOnBump: true,
+    goals: [
+      visit('corner', l('Sampai di tikungan', 'Reach the corner')),
+      stoppedIn(
+        'finish',
+        l('Belok kiri lalu berhenti di zona finis', 'Turn left, then stop in the finish zone'),
+      ),
+    ],
+    hint: l(
+      'Di kecepatan 50%, robot berputar sekitar 143° setiap detik. Seperempat putaran itu 90°. Berapa detik yang dibutuhkan?',
+      'At 50% speed the robot spins about 143° every second. A quarter turn is 90°. How many seconds is that?',
+    ),
+    starter: starter(
+      { type: 'sim_drive_for', fields: { DIR: 'forward', SPEED: 50, SECONDS: 5.3 } },
+      { type: 'sim_drive_for', fields: { DIR: 'left', SPEED: 50, SECONDS: 1 } },
+      { type: 'sim_drive_for', fields: { DIR: 'forward', SPEED: 50, SECONDS: 5.3 } },
+    ),
+    solution: {
+      body: [drive('forward', 50, 5.33), drive('left', 50, 0.63), drive('forward', 50, 5.33)],
+    },
+  },
+  {
     id: 'sd-kotak',
     robot: 'sd',
     arena: {
