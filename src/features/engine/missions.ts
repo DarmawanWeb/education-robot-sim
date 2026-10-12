@@ -81,6 +81,19 @@ function starter(...blocks: StarterBlock[]): object {
 }
 
 // ---- goals ----
+/** Numbers written on the OLED, read the way a student would read them. */
+const numbersIn = (shown: string) =>
+  [...shown.matchAll(/-?\d+(?:[.,]\d+)?/g)].map((match) =>
+    Number.parseFloat(match[0].replace(',', '.')),
+  );
+const showsNear = (shown: string, value: number, tolerance: number) =>
+  numbersIn(shown).some((number) => Math.abs(number - value) <= tolerance);
+/** True on the tick a new beep or tone starts. */
+const beepStarted = (s: { beeps: number }, memo: Record<string, unknown>) => {
+  const before = typeof memo.beeps === 'number' ? memo.beeps : 0;
+  memo.beeps = s.beeps;
+  return s.beeps > before;
+};
 const stoppedIn = (zoneId: string, label: Localized): Goal => ({
   id: `stop-${zoneId}`,
   label,
@@ -534,6 +547,96 @@ export const missions: readonly Mission[] = [
         stop,
         { kind: 'face', face: 'berhasil' },
         { kind: 'beep', seconds: n(0.3) },
+      ],
+    },
+  },
+  {
+    id: 'smp-sistem',
+    robot: 'smp',
+    arena: {
+      width: 160,
+      height: 100,
+      lines: [],
+      boxes: [],
+      zones: [zone('start', 'start', 40, 50, 26, 26)],
+      movers: [
+        {
+          id: 'hand',
+          kind: 'hand',
+          w: 7,
+          h: 13,
+          keys: [
+            { t: 0, x: 150, y: 43.5 },
+            { t: 2, x: 150, y: 43.5 },
+            { t: 3.5, x: 62, y: 43.5 },
+            { t: 5.5, x: 62, y: 43.5 },
+            { t: 7, x: 150, y: 43.5 },
+          ],
+        },
+      ],
+    },
+    start: { x: 40, y: 50, heading: 0 },
+    timeLimit: 12,
+    failOnBump: true,
+    goals: [
+      {
+        id: 'oled',
+        label: l('Tulis jarak tangan di OLED', 'Write the hand distance on the OLED'),
+        check: (s) => s.distance < 60 && showsNear(s.oledText, s.distance, 3),
+      },
+      {
+        id: 'near',
+        label: l(
+          'Bunyikan nada saat tangan lebih dekat dari 20 cm',
+          'Play a tone when the hand is closer than 20 cm',
+        ),
+        check: (s, memo) => beepStarted(s, memo) && s.distance < 20,
+      },
+      {
+        id: 'quiet',
+        label: l('Tetap diam saat tangan masih jauh', 'Stay quiet while the hand is far away'),
+        check: (s, memo) => {
+          if (beepStarted(s, memo) && s.distance > 30) memo.alarm = true;
+          return !memo.alarm && s.time >= 8;
+        },
+      },
+    ],
+    hint: l(
+      'Ulangi selamanya: tulis jarak di OLED baris 1. Setelah itu, jika jarak kurang dari 20, mainkan nada pendek.',
+      'Repeat forever: write the distance on OLED line 1. After that, if the distance is under 20, play a short tone.',
+    ),
+    starter: starter({
+      type: 'sim_forever',
+      inputs: {
+        DO: plug({
+          type: 'sim_oled',
+          fields: { LINE: '1' },
+          inputs: { VALUE: { shadow: { type: 'text', fields: { TEXT: 'Jarak' } } } },
+        }),
+      },
+    }),
+    solution: {
+      body: [
+        {
+          kind: 'forever',
+          body: [
+            {
+              kind: 'oled',
+              line: 1,
+              value: { kind: 'join', parts: [text('Jarak '), sensor('distance')] },
+            },
+            {
+              kind: 'if',
+              branches: [
+                {
+                  cond: lt(sensor('distance'), n(20)),
+                  body: [{ kind: 'tone', note: 'C6', seconds: n(0.15) }],
+                },
+              ],
+              otherwise: [],
+            },
+          ],
+        },
       ],
     },
   },
