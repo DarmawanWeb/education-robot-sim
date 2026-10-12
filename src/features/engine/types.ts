@@ -82,6 +82,7 @@ export type SensorId =
   | 'temperature'
   | 'humidity'
   | 'sound'
+  | 'wifi'
   | 'time';
 
 export type Value = number | boolean | string;
@@ -116,12 +117,20 @@ export type Statement = { blockId?: string } & (
   | { kind: 'oled'; line: number; value: Expr }
   | { kind: 'oledClear' }
   | { kind: 'servo'; angle: Expr }
+  | { kind: 'send'; key: string; value: Expr }
   | { kind: 'set'; name: string; value: Expr }
   | { kind: 'change'; name: string; delta: Expr }
 );
 
 export interface Program {
   body: Statement[];
+}
+
+/** One reading that reached the local dashboard. */
+export interface TelemetryPoint {
+  t: number;
+  key: string;
+  value: number | string;
 }
 
 /** What a mission goal can see on every tick. */
@@ -137,6 +146,8 @@ export interface Snapshot {
   programDone: boolean;
   distance: number;
   env: Environment;
+  online: boolean;
+  telemetry: readonly TelemetryPoint[];
   visited: ReadonlySet<string>;
   met: ReadonlySet<string>;
   inZone: (id: string) => boolean;
@@ -166,6 +177,8 @@ export interface Mission {
   failOnBump: boolean;
   goals: Goal[];
   envTimeline?: EnvironmentKey[];
+  /** When the class Wi-Fi is up. Online the whole time if left out. */
+  wifi?: { t: number; online: boolean }[];
   /** Scripted claps (seconds) for the sound mission. */
   claps?: number[];
   /** Free play enables manual sliders and the clap button. */

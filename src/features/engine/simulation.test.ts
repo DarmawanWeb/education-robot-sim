@@ -76,6 +76,31 @@ describe('failure cases', () => {
   });
 });
 
+describe('Wi-Fi telemetry', () => {
+  it('keeps readings sent while online and loses the rest', () => {
+    const mission = { ...getMission('smp-bebas')!, wifi: [{ t: 0.5, online: false }] };
+    const result = simulate(
+      mission,
+      {
+        body: [
+          {
+            kind: 'repeat',
+            times: { kind: 'num', value: 10 },
+            body: [
+              { kind: 'send', key: 'suhu', value: { kind: 'sensor', sensor: 'temperature' } },
+              { kind: 'wait', seconds: { kind: 'num', value: 0.1 } },
+            ],
+          },
+        ],
+      },
+      2,
+    );
+    expect(result.telemetry.length).toBe(5);
+    expect(result.dropped).toBe(5);
+    expect(result.telemetry.every((point) => point.key === 'suhu')).toBe(true);
+  });
+});
+
 describe('moving obstacles', () => {
   it('slides between keyframes and holds at both ends', () => {
     const mover = {
@@ -118,6 +143,7 @@ describe('interpreter', () => {
         oled: () => {},
         oledClear: () => {},
         servo: () => {},
+        send: () => {},
         highlight: () => {},
       },
     );

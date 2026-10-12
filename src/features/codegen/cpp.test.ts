@@ -40,6 +40,30 @@ describe('toCpp', () => {
     );
   });
 
+  it('sends telemetry and checks the Wi-Fi link', () => {
+    const cpp = toCpp(
+      {
+        body: [
+          {
+            kind: 'if',
+            branches: [
+              {
+                cond: { kind: 'sensor', sensor: 'wifi' },
+                body: [
+                  { kind: 'send', key: 'suhu', value: { kind: 'sensor', sensor: 'temperature' } },
+                ],
+              },
+            ],
+            otherwise: [],
+          },
+        ],
+      },
+      'smp',
+    );
+    expect(cpp).toContain('if (robot.wifiConnected()) {');
+    expect(cpp).toContain('robot.send("suhu", robot.temperature());');
+  });
+
   it('sanitises variable names', () => {
     expect(identifier('jarak kiri')).toBe('jarak_kiri');
     expect(identifier('2x')).toBe('v_2x');

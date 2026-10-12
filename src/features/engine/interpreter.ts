@@ -19,6 +19,8 @@ export interface RobotIO {
   oled: (line: number, text: string) => void;
   oledClear: () => void;
   servo: (angle: number) => void;
+  /** Sends a reading to the local dashboard; lost if Wi-Fi is down. */
+  send: (key: string, value: Value) => void;
   highlight: (blockId: string | undefined) => void;
 }
 
@@ -185,6 +187,9 @@ export class Runner {
         return;
       case 'servo':
         this.io.servo(clamp(this.num(statement.angle), 0, 180));
+        return;
+      case 'send':
+        this.io.send(statement.key, this.evaluate(statement.value));
         return;
       case 'set':
         this.vars.set(statement.name, this.evaluate(statement.value));

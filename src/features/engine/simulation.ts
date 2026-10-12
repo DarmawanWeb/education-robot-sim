@@ -19,6 +19,7 @@ import type {
   RobotModel,
   SensorId,
   Snapshot,
+  TelemetryPoint,
   Vec,
 } from './types';
 
@@ -63,6 +64,9 @@ export class Simulation {
   outcome: Outcome = { status: 'running' };
   /** Sounds produced since the UI last drained them. */
   buzzerEvents: BuzzerEvent[] = [];
+  /** Readings that reached the dashboard, and how many were lost while offline. */
+  telemetry: TelemetryPoint[] = [];
+  dropped = 0;
   private manualClaps: number[] = [];
   private runner: Runner | null = null;
   private memos = new Map<string, Record<string, unknown>>();
@@ -98,6 +102,18 @@ export class Simulation {
     servo: (angle) => {
       this.servoAngle = angle;
     },
+    send: (key, value) => {
+      if (!this.online) {
+        this.dropped += 1;
+        return;
+      }
+      this.telemetry.push({
+        t: this.time,
+        key,
+        value: typeof value === 'boolean' ? Number(value) : value,
+      });
+      if (this.telemetry.length > 2000) this.telemetry.shift();
+    },
     highlight: (blockId) => {
       this.activeBlock = blockId;
     },
@@ -124,6 +140,8 @@ export class Simulation {
     this.memos.clear();
     this.manualClaps = [];
     this.buzzerEvents = [];
+    this.telemetry = [];
+    this.dropped = 0;
     this.outcome = { status: 'running' };
     this.runner = null;
     this.env = this.environmentAt(0);
@@ -148,6 +166,15 @@ export class Simulation {
 
   get programDone(): boolean {
     return this.runner?.done ?? false;
+  }
+
+  /** Whether the class Wi-Fi is up right now. */
+  get online(): boolean {
+    let online = true;
+    for (const key of this.mission.wifi ?? []) {
+      if (key.t <= this.time) online = key.online;
+    }
+    return online;
   }
 
   clap(): void {
@@ -292,6 +319,8 @@ export class Simulation {
         return this.env.humidity;
       case 'sound':
         return this.env.sound;
+      case 'wifi':
+        return this.online;
       case 'time':
         return Math.round(this.time * 10) / 10;
     }
@@ -327,6 +356,8 @@ export class Simulation {
       programDone: this.programDone,
       distance: this.distance,
       env: this.env,
+      online: this.online,
+      telemetry: this.telemetry,
       visited: this.visited,
       met: this.met,
       inZone: (id) => {

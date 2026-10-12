@@ -17,6 +17,7 @@ const SENSOR: Record<SensorId, (index?: number) => string> = {
   temperature: () => 'robot.temperature()',
   humidity: () => 'robot.humidity()',
   sound: () => 'robot.soundLevel()',
+  wifi: () => 'robot.wifiConnected()',
   time: () => '(millis() / 1000.0)',
 };
 
@@ -132,6 +133,8 @@ function lines(statements: readonly Statement[], depth: number): string[] {
         return [`${pad}robot.clearDisplay();`];
       case 'servo':
         return [`${pad}robot.servo(${expr(s.angle)});`];
+      case 'send':
+        return [`${pad}robot.send(${JSON.stringify(s.key)}, ${expr(s.value)});`];
       case 'set':
         return [`${pad}${identifier(s.name)} = ${expr(s.value)};`];
       case 'change':
