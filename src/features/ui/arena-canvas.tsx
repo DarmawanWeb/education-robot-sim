@@ -2,7 +2,7 @@
 
 import { type RefObject, useEffect, useRef } from 'react';
 import type { Simulation } from '../engine/simulation';
-import { drawRobot, silhouette } from './robot-sprite';
+import { buzzerPosition, drawRobot, silhouette } from './robot-sprite';
 
 const ZONE_STYLE = {
   start: { fill: 'rgba(255,210,63,0.28)', stroke: '#c99700' },
@@ -173,6 +173,25 @@ function drawArena(canvas: HTMLCanvasElement, simulation: Simulation, dark: bool
       Math.PI * 2,
     );
     context.fill();
+  }
+
+  // Sound rings while the buzzer is on.
+  if (simulation.time < simulation.buzzingUntil) {
+    const local = buzzerPosition(model);
+    const at = {
+      x: pose.x + local.x * cos - local.y * sin,
+      y: pose.y + local.x * sin + local.y * cos,
+    };
+    const phase = (simulation.time * 2.5) % 1;
+    context.strokeStyle = '#7c5cc4';
+    for (const ring of [phase, (phase + 0.5) % 1]) {
+      context.globalAlpha = 1 - ring;
+      context.lineWidth = 0.45;
+      context.beginPath();
+      context.arc(at.x, at.y, 1.5 + ring * 5, 0, Math.PI * 2);
+      context.stroke();
+    }
+    context.globalAlpha = 1;
   }
 }
 
