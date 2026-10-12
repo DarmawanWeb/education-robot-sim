@@ -2,6 +2,7 @@
 
 import { type RefObject, useEffect, useRef } from 'react';
 import type { Simulation } from '../engine/simulation';
+import { drawRobot, silhouette } from './robot-sprite';
 
 const ZONE_STYLE = {
   start: { fill: 'rgba(255,210,63,0.28)', stroke: '#c99700' },
@@ -29,8 +30,11 @@ function drawArena(canvas: HTMLCanvasElement, simulation: Simulation, dark: bool
     canvas.width = pixelWidth;
     canvas.height = pixelHeight;
   }
+  const { model, pose } = simulation;
+
   // Draw in centimetres.
-  context.setTransform(ratio * scale, 0, 0, ratio * scale, 0, 0);
+  const k = ratio * scale;
+  context.setTransform(k, 0, 0, k, 0, 0);
   context.lineJoin = 'round';
   context.lineCap = 'round';
 
@@ -99,7 +103,33 @@ function drawArena(canvas: HTMLCanvasElement, simulation: Simulation, dark: bool
     context.stroke();
   }
 
-  const { model, pose } = simulation;
+  // Soft drop shadow. The outline itself is drawn far off the canvas and only its blurred
+  // shadow is shifted back under the robot, so no solid shape shows between the parts.
+  const far = canvas.width + 200;
+  context.save();
+  context.setTransform(k, 0, 0, k, -far, 0);
+  context.shadowColor = 'rgba(20,20,20,0.32)';
+  context.shadowBlur = 0.9 * k;
+  context.shadowOffsetX = far + 0.5 * k;
+  context.shadowOffsetY = 0.7 * k;
+  context.translate(pose.x, pose.y);
+  context.rotate(pose.heading);
+  silhouette(context, model);
+  context.fillStyle = '#000000';
+  context.fill();
+  context.restore();
+
+  context.save();
+  context.translate(pose.x, pose.y);
+  context.rotate(pose.heading);
+  drawRobot(context, {
+    model,
+    lineValues: simulation.lineValues,
+    servoAngle: simulation.servoAngle,
+    wheelTravel: simulation.wheelTravel,
+  });
+  context.restore();
+
   const cos = Math.cos(pose.heading);
   const sin = Math.sin(pose.heading);
   const sonarOrigin = {
@@ -118,41 +148,6 @@ function drawArena(canvas: HTMLCanvasElement, simulation: Simulation, dark: bool
   );
   context.stroke();
   context.setLineDash([]);
-
-  context.save();
-  context.translate(pose.x, pose.y);
-  context.rotate(pose.heading);
-  const halfLength = model.length / 2;
-  const halfWidth = model.width / 2;
-  context.fillStyle = '#1e1e1e';
-  context.fillRect(-3.5, -halfWidth - 1.2, 7, 2.4);
-  context.fillRect(-3.5, halfWidth - 1.2, 7, 2.4);
-  context.fillStyle = model.id === 'sd' ? '#2f6fe0' : '#d24a43';
-  context.strokeStyle = model.id === 'sd' ? '#173f8f' : '#7d1f1a';
-  context.lineWidth = 0.5;
-  context.beginPath();
-  context.roundRect(-halfLength, -halfWidth + 0.6, model.length, model.width - 1.2, 2.5);
-  context.fill();
-  context.stroke();
-  if (model.id === 'smp') {
-    context.fillStyle = '#1f7a4d';
-    context.fillRect(-halfLength + 3, -halfWidth + 2.5, model.length - 7, model.width - 5);
-  } else {
-    context.fillStyle = '#0b1530';
-    context.fillRect(-2, -3.2, 5, 6.4);
-  }
-  context.fillStyle = '#c7ccd6';
-  context.beginPath();
-  context.arc(halfLength - 1.2, -2.2, 1.3, 0, Math.PI * 2);
-  context.arc(halfLength - 1.2, 2.2, 1.3, 0, Math.PI * 2);
-  context.fill();
-  model.lineSensors.forEach((sensor, index) => {
-    context.fillStyle = (simulation.lineValues[index] ?? 0) > 500 ? '#ef4444' : '#475569';
-    context.beginPath();
-    context.arc(sensor.x, sensor.y, 0.75, 0, Math.PI * 2);
-    context.fill();
-  });
-  context.restore();
 }
 
 /** Top-down arena drawn on a canvas; the simulation hook calls `drawRef` every frame. */
