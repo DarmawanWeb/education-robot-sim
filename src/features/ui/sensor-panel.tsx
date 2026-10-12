@@ -11,10 +11,13 @@ const ON_LINE = 500;
 
 function Readout({
   label,
+  part,
   value,
   className,
 }: {
   label: string;
+  /** The module on the real robot that gives this reading. */
+  part?: string;
   value: string;
   className?: string;
 }) {
@@ -22,6 +25,7 @@ function Readout({
     <div className={cn('bg-surface-muted rounded-md px-3 py-2', className)}>
       <dt className="text-muted-foreground text-xs">{label}</dt>
       <dd className="font-display text-lg font-semibold tabular-nums">{value}</dd>
+      {part ? <dd className="text-muted-foreground text-xs font-semibold">{part}</dd> : null}
     </div>
   );
 }
@@ -73,20 +77,30 @@ export function SensorPanel({
         <dl className="grid content-start grid-cols-2 gap-2 lg:grid-cols-3">
           {robot === 'sd' ? (
             <>
-              <Readout label={t('lineLeft')} value={yesNo(seen[0] ?? false)} />
-              <Readout label={t('lineRight')} value={yesNo(seen[1] ?? false)} />
-              <Readout label={t('distance')} value={`${panel.distance.toFixed(1)} cm`} />
+              <Readout label={t('lineLeft')} part="IR" value={yesNo(seen[0] ?? false)} />
+              <Readout label={t('lineRight')} part="IR" value={yesNo(seen[1] ?? false)} />
+              <Readout
+                label={t('distance')}
+                part={t('ultrasonic')}
+                value={`${panel.distance.toFixed(1)} cm`}
+              />
             </>
           ) : (
             <>
               <div className="bg-surface-muted col-span-2 rounded-md px-3 py-2 lg:col-span-3">
-                <dt className="text-muted-foreground text-xs">{t('lineSensors')}</dt>
+                <dt className="text-muted-foreground flex items-baseline justify-between gap-2 text-xs">
+                  <span>{t('lineSensors')}</span>
+                  <span className="font-semibold opacity-80">IR 5-in-1</span>
+                </dt>
                 <dd className="mt-1 flex h-10 items-end gap-1.5">
                   {panel.lineValues.map((value, index) => (
                     <span
                       // biome-ignore lint/suspicious/noArrayIndexKey: the index is the sensor position
                       key={index}
-                      className="bg-primary flex-1 rounded-t"
+                      className={cn(
+                        'flex-1 rounded-t',
+                        value > ON_LINE ? 'bg-[#e0352b]' : 'bg-primary',
+                      )}
                       style={{ height: `${Math.max(8, (value / 1000) * 100)}%` }}
                       title={String(Math.round(value))}
                     />
@@ -94,15 +108,24 @@ export function SensorPanel({
                 </dd>
               </div>
               <Readout label={t('linePosition')} value={String(Math.round(panel.linePosition))} />
-              <Readout label={t('distance')} value={`${panel.distance.toFixed(1)} cm`} />
+              <Readout
+                label={t('distance')}
+                part="HC-SR04"
+                value={`${panel.distance.toFixed(1)} cm`}
+              />
               <Readout label={t('servo')} value={`${Math.round(panel.servoAngle)}°`} />
-              <Readout label={t('temperature')} value={`${panel.env.temperature} °C`} />
-              <Readout label={t('humidity')} value={`${panel.env.humidity} %`} />
-              <Readout label={t('sound')} value={`${panel.env.sound} dB`} />
+              <Readout
+                label={t('temperature')}
+                part="AHT10"
+                value={`${panel.env.temperature} °C`}
+              />
+              <Readout label={t('humidity')} part="AHT10" value={`${panel.env.humidity} %`} />
+              <Readout label={t('sound')} part={t('microphone')} value={`${panel.env.sound} dB`} />
             </>
           )}
           <Readout
             label={t('motors')}
+            part={robot === 'smp' ? 'TB6612FNG' : undefined}
             value={`${Math.round(panel.motors.left)} / ${Math.round(panel.motors.right)}`}
             className="col-span-2 lg:col-span-1"
           />
