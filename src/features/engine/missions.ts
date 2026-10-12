@@ -54,8 +54,19 @@ type StarterBlock = {
   type: string;
   fields?: Record<string, unknown>;
   inputs?: Record<string, unknown>;
+  extraState?: object;
 };
 const shadowNum = (value: number) => ({ shadow: { type: 'math_number', fields: { NUM: value } } });
+/** A block plugged into another block's input. */
+const plug = (block: StarterBlock) => ({ block });
+const distanceBelow = (cm: number): StarterBlock => ({
+  type: 'logic_compare',
+  fields: { OP: 'LT' },
+  inputs: {
+    A: plug({ type: 'sim_distance' }),
+    B: plug({ type: 'math_number', fields: { NUM: cm } }),
+  },
+});
 function starter(...blocks: StarterBlock[]): object {
   const chain = blocks.reduceRight<object | undefined>(
     (next, block) => ({ ...block, ...(next ? { next: { block: next } } : {}) }),
@@ -294,6 +305,75 @@ export const missions: readonly Mission[] = [
         stop,
         { kind: 'face', face: 'waspada' },
         { kind: 'beep', seconds: n(0.3) },
+      ],
+    },
+  },
+  {
+    id: 'sd-hindar',
+    robot: 'sd',
+    arena: {
+      width: 200,
+      height: 100,
+      lines: [],
+      boxes: [
+        { x: 80, y: 18, w: 112, h: 10 },
+        { x: 80, y: 72, w: 112, h: 10 },
+        { x: 182, y: 28, w: 10, h: 44 },
+      ],
+      zones: [zone('start', 'start', 115, 50, 26, 26), zone('exit', 'finish', 35, 50, 30, 30)],
+    },
+    start: { x: 115, y: 50, heading: 0 },
+    timeLimit: 30,
+    failOnBump: true,
+    goals: [
+      {
+        id: 'turn',
+        label: l(
+          'Putar balik di ujung lorong tanpa menabrak',
+          'Turn around at the dead end without bumping',
+        ),
+        check: (s) => Math.cos(s.pose.heading) < -0.95,
+      },
+      visit(
+        'exit',
+        l('Keluar dari lorong ke zona finis', 'Leave the corridor for the finish zone'),
+        'turn',
+      ),
+    ],
+    hint: l(
+      'Ulangi selamanya. Jika jarak kurang dari 15 cm: mundur sebentar, lalu belok 50% sekitar 1,26 detik untuk putar balik. Jika tidak: maju.',
+      'Repeat forever. If the distance is under 15 cm: back up a little, then turn at 50% for about 1.26 seconds to face the other way. Otherwise: go forward.',
+    ),
+    starter: starter({
+      type: 'sim_forever',
+      inputs: {
+        DO: plug({
+          type: 'controls_if',
+          extraState: { hasElse: true },
+          inputs: {
+            IF0: plug(distanceBelow(15)),
+            ELSE: plug({ type: 'sim_drive', fields: { DIR: 'forward', SPEED: 50 } }),
+          },
+        }),
+      },
+    }),
+    solution: {
+      body: [
+        {
+          kind: 'forever',
+          body: [
+            {
+              kind: 'if',
+              branches: [
+                {
+                  cond: lt(sensor('distance'), n(15)),
+                  body: [drive('backward', 50, 0.5), drive('right', 50, 1.26)],
+                },
+              ],
+              otherwise: [drive('forward', 50)],
+            },
+          ],
+        },
       ],
     },
   },
