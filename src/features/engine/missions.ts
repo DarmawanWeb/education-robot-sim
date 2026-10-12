@@ -409,6 +409,86 @@ export const missions: readonly Mission[] = [
     solution: { body: [{ kind: 'forever', body: [followSd(40)] }] },
   },
   {
+    id: 'sd-persimpangan',
+    robot: 'sd',
+    arena: {
+      width: 200,
+      height: 120,
+      lines: [
+        {
+          width: tape,
+          points: [
+            { x: 12, y: 85 },
+            { x: 60, y: 85 },
+            { x: 100, y: 55 },
+            { x: 172, y: 55 },
+          ],
+        },
+        {
+          width: 5,
+          points: [
+            { x: 176, y: 38 },
+            { x: 176, y: 72 },
+          ],
+        },
+      ],
+      boxes: [],
+      zones: [
+        zone('bend', 'checkpoint', 120, 55, 24, 24),
+        zone('stopline', 'finish', 164, 55, 22, 26),
+      ],
+    },
+    start: { x: 22, y: 85, heading: 0 },
+    timeLimit: 45,
+    failOnBump: false,
+    goals: [
+      visit(
+        'bend',
+        l('Lewati belokan tanpa keluar garis', 'Get past the bend without leaving the line'),
+      ),
+      stoppedIn('stopline', l('Berhenti tepat di garis lebar', 'Stop right at the wide line')),
+    ],
+    hint: l(
+      'Di dalam ulangi, pakai aturan belok dari misi Ikuti garis. Pengulangan berhenti sendiri saat sensor kiri dan kanan sama-sama melihat hitam.',
+      'Inside the repeat, use the steering rules from the Follow the line mission. The repeat ends on its own when both sensors see black.',
+    ),
+    starter: starter(
+      {
+        type: 'controls_whileUntil',
+        fields: { MODE: 'UNTIL' },
+        inputs: {
+          BOOL: plug({
+            type: 'logic_operation',
+            fields: { OP: 'AND' },
+            inputs: { A: plug({ type: 'sim_line_left' }), B: plug({ type: 'sim_line_right' }) },
+          }),
+        },
+      },
+      { type: 'sim_stop' },
+    ),
+    solution: {
+      body: [
+        {
+          kind: 'loop',
+          until: true,
+          cond: and(lineLeft, lineRight),
+          body: [
+            {
+              kind: 'if',
+              branches: [
+                { cond: lineLeft, body: [drive('left', 40)] },
+                { cond: lineRight, body: [drive('right', 40)] },
+              ],
+              otherwise: [drive('forward', 40)],
+            },
+          ],
+        },
+        stop,
+        { kind: 'face', face: 'berhasil' },
+      ],
+    },
+  },
+  {
     id: 'sd-misi-akhir',
     robot: 'sd',
     arena: {
