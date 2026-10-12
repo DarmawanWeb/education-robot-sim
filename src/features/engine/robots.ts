@@ -1,6 +1,9 @@
 import type { RobotId, RobotModel } from './types';
 
-/** SD v1: two IR line sensors straddling the tape, front ultrasonic, matched motors. */
+/**
+ * SD v1: two IR line sensors straddling the tape, low under the face at the front,
+ * the ultrasonic sensor on top of the face, matched motors.
+ */
 const sd: RobotModel = {
   id: 'sd',
   length: 16,
@@ -10,8 +13,8 @@ const sd: RobotModel = {
   maxSpeed: 30,
   motorBias: { left: 1, right: 1 },
   lineSensors: [
-    { x: 7, y: -1.6 },
-    { x: 7, y: 1.6 },
+    { x: 8.6, y: -1.6 },
+    { x: 8.6, y: 1.6 },
   ],
   sonar: { forward: 8, range: 200, halfCone: 0.13 },
   hasServo: false,
