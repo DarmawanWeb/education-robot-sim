@@ -37,6 +37,8 @@ export class Simulation {
   servoAngle = 90;
   speed = 0;
   turnRate = 0;
+  /** Centimetres each wheel has rolled; the canvas uses it to turn the tyre tread. */
+  wheelTravel = { left: 0, right: 0 };
   stationaryFor = 0;
   bumped = false;
   beeps = 0;
@@ -102,6 +104,7 @@ export class Simulation {
     this.servoAngle = 90;
     this.speed = 0;
     this.turnRate = 0;
+    this.wheelTravel = { left: 0, right: 0 };
     this.stationaryFor = 0;
     this.bumped = false;
     this.beeps = 0;
@@ -178,6 +181,9 @@ export class Simulation {
     const right = ((maxSpeed * this.motors.right) / 100) * motorBias.right;
     const v = (left + right) / 2;
     const omega = (left - right) / wheelBase;
+    // Wheels keep spinning against a wall, as real ones do.
+    this.wheelTravel.left += left * dt;
+    this.wheelTravel.right += right * dt;
     const middle = this.pose.heading + (omega * dt) / 2;
     const next = {
       x: this.pose.x + v * Math.cos(middle) * dt,
