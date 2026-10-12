@@ -16,6 +16,7 @@ import { CheckCircle2, Circle, Play, RotateCcw, Square, Undo2 } from 'lucide-rea
 import dynamic from 'next/dynamic';
 import { useMessages, useTranslations } from 'next-intl';
 import { useCallback, useRef, useState } from 'react';
+import { syllabusUrl } from '@/lib/links';
 import type { WorkspaceApi } from '../blocks/blockly-workspace';
 import type { CompileResult } from '../blocks/compile';
 import type { Mission, Outcome } from '../engine/types';
@@ -82,6 +83,10 @@ export function MissionScreen({
       : mission.free
         ? t('status.free')
         : t('status.idle');
+  const place = missionPlace(info);
+  const meetingList = place
+    ? new Intl.ListFormat(locale, { type: 'conjunction' }).format(place.meetings.map(String))
+    : '';
   const outcomeKey =
     result && result.status !== 'running'
       ? result.status === 'success'
@@ -107,10 +112,13 @@ export function MissionScreen({
 
       <div className="flex min-w-0 flex-col gap-4">
         <section className="border-border bg-surface rounded-xl border p-5">
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge variant={mission.robot}>
-              {t('module', { n: missionPlace(info)?.module ?? 0 })}
-            </Badge>
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+            <Badge variant={mission.robot}>{t('module', { n: place?.module ?? 0 })}</Badge>
+            {place ? (
+              <span className="text-muted-foreground text-sm font-semibold">
+                {t('meetings', { count: place.meetings.length, list: meetingList })}
+              </span>
+            ) : null}
           </div>
           <h1 className="mt-2 text-2xl font-bold [font-stretch:90%]">{pick(info.title, locale)}</h1>
           <p className="text-muted-foreground mt-1">{pick(info.brief, locale)}</p>
@@ -144,6 +152,17 @@ export function MissionScreen({
             <summary className="cursor-pointer font-semibold">{t('hint')}</summary>
             <p className="text-muted-foreground mt-2">{pick(mission.hint, locale)}</p>
           </details>
+          {place ? (
+            <a
+              href={syllabusUrl(locale, mission.robot, place.moduleId)}
+              target="_blank"
+              rel="noopener"
+              className="decoration-primary mt-3 inline-block text-sm font-semibold underline decoration-2 underline-offset-4"
+            >
+              {t('inSyllabus')}
+              <span className="sr-only"> {t('newTab')}</span>
+            </a>
+          ) : null}
         </section>
 
         <div className="flex flex-wrap items-center gap-2">

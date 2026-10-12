@@ -17,12 +17,10 @@ import { useSearchParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { useSyncExternalStore } from 'react';
 import { useRouter } from '@/i18n/navigation';
+import { eduUrl } from '@/lib/links';
 import { getMission } from '../engine/missions';
 import { MissionScreen } from './mission-screen';
 import { useFinishedMissions } from './progress';
-
-/** The education site's simulator page, where this app is introduced. */
-const eduUrl = (process.env.NEXT_PUBLIC_EDU_URL ?? 'http://localhost:3003').replace(/\/+$/, '');
 
 function subscribeTheme(onChange: () => void) {
   const observer = new MutationObserver(onChange);
