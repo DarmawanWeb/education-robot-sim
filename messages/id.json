@@ -13,6 +13,8 @@
     "robotSmp": "SMP v1",
     "mission": "Misi",
     "module": "Modul {n}",
+    "finishedOption": "{title} (selesai)",
+    "progress": "{done} dari {total} misi selesai",
     "goals": "Tujuan misi",
     "hint": "Petunjuk",
     "run": "Jalankan",

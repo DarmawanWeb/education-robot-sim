@@ -19,6 +19,7 @@ import { useSyncExternalStore } from 'react';
 import { useRouter } from '@/i18n/navigation';
 import { getMission } from '../engine/missions';
 import { MissionScreen } from './mission-screen';
+import { useFinishedMissions } from './progress';
 
 /** The education site's simulator page, where this app is introduced. */
 const eduUrl = (process.env.NEXT_PUBLIC_EDU_URL ?? 'http://localhost:3003').replace(/\/+$/, '');
@@ -57,6 +58,7 @@ export function SimApp() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const dark = useDarkMode();
+  const finished = useFinishedMissions();
 
   const requested = getMission(searchParams.get('mission') ?? '');
   const robot: SimRobot = requested?.robot ?? (searchParams.get('robot') === 'smp' ? 'smp' : 'sd');
@@ -122,13 +124,21 @@ export function SimApp() {
                 >
                   {group.missions.map((entry) => (
                     <option key={entry.id} value={entry.id}>
-                      {pick(entry.title, locale)}
+                      {finished.has(entry.id)
+                        ? t('finishedOption', { title: pick(entry.title, locale) })
+                        : pick(entry.title, locale)}
                     </option>
                   ))}
                 </optgroup>
               ))}
             </select>
           </label>
+          <span className="text-muted-foreground hidden text-sm font-semibold tabular-nums lg:inline">
+            {t('progress', {
+              done: list.filter((entry) => finished.has(entry.id)).length,
+              total: list.length,
+            })}
+          </span>
           <div className="ml-auto flex items-center gap-2">
             <fieldset
               aria-label={t('language')}

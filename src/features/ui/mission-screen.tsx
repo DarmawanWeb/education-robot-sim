@@ -21,6 +21,7 @@ import type { CompileResult } from '../blocks/compile';
 import type { Mission, Outcome } from '../engine/types';
 import { ArenaCanvas } from './arena-canvas';
 import { CodePanel } from './code-panel';
+import { markFinished } from './progress';
 import { SensorPanel } from './sensor-panel';
 import { useSimulation } from './use-simulation';
 
@@ -56,7 +57,9 @@ export function MissionScreen({
 
   const sim = useSimulation(mission, {
     onFinish: (outcome) => {
-      if (!mission.free) setResult(outcome);
+      if (mission.free) return;
+      if (outcome.status === 'success') markFinished(mission.id);
+      setResult(outcome);
     },
     onActiveBlock: (blockId) => apiRef.current?.highlight(blockId),
   });

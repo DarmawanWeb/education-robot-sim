@@ -13,6 +13,8 @@
     "robotSmp": "SMP v1",
     "mission": "Mission",
     "module": "Module {n}",
+    "finishedOption": "{title} (done)",
+    "progress": "{done} of {total} missions done",
     "goals": "Mission goals",
     "hint": "Hint",
     "run": "Run",
