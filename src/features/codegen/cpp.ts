@@ -161,15 +161,15 @@ function variables(
   return found;
 }
 
-/** Arduino C++ for the Taksu robot library: the same program students built with blocks. */
+/** Arduino C++ for the RobotKit library: the same program students built with blocks. */
 export function toCpp(program: Program, robot: RobotId): string {
   const declared = [...variables(program.body)].map(
     ([name, type]) => `${type} ${identifier(name)}${type === 'float' ? ' = 0' : ''};`,
   );
   return [
-    '#include <TaksuRobot.h>',
+    '#include <RobotKit.h>',
     '',
-    `TaksuRobot robot(TaksuRobot::${robot.toUpperCase()});`,
+    `RobotKit robot(RobotKit::${robot.toUpperCase()});`,
     ...declared,
     '',
     'void setup() {',

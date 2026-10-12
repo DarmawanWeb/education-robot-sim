@@ -72,7 +72,7 @@
     "close": "Close",
     "code": {
       "title": "C++ code",
-      "note": "The same program in C++ for the Arduino IDE with the TaksuRobot library.",
+      "note": "The same program in C++ for the Arduino IDE with the RobotKit library.",
       "copy": "Copy code",
       "copied": "Copied",
       "empty": "Add blocks under the when-started block to see the code."

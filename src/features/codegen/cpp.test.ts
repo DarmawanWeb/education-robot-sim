@@ -6,9 +6,9 @@ describe('toCpp', () => {
   it('turns the SD obstacle solution into Arduino C++', () => {
     expect(toCpp(getMission('sd-rintangan')!.solution, 'sd')).toBe(
       [
-        '#include <TaksuRobot.h>',
+        '#include <RobotKit.h>',
         '',
-        'TaksuRobot robot(TaksuRobot::SD);',
+        'RobotKit robot(RobotKit::SD);',
         '',
         'void setup() {',
         '  robot.begin();',

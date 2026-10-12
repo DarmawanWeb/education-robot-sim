@@ -72,7 +72,7 @@
     "close": "Tutup",
     "code": {
       "title": "Kode C++",
-      "note": "Program yang sama dalam C++ untuk Arduino IDE dengan pustaka TaksuRobot.",
+      "note": "Program yang sama dalam C++ untuk Arduino IDE dengan pustaka RobotKit.",
       "copy": "Salin kode",
       "copied": "Tersalin",
       "empty": "Tambahkan blok di bawah blok saat mulai untuk melihat kodenya."
