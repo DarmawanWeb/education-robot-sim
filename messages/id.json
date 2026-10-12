@@ -100,6 +100,7 @@
     "SIM_CAT_OUTPUT": "Wajah dan suara",
     "SIM_CAT_OUTPUT_SMP": "Servo, OLED, suara",
     "SIM_CAT_VARIABLES": "Variabel",
+    "SIM_CAT_WIFI": "Wi-Fi",
     "SIM_START": "saat mulai",
     "SIM_DRIVE_FOR": "%1 kecepatan %2 %% selama %3 detik",
     "SIM_DRIVE": "%1 terus kecepatan %2 %%",
@@ -132,7 +133,9 @@
     "SIM_FACE_BINGUNG": "bingung",
     "SIM_FACE_WASPADA": "waspada",
     "SIM_FACE_BERHASIL": "berhasil",
-    "SIM_BEEP": "bunyikan bip %1 detik"
+    "SIM_BEEP": "bunyikan bip %1 detik",
+    "SIM_SEND": "kirim ke dasbor %1 nilai %2",
+    "SIM_WIFI": "Wi-Fi tersambung"
   },
   "NotFound": {
     "title": "Halaman tidak ditemukan",

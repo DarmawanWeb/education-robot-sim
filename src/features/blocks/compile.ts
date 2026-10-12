@@ -20,6 +20,7 @@ const SENSOR_BLOCKS: Record<string, SensorId> = {
   sim_humidity: 'humidity',
   sim_sound: 'sound',
   sim_timer: 'time',
+  sim_wifi: 'wifi',
 };
 
 const num = (value: unknown, fallback = 0): Expr => ({
@@ -157,6 +158,13 @@ function statement(block: Blockly.Block): Statement | null {
       };
     case 'sim_oled_clear':
       return { kind: 'oledClear', blockId };
+    case 'sim_send':
+      return {
+        kind: 'send',
+        key: String(field('NAME') ?? '').trim() || 'data',
+        value: input('VALUE'),
+        blockId,
+      };
     case 'sim_servo':
       return { kind: 'servo', angle: input('ANGLE', { kind: 'num', value: 90 }), blockId };
     case 'variables_set':

@@ -150,6 +150,17 @@ const definitions: Record<string, () => object> = {
     style: 'output_blocks',
   }),
   sim_oled_clear: () => ({ message0: msg('SIM_OLED_CLEAR'), ...statement, style: 'output_blocks' }),
+  sim_send: () => ({
+    message0: msg('SIM_SEND'),
+    args0: [
+      { type: 'field_input', name: 'NAME', text: 'suhu' },
+      { type: 'input_value', name: 'VALUE' },
+    ],
+    inputsInline: true,
+    ...statement,
+    style: 'network_blocks',
+  }),
+  sim_wifi: () => ({ message0: msg('SIM_WIFI'), output: 'Boolean', style: 'network_blocks' }),
 };
 
 export function registerBlocks(): void {
@@ -262,6 +273,15 @@ export function buildToolbox(robot: RobotId): Blockly.utils.toolbox.ToolboxDefin
         ? [
             {
               kind: 'category',
+              name: msg('SIM_CAT_WIFI'),
+              categorystyle: 'network_category',
+              contents: [
+                block('sim_send', { inputs: { VALUE: shadowNumber(0) } }),
+                block('sim_wifi'),
+              ],
+            },
+            {
+              kind: 'category',
               name: msg('SIM_CAT_VARIABLES'),
               categorystyle: 'variable_category',
               custom: 'VARIABLE',
@@ -279,6 +299,7 @@ const palette = {
   control: '#0e6b57',
   sensor: '#d4471a',
   output: '#7c5cc4',
+  network: '#0f7c99',
 };
 
 const blockStyles = {
@@ -308,6 +329,11 @@ const blockStyles = {
     colourSecondary: '#9a80d8',
     colourTertiary: '#5b3fa0',
   },
+  network_blocks: {
+    colourPrimary: palette.network,
+    colourSecondary: '#3fa5bf',
+    colourTertiary: '#09566b',
+  },
 };
 
 const categoryStyles = {
@@ -316,6 +342,7 @@ const categoryStyles = {
   control_category: { colour: palette.control },
   sensor_category: { colour: palette.sensor },
   output_category: { colour: palette.output },
+  network_category: { colour: palette.network },
 };
 
 const fontStyle = {

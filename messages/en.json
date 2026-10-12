@@ -100,6 +100,7 @@
     "SIM_CAT_OUTPUT": "Face and sound",
     "SIM_CAT_OUTPUT_SMP": "Servo, OLED, sound",
     "SIM_CAT_VARIABLES": "Variables",
+    "SIM_CAT_WIFI": "Wi-Fi",
     "SIM_START": "when started",
     "SIM_DRIVE_FOR": "%1 at %2 %% for %3 seconds",
     "SIM_DRIVE": "%1 continuously at %2 %%",
@@ -132,7 +133,9 @@
     "SIM_FACE_BINGUNG": "puzzled",
     "SIM_FACE_WASPADA": "alert",
     "SIM_FACE_BERHASIL": "success",
-    "SIM_BEEP": "beep for %1 seconds"
+    "SIM_BEEP": "beep for %1 seconds",
+    "SIM_SEND": "send to dashboard %1 value %2",
+    "SIM_WIFI": "Wi-Fi connected"
   },
   "NotFound": {
     "title": "Page not found",
