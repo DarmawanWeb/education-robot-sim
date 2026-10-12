@@ -11,6 +11,7 @@ const nextConfig: NextConfig = {
   turbopack: { root: monorepoRoot },
   transpilePackages: ['@taksu/ui', '@taksu/bali', '@taksu/content'],
   poweredByHeader: false,
+  agentRules: false,
   reactStrictMode: true,
 };
 
