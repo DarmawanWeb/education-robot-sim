@@ -1,6 +1,6 @@
 import type { RobotId, RobotModel } from './types';
 
-/** Robot Pintar (SD): two IR line sensors straddling the tape, front ultrasonic, matched motors. */
+/** SD v1: two IR line sensors straddling the tape, front ultrasonic, matched motors. */
 const sd: RobotModel = {
   id: 'sd',
   length: 16,

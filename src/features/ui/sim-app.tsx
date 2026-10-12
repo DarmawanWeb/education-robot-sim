@@ -1,7 +1,7 @@
 'use client';
 
-import { type Locale, pick, type SimRobot, simMissions } from '@taksu/content';
-import { Logo } from '@taksu/ui/brand/logo';
+import { type Locale, names, pick, type SimRobot, simMissions } from '@taksu/content';
+import { EduWordmark } from '@taksu/ui/brand/edu-wordmark';
 import { ThemeToggle } from '@taksu/ui/brand/theme-toggle';
 import { cn } from '@taksu/ui/lib/utils';
 import { useSearchParams } from 'next/navigation';
@@ -11,7 +11,8 @@ import { useRouter } from '@/i18n/navigation';
 import { getMission } from '../engine/missions';
 import { MissionScreen } from './mission-screen';
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
+/** The education site's simulator page, where this app is introduced. */
+const eduUrl = (process.env.NEXT_PUBLIC_EDU_URL ?? 'http://localhost:3003').replace(/\/+$/, '');
 
 function subscribeTheme(onChange: () => void) {
   const observer = new MutationObserver(onChange);
@@ -52,17 +53,17 @@ export function SimApp() {
   if (!info || !mission) return null;
 
   return (
-    <div data-area="edu" className="bg-background text-foreground min-h-dvh">
+    <div className="bg-background text-foreground min-h-dvh">
       <header className="border-border bg-background/90 sticky top-0 z-20 border-b backdrop-blur">
         <div className="flex flex-wrap items-center gap-3 px-4 py-3 sm:px-6">
           <a
-            href={`${siteUrl}/${locale}/education/simulator`}
-            aria-label={t('backToSite')}
-            className="shrink-0"
+            href={`${eduUrl}/${locale}/simulator`}
+            aria-label={t('backToSite', { brand: names.edu })}
+            className="shrink-0 rounded-sm"
           >
-            <Logo />
+            <EduWordmark name={names.edu} />
           </a>
-          <span className="font-display text-muted-foreground hidden text-lg font-semibold sm:inline">
+          <span className="text-muted-foreground hidden text-lg font-bold md:inline">
             {t('title')}
           </span>
           <fieldset

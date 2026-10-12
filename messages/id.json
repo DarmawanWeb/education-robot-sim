@@ -1,16 +1,16 @@
 {
   "Meta": {
-    "title": "Simulator robot Taksu Edu",
-    "description": "Program Robot Pintar SD dan Robot Modular SMP dengan blok, lalu jalankan misi sesuai kurikulum: maju, ikuti garis, rintangan, radar, suhu, dan suara."
+    "title": "Simulator robot SD v1 dan SMP v1",
+    "description": "Program SD v1 dan SMP v1 dengan blok, lalu jalankan misi sesuai kurikulum: maju, ikuti garis, rintangan, radar, suhu, dan suara."
   },
   "Sim": {
     "title": "Simulator robot",
-    "backToSite": "Kembali ke Taksu Edu",
+    "backToSite": "Kembali ke {brand}",
     "theme": "Ganti tema terang atau gelap",
     "language": "Bahasa",
     "robot": "Robot",
-    "robotSd": "Robot Pintar SD",
-    "robotSmp": "Robot Modular SMP",
+    "robotSd": "SD v1",
+    "robotSmp": "SMP v1",
     "mission": "Misi",
     "module": "Modul {n}",
     "goals": "Tujuan misi",

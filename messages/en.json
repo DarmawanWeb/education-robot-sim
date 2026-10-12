@@ -1,16 +1,16 @@
 {
   "Meta": {
-    "title": "Taksu Edu robot simulator",
-    "description": "Program the primary Robot Pintar and the junior high modular robot with blocks, then run curriculum missions: driving, line following, obstacles, radar, temperature, and sound."
+    "title": "SD v1 and SMP v1 robot simulator",
+    "description": "Program SD v1 and SMP v1 with blocks, then run curriculum missions: driving, line following, obstacles, radar, temperature, and sound."
   },
   "Sim": {
     "title": "Robot simulator",
-    "backToSite": "Back to Taksu Edu",
+    "backToSite": "Back to {brand}",
     "theme": "Switch light or dark theme",
     "language": "Language",
     "robot": "Robot",
-    "robotSd": "Robot Pintar (primary)",
-    "robotSmp": "Modular robot (junior high)",
+    "robotSd": "SD v1",
+    "robotSmp": "SMP v1",
     "mission": "Mission",
     "module": "Module {n}",
     "goals": "Mission goals",

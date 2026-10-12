@@ -1,3 +1,4 @@
+import { names } from '@taksu/content';
 import Link from 'next/link';
 
 /** Fallback for requests outside any locale (rare, the proxy redirects most of them). */
@@ -9,7 +10,7 @@ export default function GlobalNotFound() {
       >
         <h1>404</h1>
         <p>Halaman tidak ditemukan. Page not found.</p>
-        <Link href="/">Taksu Tech</Link>
+        <Link href="/">{names.edu}</Link>
       </body>
     </html>
   );
