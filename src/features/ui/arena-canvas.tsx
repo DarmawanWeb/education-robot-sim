@@ -193,6 +193,28 @@ function drawArena(canvas: HTMLCanvasElement, simulation: Simulation, dark: bool
     }
     context.globalAlpha = 1;
   }
+
+  // Scale bar in screen space, so the size of things on the mat is easy to read.
+  const barCm = 20;
+  const barPx = barCm * scale * ratio;
+  const pad = 10 * ratio;
+  const baseY = canvas.height - pad;
+  context.setTransform(1, 0, 0, 1, 0, 0);
+  context.fillStyle = 'rgba(255,255,255,0.8)';
+  context.fillRect(pad - 4 * ratio, baseY - 18 * ratio, barPx + 8 * ratio, 22 * ratio);
+  context.strokeStyle = '#141414';
+  context.lineWidth = 1.5 * ratio;
+  context.lineCap = 'butt';
+  context.beginPath();
+  context.moveTo(pad, baseY - 4 * ratio);
+  context.lineTo(pad, baseY);
+  context.lineTo(pad + barPx, baseY);
+  context.lineTo(pad + barPx, baseY - 4 * ratio);
+  context.stroke();
+  context.fillStyle = '#141414';
+  context.font = `700 ${11 * ratio}px 'Atkinson Hyperlegible Next Variable', system-ui, sans-serif`;
+  context.textBaseline = 'alphabetic';
+  context.fillText(`${barCm} cm`, pad + 2 * ratio, baseY - 6 * ratio);
 }
 
 /** Top-down arena drawn on a canvas; the simulation hook calls `drawRef` every frame. */
