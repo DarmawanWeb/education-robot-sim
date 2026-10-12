@@ -68,11 +68,13 @@ function drawArena(canvas: HTMLCanvasElement, simulation: Simulation, dark: bool
   context.strokeStyle = '#141414';
   for (const path of arena.lines) {
     context.lineWidth = path.width;
+    context.lineCap = path.closed ? 'round' : 'butt';
     context.beginPath();
     traceLine(context, path.points);
     if (path.closed) context.closePath();
     context.stroke();
   }
+  context.lineCap = 'round';
 
   for (const box of arena.boxes) {
     context.fillStyle = '#c98c4c';
