@@ -33,6 +33,8 @@
     },
     "panel": {
       "title": "Sensor panel",
+      "front": "Robot face",
+      "frontLabel": "The robot seen from the front, with its OLED screen",
       "oled": "OLED screen",
       "lineLeft": "Left line",
       "lineRight": "Right line",

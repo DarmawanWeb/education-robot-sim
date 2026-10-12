@@ -3,53 +3,11 @@
 import { cn } from '@taksu/ui/lib/utils';
 import { Bell, Hand } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import type { Face, RobotId } from '../engine/types';
+import type { RobotId } from '../engine/types';
+import { RobotFront } from './robot-front';
 import type { PanelState } from './use-simulation';
 
-const PIXEL = '#7ff3ff';
-
-function OledFace({ face }: { face: Face }) {
-  const eyes =
-    face === 'senang' || face === 'berhasil' ? (
-      <g fill="none" stroke={PIXEL} strokeWidth="6" strokeLinecap="round">
-        <path d="M30 38q12-18 24 0" />
-        <path d="M74 38q12-18 24 0" />
-      </g>
-    ) : face === 'waspada' ? (
-      <g fill={PIXEL}>
-        <rect x="32" y="24" width="20" height="22" rx="4" />
-        <rect x="76" y="24" width="20" height="22" rx="4" />
-        <path d="M28 18l26 6M100 18l-26 6" stroke={PIXEL} strokeWidth="4" strokeLinecap="round" />
-      </g>
-    ) : face === 'bingung' ? (
-      <g fill={PIXEL}>
-        <rect x="30" y="20" width="24" height="24" rx="5" />
-        <rect x="78" y="28" width="16" height="16" rx="4" />
-        <text x="102" y="22" fontSize="16" fontWeight="700" fill={PIXEL}>
-          ?
-        </text>
-      </g>
-    ) : (
-      <g fill={PIXEL}>
-        <rect x="30" y="18" width="24" height="26" rx="6" />
-        <rect x="74" y="18" width="24" height="26" rx="6" />
-      </g>
-    );
-  return (
-    <svg viewBox="0 0 128 64" className="h-full w-full" aria-hidden>
-      {eyes}
-      {face === 'berhasil' ? (
-        <path
-          d="M54 52l7 6 13-12"
-          fill="none"
-          stroke={PIXEL}
-          strokeWidth="4"
-          strokeLinecap="round"
-        />
-      ) : null}
-    </svg>
-  );
-}
+const ON_LINE = 500;
 
 function Readout({
   label,
@@ -83,25 +41,24 @@ export function SensorPanel({
 }) {
   const t = useTranslations('Sim.panel');
   const yesNo = (on: boolean) => (on ? t('yes') : t('no'));
-  const hasText = panel.oled.some((line) => line.trim().length > 0);
+  const seen = panel.lineValues.map((value) => value > ON_LINE);
 
   return (
     <section aria-label={t('title')} className="border-border bg-surface rounded-xl border p-4">
       <h2 className="text-muted-foreground mb-3 text-sm font-semibold">{t('title')}</h2>
-      <div className="grid gap-4 sm:grid-cols-[11rem_1fr]">
+      <div className="grid gap-4 sm:grid-cols-[12rem_1fr]">
         <div>
-          <p className="text-muted-foreground mb-1 text-xs">{t('oled')}</p>
-          <div className="aspect-[2/1] rounded-md border-4 border-[#1b2333] bg-black p-1.5">
-            {hasText ? (
-              <pre
-                className="h-full overflow-hidden font-mono text-[0.7rem] leading-tight"
-                style={{ color: PIXEL }}
-              >
-                {panel.oled.join('\n')}
-              </pre>
-            ) : (
-              <OledFace face={panel.face} />
-            )}
+          <p className="text-muted-foreground mb-1 text-xs">
+            {robot === 'sd' ? t('front') : t('oled')}
+          </p>
+          <div className="mx-auto max-w-[14rem] sm:max-w-none">
+            <RobotFront
+              robot={robot}
+              face={panel.face}
+              oled={panel.oled}
+              lineSeen={seen}
+              label={t('frontLabel')}
+            />
           </div>
           <p
             className={cn(
@@ -113,11 +70,11 @@ export function SensorPanel({
             {t('buzzer')}
           </p>
         </div>
-        <dl className="grid grid-cols-2 gap-2 lg:grid-cols-3">
+        <dl className="grid content-start grid-cols-2 gap-2 lg:grid-cols-3">
           {robot === 'sd' ? (
             <>
-              <Readout label={t('lineLeft')} value={yesNo((panel.lineValues[0] ?? 0) > 500)} />
-              <Readout label={t('lineRight')} value={yesNo((panel.lineValues[1] ?? 0) > 500)} />
+              <Readout label={t('lineLeft')} value={yesNo(seen[0] ?? false)} />
+              <Readout label={t('lineRight')} value={yesNo(seen[1] ?? false)} />
               <Readout label={t('distance')} value={`${panel.distance.toFixed(1)} cm`} />
             </>
           ) : (

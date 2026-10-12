@@ -33,6 +33,8 @@
     },
     "panel": {
       "title": "Panel sensor",
+      "front": "Wajah robot",
+      "frontLabel": "Robot dilihat dari depan, dengan layar OLED-nya",
       "oled": "Layar OLED",
       "lineLeft": "Garis kiri",
       "lineRight": "Garis kanan",
