@@ -28,7 +28,7 @@ const num = (value: unknown, fallback = 0): Expr => ({
 });
 
 function expression(block: Blockly.Block | null, fallback: Expr = { kind: 'num', value: 0 }): Expr {
-  if (!block || !block.isEnabled()) return fallback;
+  if (!block?.isEnabled()) return fallback;
   const input = (name: string, missing?: Expr) =>
     expression(block.getInputTargetBlock(name), missing);
   const sensor = SENSOR_BLOCKS[block.type];

@@ -137,6 +137,7 @@ function lines(statements: readonly Statement[], depth: number): string[] {
       case 'change':
         return [`${pad}${identifier(s.name)} += ${expr(s.delta)};`];
     }
+    return [];
   });
 }
 

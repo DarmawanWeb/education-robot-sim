@@ -1,6 +1,6 @@
 'use client';
 
-import { pick, type Locale, type SimMissionInfo } from '@taksu/content';
+import { type Locale, pick, type SimMissionInfo } from '@taksu/content';
 import { Badge } from '@taksu/ui/components/badge';
 import { Button } from '@taksu/ui/components/button';
 import {
@@ -157,8 +157,7 @@ export function MissionScreen({
             <RotateCcw aria-hidden />
             {t('reset')}
           </Button>
-          <div
-            role="group"
+          <fieldset
             aria-label={t('speed')}
             className="border-border flex overflow-hidden rounded-md border"
           >
@@ -179,7 +178,7 @@ export function MissionScreen({
                 {value}×
               </button>
             ))}
-          </div>
+          </fieldset>
           <Button size="sm" variant="ghost" onClick={() => apiRef.current?.load(mission.starter)}>
             <Undo2 aria-hidden />
             {t('restore')}

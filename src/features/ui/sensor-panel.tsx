@@ -127,6 +127,7 @@ export function SensorPanel({
                 <dd className="mt-1 flex h-10 items-end gap-1.5">
                   {panel.lineValues.map((value, index) => (
                     <span
+                      // biome-ignore lint/suspicious/noArrayIndexKey: the index is the sensor position
                       key={index}
                       className="bg-primary flex-1 rounded-t"
                       style={{ height: `${Math.max(8, (value / 1000) * 100)}%` }}

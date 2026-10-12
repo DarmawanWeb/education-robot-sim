@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, type RefObject } from 'react';
+import { type RefObject, useEffect, useRef } from 'react';
 import type { Simulation } from '../engine/simulation';
 
 const ZONE_STYLE = {
@@ -8,6 +8,13 @@ const ZONE_STYLE = {
   finish: { fill: 'rgba(29,116,102,0.16)', stroke: '#1d7466' },
   checkpoint: { fill: 'rgba(245,158,11,0.12)', stroke: '#d97706' },
 } as const;
+
+function traceLine(context: CanvasRenderingContext2D, points: readonly { x: number; y: number }[]) {
+  points.forEach((point, index) => {
+    if (index === 0) context.moveTo(point.x, point.y);
+    else context.lineTo(point.x, point.y);
+  });
+}
 
 function drawArena(canvas: HTMLCanvasElement, simulation: Simulation, dark: boolean) {
   const { arena } = simulation.mission;
@@ -62,9 +69,7 @@ function drawArena(canvas: HTMLCanvasElement, simulation: Simulation, dark: bool
   for (const path of arena.lines) {
     context.lineWidth = path.width;
     context.beginPath();
-    path.points.forEach((point, index) =>
-      index === 0 ? context.moveTo(point.x, point.y) : context.lineTo(point.x, point.y),
-    );
+    traceLine(context, path.points);
     if (path.closed) context.closePath();
     context.stroke();
   }
@@ -88,9 +93,7 @@ function drawArena(canvas: HTMLCanvasElement, simulation: Simulation, dark: bool
     context.strokeStyle = 'rgba(31,79,209,0.35)';
     context.lineWidth = 0.6;
     context.beginPath();
-    simulation.trail.forEach((point, index) =>
-      index === 0 ? context.moveTo(point.x, point.y) : context.lineTo(point.x, point.y),
-    );
+    traceLine(context, simulation.trail);
     context.stroke();
   }
 

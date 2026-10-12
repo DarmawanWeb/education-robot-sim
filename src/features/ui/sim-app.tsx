@@ -1,6 +1,6 @@
 'use client';
 
-import { pick, simMissions, type Locale, type SimRobot } from '@taksu/content';
+import { type Locale, pick, type SimRobot, simMissions } from '@taksu/content';
 import { Logo } from '@taksu/ui/brand/logo';
 import { ThemeToggle } from '@taksu/ui/brand/theme-toggle';
 import { cn } from '@taksu/ui/lib/utils';
@@ -65,8 +65,7 @@ export function SimApp() {
           <span className="font-display text-muted-foreground hidden text-lg font-semibold sm:inline">
             {t('title')}
           </span>
-          <div
-            role="group"
+          <fieldset
             aria-label={t('robot')}
             className="border-border flex overflow-hidden rounded-md border"
           >
@@ -84,7 +83,7 @@ export function SimApp() {
                 {id === 'sd' ? t('robotSd') : t('robotSmp')}
               </button>
             ))}
-          </div>
+          </fieldset>
           <label className="flex min-w-0 flex-1 items-center gap-2 text-sm font-semibold sm:flex-none">
             <span className="sr-only sm:not-sr-only">{t('mission')}</span>
             <select
@@ -100,8 +99,7 @@ export function SimApp() {
             </select>
           </label>
           <div className="ml-auto flex items-center gap-2">
-            <div
-              role="group"
+            <fieldset
               aria-label={t('language')}
               className="border-border flex overflow-hidden rounded-md border text-sm font-semibold"
             >
@@ -119,7 +117,7 @@ export function SimApp() {
                   {code}
                 </button>
               ))}
-            </div>
+            </fieldset>
             <ThemeToggle label={t('theme')} />
           </div>
         </div>
