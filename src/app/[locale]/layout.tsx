@@ -1,6 +1,6 @@
-import '@fontsource-variable/plus-jakarta-sans';
-import '@fontsource-variable/bricolage-grotesque/standard.css';
-import '@fontsource/noto-serif-balinese/balinese-400.css';
+import '@fontsource-variable/archivo/wdth.css';
+import '@fontsource-variable/atkinson-hyperlegible-next';
+import '@fontsource-variable/atkinson-hyperlegible-mono';
 import '../globals.css';
 
 import { ThemeProvider } from '@taksu/ui/brand/theme-provider';
