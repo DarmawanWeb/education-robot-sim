@@ -130,6 +130,7 @@ function drawArena(canvas: HTMLCanvasElement, simulation: Simulation, dark: bool
   });
   context.restore();
 
+  // Ultrasonic beam: the cone the sensor listens in, and where the echo came from.
   const cos = Math.cos(pose.heading);
   const sin = Math.sin(pose.heading);
   const sonarOrigin = {
@@ -137,17 +138,42 @@ function drawArena(canvas: HTMLCanvasElement, simulation: Simulation, dark: bool
     y: pose.y + model.sonar.forward * sin,
   };
   const sonarAngle = pose.heading - ((simulation.servoAngle - 90) * Math.PI) / 180;
+  const reach = simulation.distance;
+  context.fillStyle = 'rgba(14,165,233,0.1)';
+  context.beginPath();
+  context.moveTo(sonarOrigin.x, sonarOrigin.y);
+  context.arc(
+    sonarOrigin.x,
+    sonarOrigin.y,
+    reach,
+    sonarAngle - model.sonar.halfCone,
+    sonarAngle + model.sonar.halfCone,
+  );
+  context.closePath();
+  context.fill();
   context.strokeStyle = 'rgba(14,165,233,0.75)';
-  context.lineWidth = 0.4;
+  context.lineWidth = 0.35;
   context.setLineDash([1.2, 0.8]);
   context.beginPath();
   context.moveTo(sonarOrigin.x, sonarOrigin.y);
   context.lineTo(
-    sonarOrigin.x + simulation.distance * Math.cos(sonarAngle),
-    sonarOrigin.y + simulation.distance * Math.sin(sonarAngle),
+    sonarOrigin.x + reach * Math.cos(sonarAngle),
+    sonarOrigin.y + reach * Math.sin(sonarAngle),
   );
   context.stroke();
   context.setLineDash([]);
+  if (reach < model.sonar.range) {
+    context.fillStyle = '#0ea5e9';
+    context.beginPath();
+    context.arc(
+      sonarOrigin.x + reach * Math.cos(sonarAngle),
+      sonarOrigin.y + reach * Math.sin(sonarAngle),
+      0.8,
+      0,
+      Math.PI * 2,
+    );
+    context.fill();
+  }
 }
 
 /** Top-down arena drawn on a canvas; the simulation hook calls `drawRef` every frame. */
