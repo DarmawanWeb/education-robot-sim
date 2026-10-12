@@ -1,4 +1,4 @@
-import type { Box, LinePath, Vec } from './types';
+import type { Box, LinePath, Mover, Vec } from './types';
 
 export function distanceToSegment(p: Vec, a: Vec, b: Vec): number {
   const dx = b.x - a.x;
@@ -70,6 +70,28 @@ export function arc(center: Vec, radius: number, start: number, end: number, ste
     const angle = start + ((end - start) * index) / steps;
     return { x: center.x + radius * Math.cos(angle), y: center.y + radius * Math.sin(angle) };
   });
+}
+
+/** Where a mover is at `time`, moving in straight lines between its keys. */
+export function moverBox(mover: Mover, time: number): Box {
+  const { keys } = mover;
+  const first = keys[0];
+  if (!first) return { x: 0, y: 0, w: 0, h: 0 };
+  let at = { x: first.x, y: first.y };
+  for (let index = 1; index < keys.length; index += 1) {
+    const from = keys[index - 1] as Mover['keys'][number];
+    const to = keys[index] as Mover['keys'][number];
+    if (time >= to.t) {
+      at = { x: to.x, y: to.y };
+      continue;
+    }
+    if (time > from.t) {
+      const progress = (time - from.t) / (to.t - from.t);
+      at = { x: from.x + (to.x - from.x) * progress, y: from.y + (to.y - from.y) * progress };
+    }
+    break;
+  }
+  return { ...at, w: mover.w, h: mover.h };
 }
 
 /** Closed rounded-rectangle track. */

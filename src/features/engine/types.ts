@@ -48,12 +48,23 @@ export interface Zone extends Box {
   kind: 'start' | 'finish' | 'checkpoint';
 }
 
+/** Something that moves on its own, such as a hand reaching toward the sensor. */
+export interface Mover {
+  id: string;
+  kind: 'hand';
+  w: number;
+  h: number;
+  /** Top-left corner over time. Held before the first key and after the last. */
+  keys: { t: number; x: number; y: number }[];
+}
+
 export interface Arena {
   width: number;
   height: number;
   lines: LinePath[];
   boxes: Box[];
   zones: Zone[];
+  movers?: Mover[];
 }
 
 export interface Environment {

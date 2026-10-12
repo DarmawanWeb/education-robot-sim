@@ -1,7 +1,15 @@
-import { circleHitsBox, distanceToPath, pointInBox, rayToBox, rayToWalls } from './geometry';
+import {
+  circleHitsBox,
+  distanceToPath,
+  moverBox,
+  pointInBox,
+  rayToBox,
+  rayToWalls,
+} from './geometry';
 import { type RobotIO, Runner } from './interpreter';
 import { robotModels } from './robots';
 import type {
+  Box,
   Environment,
   Face,
   Mission,
@@ -162,9 +170,15 @@ export class Simulation {
     this.judge();
   }
 
+  /** Fixed boxes plus anything moving, where it is right now. */
+  get obstacles(): Box[] {
+    const { boxes, movers = [] } = this.mission.arena;
+    return [...boxes, ...movers.map((mover) => moverBox(mover, this.time))];
+  }
+
   private collides(point: Vec): boolean {
     const { radius } = this.model;
-    const { width, height, boxes } = this.mission.arena;
+    const { width, height } = this.mission.arena;
     if (
       point.x - radius < 0 ||
       point.y - radius < 0 ||
@@ -172,7 +186,7 @@ export class Simulation {
       point.y + radius > height
     )
       return true;
-    return boxes.some((box) => circleHitsBox(point, radius, box));
+    return this.obstacles.some((box) => circleHitsBox(point, radius, box));
   }
 
   private integrate(dt: number): void {
@@ -250,11 +264,12 @@ export class Simulation {
     const { forward, range, halfCone } = this.model.sonar;
     const origin = { x: x + forward * cos, y: y + forward * sin };
     const base = heading - ((this.servoAngle - 90) * Math.PI) / 180;
-    const { width, height, boxes } = this.mission.arena;
+    const { width, height } = this.mission.arena;
+    const obstacles = this.obstacles;
     let nearest = range;
     for (const angle of [base - halfCone, base, base + halfCone]) {
       nearest = Math.min(nearest, rayToWalls(origin, angle, width, height));
-      for (const box of boxes) nearest = Math.min(nearest, rayToBox(origin, angle, box));
+      for (const box of obstacles) nearest = Math.min(nearest, rayToBox(origin, angle, box));
     }
     this.distance = Math.round(nearest * 10) / 10;
   }

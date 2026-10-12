@@ -1,5 +1,6 @@
 import { simMissions } from '@taksu/content';
 import { describe, expect, it } from 'vitest';
+import { moverBox } from './geometry';
 import { Runner } from './interpreter';
 import { getMission, missions } from './missions';
 import { simulate } from './simulation';
@@ -72,6 +73,24 @@ describe('failure cases', () => {
   it('times out an endless loop that never reaches the goal', () => {
     const result = run('sd-garis', { body: [{ kind: 'forever', body: [] }] });
     expect(result.outcome).toEqual({ status: 'fail', reason: 'time' });
+  });
+});
+
+describe('moving obstacles', () => {
+  it('slides between keyframes and holds at both ends', () => {
+    const mover = {
+      id: 'hand',
+      kind: 'hand' as const,
+      w: 6,
+      h: 12,
+      keys: [
+        { t: 1, x: 100, y: 40 },
+        { t: 3, x: 60, y: 40 },
+      ],
+    };
+    expect(moverBox(mover, 0).x).toBe(100);
+    expect(moverBox(mover, 2).x).toBeCloseTo(80);
+    expect(moverBox(mover, 9).x).toBe(60);
   });
 });
 

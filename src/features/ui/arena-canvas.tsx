@@ -3,7 +3,9 @@
 import { cn } from '@taksu/ui/lib/utils';
 import { ScanSearch } from 'lucide-react';
 import { type RefObject, useEffect, useRef, useState } from 'react';
+import { moverBox } from '../engine/geometry';
 import type { Simulation } from '../engine/simulation';
+import type { Box } from '../engine/types';
 import { buzzerPosition, drawRobot, silhouette } from './robot-sprite';
 
 const ZONE_STYLE = {
@@ -22,6 +24,29 @@ function traceLine(context: CanvasRenderingContext2D, points: readonly { x: numb
     if (index === 0) context.moveTo(point.x, point.y);
     else context.lineTo(point.x, point.y);
   });
+}
+
+/** A hand seen from above, fingers pointing left toward the robot, with a shirt cuff. */
+function drawHand(context: CanvasRenderingContext2D, box: Box) {
+  const { x, y, w, h } = box;
+  const finger = h / 5.2;
+  context.save();
+  context.fillStyle = '#3e6fb3';
+  context.beginPath();
+  context.roundRect(x + w * 0.9, y + h * 0.04, w * 0.9, h * 0.92, 0.6);
+  context.fill();
+  context.fillStyle = '#e0ac7e';
+  context.strokeStyle = '#a8714a';
+  context.lineWidth = 0.3;
+  context.beginPath();
+  context.roundRect(x + w * 0.42, y + h * 0.08, w * 0.58, h * 0.84, 1.2);
+  for (const row of [0, 1, 2, 3]) {
+    context.roundRect(x, y + h * 0.1 + row * (finger + 0.35), w * 0.62, finger, finger / 2);
+  }
+  context.roundRect(x + w * 0.38, y - h * 0.08, w * 0.36, finger * 1.05, finger / 2);
+  context.fill();
+  context.stroke();
+  context.restore();
 }
 
 function drawArena(
@@ -110,6 +135,10 @@ function drawArena(
     context.lineTo(box.x, box.y + box.h);
     context.strokeStyle = 'rgba(122,79,34,0.45)';
     context.stroke();
+  }
+
+  for (const mover of simulation.mission.arena.movers ?? []) {
+    drawHand(context, moverBox(mover, simulation.time));
   }
 
   if (simulation.trail.length > 1) {
