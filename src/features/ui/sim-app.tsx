@@ -1,6 +1,15 @@
 'use client';
 
-import { type Locale, missionPlace, names, pick, type SimRobot, simMissions } from '@taksu/content';
+import {
+  type Locale,
+  type Localized,
+  missionPlace,
+  names,
+  pick,
+  type SimMissionInfo,
+  type SimRobot,
+  simMissions,
+} from '@taksu/content';
 import { EduWordmark } from '@taksu/ui/brand/edu-wordmark';
 import { ThemeToggle } from '@taksu/ui/brand/theme-toggle';
 import { cn } from '@taksu/ui/lib/utils';
@@ -29,6 +38,19 @@ function useDarkMode(): boolean {
   );
 }
 
+/** Missions under their syllabus module, for the picker. */
+function groupByModule(list: readonly SimMissionInfo[]) {
+  const groups: { module: number; title: Localized; missions: SimMissionInfo[] }[] = [];
+  for (const entry of list) {
+    const place = missionPlace(entry);
+    if (!place) continue;
+    const group = groups.find((item) => item.module === place.module);
+    if (group) group.missions.push(entry);
+    else groups.push({ module: place.module, title: place.moduleTitle, missions: [entry] });
+  }
+  return groups;
+}
+
 export function SimApp() {
   const t = useTranslations('Sim');
   const locale = useLocale() as Locale;
@@ -43,6 +65,7 @@ export function SimApp() {
   const mission = info ? getMission(info.id) : undefined;
   const index = info ? list.indexOf(info) : -1;
   const next = list[index + 1];
+  const groups = groupByModule(list);
 
   const open = (target: { robot: SimRobot; mission?: string }, nextLocale: Locale = locale) => {
     const query: Record<string, string> = { robot: target.robot };
@@ -92,11 +115,17 @@ export function SimApp() {
               onChange={(event) => open({ robot, mission: event.target.value })}
               className="border-border bg-surface h-10 min-w-0 flex-1 rounded-md border px-3"
             >
-              {list.map((entry) => (
-                <option key={entry.id} value={entry.id}>
-                  {t('module', { n: missionPlace(entry)?.module ?? 0 })}:{' '}
-                  {pick(entry.title, locale)}
-                </option>
+              {groups.map((group) => (
+                <optgroup
+                  key={group.module}
+                  label={`${t('module', { n: group.module })}: ${pick(group.title, locale)}`}
+                >
+                  {group.missions.map((entry) => (
+                    <option key={entry.id} value={entry.id}>
+                      {pick(entry.title, locale)}
+                    </option>
+                  ))}
+                </optgroup>
               ))}
             </select>
           </label>
