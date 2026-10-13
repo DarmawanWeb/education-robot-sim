@@ -4,6 +4,7 @@ import { cn } from '@taksu/ui/lib/utils';
 import { Wifi, WifiOff } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { TelemetryPoint } from '../engine/types';
+import { panelClass } from './styles';
 
 const WIDTH = 240;
 const HEIGHT = 48;
@@ -72,9 +73,9 @@ export function DashboardPanel({
   const t = useTranslations('Sim.dashboard');
   const series = seriesOf(telemetry);
   return (
-    <section aria-label={t('title')} className="border-border bg-surface rounded-xl border p-4">
+    <section aria-label={t('title')} className={cn(panelClass, 'p-4')}>
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-muted-foreground text-sm font-semibold">{t('title')}</h2>
+        <h2 className="text-sm font-bold">{t('title')}</h2>
         <span
           className={cn(
             'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold',

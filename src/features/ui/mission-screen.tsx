@@ -2,7 +2,6 @@
 
 import { type Locale, missionPlace, pick, type SimMissionInfo } from '@taksu/content';
 import { Badge } from '@taksu/ui/components/badge';
-import { Button } from '@taksu/ui/components/button';
 import {
   Dialog,
   DialogContent,
@@ -25,6 +24,7 @@ import { CodePanel } from './code-panel';
 import { DashboardPanel } from './dashboard-panel';
 import { markFinished } from './progress';
 import { SensorPanel } from './sensor-panel';
+import { actionClass, panelClass, segmentClass, segmentGroupClass } from './styles';
 import { useSimulation } from './use-simulation';
 
 const BlocklyWorkspace = dynamic(() => import('../blocks/blockly-workspace'), {
@@ -97,7 +97,7 @@ export function MissionScreen({
 
   return (
     <div className="grid gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
-      <section className="border-border h-[60vh] min-h-[26rem] overflow-hidden rounded-xl border xl:sticky xl:top-4 xl:h-[calc(100dvh-7rem)]">
+      <section className="border-edge h-[60vh] min-h-[26rem] overflow-hidden rounded-lg border-2 xl:sticky xl:top-[5.5rem] xl:h-[calc(100dvh-7.5rem)]">
         <BlocklyWorkspace
           robot={mission.robot}
           locale={locale}
@@ -112,7 +112,7 @@ export function MissionScreen({
       </section>
 
       <div className="flex min-w-0 flex-col gap-4">
-        <section className="border-border bg-surface rounded-xl border p-5">
+        <section className={cn(panelClass, 'p-5')}>
           <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
             <Badge variant={mission.robot}>{t('module', { n: place?.module ?? 0 })}</Badge>
             {place ? (
@@ -121,24 +121,24 @@ export function MissionScreen({
               </span>
             ) : null}
           </div>
-          <h1 className="mt-2 text-2xl font-bold [font-stretch:90%]">{pick(info.title, locale)}</h1>
-          <p className="text-muted-foreground mt-1">{pick(info.brief, locale)}</p>
+          <h1 className="type-label mt-3 text-[1.75rem]">{pick(info.title, locale)}</h1>
+          <p className="text-muted-foreground mt-2">{pick(info.brief, locale)}</p>
           {mission.goals.length > 0 ? (
             <>
-              <h2 className="text-muted-foreground mt-4 text-sm font-semibold">{t('goals')}</h2>
+              <h2 className="mt-5 text-sm font-bold">{t('goals')}</h2>
               <ul className="mt-2 flex flex-col gap-1.5">
                 {mission.goals.map((goal) => {
                   const met = sim.panel.met.includes(goal.id);
                   return (
                     <li
                       key={goal.id}
-                      className={cn(
-                        'flex items-center gap-2 text-sm',
-                        met && 'text-primary font-semibold',
-                      )}
+                      className={cn('flex items-center gap-2 text-sm', met && 'font-bold')}
                     >
                       {met ? (
-                        <CheckCircle2 className="size-4 shrink-0" aria-hidden />
+                        <CheckCircle2
+                          className="dark:text-level-smp size-4 shrink-0 text-[#0e6b57]"
+                          aria-hidden
+                        />
                       ) : (
                         <Circle className="text-muted-foreground size-4 shrink-0" aria-hidden />
                       )}
@@ -150,7 +150,7 @@ export function MissionScreen({
             </>
           ) : null}
           <details className="mt-4 text-sm">
-            <summary className="cursor-pointer font-semibold">{t('hint')}</summary>
+            <summary className="cursor-pointer font-bold">{t('hint')}</summary>
             <p className="text-muted-foreground mt-2">{pick(mission.hint, locale)}</p>
           </details>
           {place ? (
@@ -168,24 +168,21 @@ export function MissionScreen({
 
         <div className="flex flex-wrap items-center gap-2">
           {sim.running ? (
-            <Button size="lg" variant="outline" onClick={sim.stop}>
+            <button type="button" className={actionClass('plain', 'min-w-36')} onClick={sim.stop}>
               <Square aria-hidden />
               {t('stop')}
-            </Button>
+            </button>
           ) : (
-            <Button size="lg" onClick={run}>
+            <button type="button" className={actionClass('signal', 'min-w-36')} onClick={run}>
               <Play aria-hidden />
               {t('run')}
-            </Button>
+            </button>
           )}
-          <Button size="lg" variant="ghost" onClick={sim.reset}>
+          <button type="button" className={actionClass('quiet')} onClick={sim.reset}>
             <RotateCcw aria-hidden />
             {t('reset')}
-          </Button>
-          <fieldset
-            aria-label={t('speed')}
-            className="border-border flex overflow-hidden rounded-md border"
-          >
+          </button>
+          <fieldset aria-label={t('speed')} className={segmentGroupClass}>
             {SPEEDS.map((value) => (
               <button
                 key={value}
@@ -195,22 +192,23 @@ export function MissionScreen({
                   setSpeed(value);
                   sim.setSpeed(value);
                 }}
-                className={cn(
-                  'px-3 py-2 text-sm font-semibold',
-                  speed === value ? 'bg-primary text-primary-foreground' : 'bg-surface',
-                )}
+                className={segmentClass(speed === value)}
               >
                 {value}×
               </button>
             ))}
           </fieldset>
-          <Button size="sm" variant="ghost" onClick={() => apiRef.current?.load(mission.starter)}>
+          <button
+            type="button"
+            className={actionClass('quiet', 'min-h-9 px-3 text-sm [&_svg]:size-4')}
+            onClick={() => apiRef.current?.load(mission.starter)}
+          >
             <Undo2 aria-hidden />
             {t('restore')}
-          </Button>
+          </button>
           <p
             aria-live="polite"
-            className="text-muted-foreground ml-auto text-sm font-semibold tabular-nums"
+            className="text-muted-foreground ml-auto text-sm font-bold tabular-nums"
           >
             {status}
           </p>
@@ -247,7 +245,7 @@ export function MissionScreen({
       </div>
 
       <Dialog open={outcomeKey !== null} onOpenChange={(open) => (open ? null : setResult(null))}>
-        <DialogContent closeLabel={t('close')}>
+        <DialogContent closeLabel={t('close')} className="border-edge rounded-lg border-2">
           {outcomeKey ? (
             <>
               <DialogHeader>
@@ -255,17 +253,20 @@ export function MissionScreen({
                 <DialogDescription>{t(`results.${outcomeKey}.body`)}</DialogDescription>
               </DialogHeader>
               <DialogFooter>
-                <Button
-                  variant="outline"
+                <button
+                  type="button"
+                  className={actionClass('plain')}
                   onClick={() => {
                     setResult(null);
                     sim.reset();
                   }}
                 >
                   {t('tryAgain')}
-                </Button>
+                </button>
                 {outcomeKey === 'success' && hasNext ? (
-                  <Button onClick={onNext}>{t('nextMission')}</Button>
+                  <button type="button" className={actionClass('signal')} onClick={onNext}>
+                    {t('nextMission')}
+                  </button>
                 ) : null}
               </DialogFooter>
             </>

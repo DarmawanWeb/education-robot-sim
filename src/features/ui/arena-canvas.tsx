@@ -300,7 +300,7 @@ export function ArenaCanvas({
         ref={canvasRef}
         role="img"
         aria-label={label}
-        className="border-border block w-full rounded-lg border"
+        className="border-edge block w-full rounded-lg border-2"
         style={{ aspectRatio: `${width} / ${height}` }}
       />
       <button
@@ -308,10 +308,8 @@ export function ArenaCanvas({
         aria-pressed={follow}
         onClick={() => setFollow((value) => !value)}
         className={cn(
-          'absolute top-2 right-2 inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs font-semibold shadow-sm',
-          follow
-            ? 'border-primary bg-primary text-primary-foreground'
-            : 'border-border bg-background/90 text-foreground',
+          'border-edge absolute top-3 right-3 inline-flex items-center gap-1.5 rounded-md border-2 px-2.5 py-1.5 text-xs font-bold',
+          follow ? 'bg-accent text-black' : 'bg-surface text-foreground hover:bg-surface-muted',
         )}
       >
         <ScanSearch className="size-3.5" aria-hidden />

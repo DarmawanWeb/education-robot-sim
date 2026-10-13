@@ -5,6 +5,7 @@ import { Bell, Hand } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { RobotId } from '../engine/types';
 import { RobotFront } from './robot-front';
+import { panelClass } from './styles';
 import type { PanelState } from './use-simulation';
 
 const ON_LINE = 500;
@@ -48,8 +49,8 @@ export function SensorPanel({
   const seen = panel.lineValues.map((value) => value > ON_LINE);
 
   return (
-    <section aria-label={t('title')} className="border-border bg-surface rounded-xl border p-4">
-      <h2 className="text-muted-foreground mb-3 text-sm font-semibold">{t('title')}</h2>
+    <section aria-label={t('title')} className={cn(panelClass, 'p-4')}>
+      <h2 className="mb-3 text-sm font-bold">{t('title')}</h2>
       <div className="grid gap-4 sm:grid-cols-[12rem_1fr]">
         <div>
           <p className="text-muted-foreground mb-1 text-xs">
@@ -163,7 +164,7 @@ export function SensorPanel({
           <button
             type="button"
             onClick={onClap}
-            className="border-border bg-background hover:border-primary inline-flex h-10 items-center gap-2 rounded-md border px-4 font-semibold"
+            className="border-edge bg-surface hover:bg-surface-muted inline-flex h-10 items-center gap-2 rounded-md border-2 px-4 font-bold"
           >
             <Hand className="size-4" aria-hidden />
             {t('clap')}
