@@ -71,6 +71,8 @@ export default function BlocklyWorkspace({
       media: '/blockly-media/',
       trashcan: true,
       sounds: false,
+      // A dot every 2 cm, like the squared mat on the edu site.
+      grid: { spacing: 24, length: 2, colour: dark ? '#2b443c' : '#d5d9d2', snap: false },
       zoom: { controls: true, wheel: false, startScale: 0.8, maxScale: 1.6, minScale: 0.4 },
       move: { scrollbars: true, drag: true, wheel: true },
     });
