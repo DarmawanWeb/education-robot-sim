@@ -21,6 +21,7 @@ import { eduUrl } from '@/lib/links';
 import { getMission } from '../engine/missions';
 import { MissionScreen } from './mission-screen';
 import { useFinishedMissions } from './progress';
+import { segmentClass, segmentGroupClass } from './styles';
 
 function subscribeTheme(onChange: () => void) {
   const observer = new MutationObserver(onChange);
@@ -77,7 +78,7 @@ export function SimApp() {
 
   return (
     <div className="bg-background text-foreground min-h-dvh">
-      <header className="border-border bg-background/90 sticky top-0 z-20 border-b backdrop-blur">
+      <header className="border-edge bg-background/95 sticky top-0 z-20 border-b-2 backdrop-blur">
         <div className="flex flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3 sm:px-6">
           <a
             href={`${eduUrl}/${locale}/simulator`}
@@ -91,19 +92,16 @@ export function SimApp() {
           </span>
           {/* Robot and mission take their own row until there is room for everything. */}
           <div className="order-last flex min-w-0 basis-full items-center gap-3 xl:order-none xl:basis-auto">
-            <fieldset
-              aria-label={t('robot')}
-              className="border-border flex shrink-0 overflow-hidden rounded-md border"
-            >
+            <fieldset aria-label={t('robot')} className={segmentGroupClass}>
               {(['sd', 'smp'] as const).map((id) => (
                 <button
                   key={id}
                   type="button"
                   aria-pressed={robot === id}
                   onClick={() => open({ robot: id })}
-                  className={cn(
-                    'px-3 py-2 text-sm font-semibold whitespace-nowrap',
-                    robot === id ? 'bg-primary text-primary-foreground' : 'bg-surface',
+                  className={segmentClass(
+                    robot === id,
+                    id === 'sd' ? 'bg-level-sd text-black' : 'bg-level-smp text-black',
                   )}
                 >
                   {id === 'sd' ? t('robotSd') : t('robotSmp')}
@@ -115,7 +113,7 @@ export function SimApp() {
               <select
                 value={info.id}
                 onChange={(event) => open({ robot, mission: event.target.value })}
-                className="border-border bg-surface h-10 min-w-0 flex-1 rounded-md border px-3"
+                className="border-edge bg-surface h-10 min-w-0 flex-1 rounded-md border-2 px-3 font-semibold"
               >
                 {groups.map((group) => (
                   <optgroup
@@ -141,20 +139,15 @@ export function SimApp() {
             </span>
           </div>
           <div className="ml-auto flex items-center gap-2">
-            <fieldset
-              aria-label={t('language')}
-              className="border-border flex overflow-hidden rounded-md border text-sm font-semibold"
-            >
+            <fieldset aria-label={t('language')} className={segmentGroupClass}>
               {(['id', 'en'] as const).map((code) => (
                 <button
                   key={code}
                   type="button"
                   aria-pressed={locale === code}
                   onClick={() => open({ robot, mission: info.id }, code)}
-                  className={cn(
-                    'px-3 py-2 uppercase',
-                    locale === code ? 'bg-primary text-primary-foreground' : 'bg-surface',
-                  )}
+                  lang={code}
+                  className={cn(segmentClass(locale === code), 'uppercase')}
                 >
                   {code}
                 </button>
