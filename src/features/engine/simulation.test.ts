@@ -4,9 +4,15 @@ import { moverBox } from './geometry';
 import { Runner } from './interpreter';
 import { getMission, missions } from './missions';
 import { Simulation, simulate } from './simulation';
-import type { Program, Statement } from './types';
+import type { DriveDirection, Program, Statement } from './types';
 
 const num = (value: number) => ({ kind: 'num' as const, value });
+const drive = (dir: DriveDirection, seconds: number): Statement => ({
+  kind: 'drive',
+  dir,
+  speed: num(50),
+  seconds: num(seconds),
+});
 const wait = (seconds: number): Statement => ({ kind: 'wait', seconds: num(seconds) });
 const signal = (side: 'left' | 'off', tick = true): Statement => ({ kind: 'signal', side, tick });
 
@@ -72,6 +78,35 @@ describe('failure cases', () => {
       ],
     });
     expect(result.outcome.status).toBe('fail');
+  });
+
+  describe('signal before the turn', () => {
+    const route = (atCorner: Statement[], afterTurn: Statement[]): Program => ({
+      body: [
+        drive('forward', 5.33),
+        ...atCorner,
+        drive('left', 0.63),
+        ...afterTurn,
+        drive('forward', 5.33),
+      ],
+    });
+
+    it('fails a turn made without the signal', () => {
+      const result = run('sd-sein', route([], []));
+      expect(result.outcome).toEqual({ status: 'fail', reason: 'incomplete' });
+      expect([...result.met]).toEqual(['stop-finish']);
+    });
+
+    it('fails a signal that comes on just as the robot turns', () => {
+      const result = run('sd-sein', route([signal('left'), wait(0.2)], [signal('off')]));
+      expect(result.met.has('sein-kiri')).toBe(false);
+    });
+
+    it('fails a signal left blinking after the turn', () => {
+      const result = run('sd-sein', route([signal('left'), wait(1)], []));
+      expect(result.outcome).toEqual({ status: 'fail', reason: 'incomplete' });
+      expect([...result.met].sort()).toEqual(['sein-kiri', 'stop-finish']);
+    });
   });
 
   it('times out an endless loop that never reaches the goal', () => {

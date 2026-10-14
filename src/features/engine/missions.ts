@@ -7,6 +7,7 @@ import type {
   LinePath,
   Mission,
   SensorId,
+  Signal,
   Statement,
   Zone,
 } from './types';
@@ -48,6 +49,7 @@ const drive = (dir: DriveDirection, speed: number, seconds?: number): Statement 
 const motors = (left: Expr, right: Expr): Statement => ({ kind: 'motors', left, right });
 const wait = (seconds: number): Statement => ({ kind: 'wait', seconds: n(seconds) });
 const stop: Statement = { kind: 'stop' };
+const signal = (side: Signal, tick = true): Statement => ({ kind: 'signal', side, tick });
 
 // ---- Blockly starter helpers ----
 type StarterBlock = {
@@ -237,6 +239,65 @@ export const missions: readonly Mission[] = [
     ),
     solution: {
       body: [drive('forward', 50, 5.33), drive('left', 50, 0.63), drive('forward', 50, 5.33)],
+    },
+  },
+  {
+    id: 'sd-sein',
+    robot: 'sd',
+    arena: {
+      width: 180,
+      height: 140,
+      lines: [],
+      boxes: [{ x: 50, y: 40, w: 45, h: 55 }],
+      zones: [
+        zone('start', 'start', 30, 110, 28, 28),
+        zone('corner', 'checkpoint', 110, 110, 26, 26),
+        zone('finish', 'finish', 110, 30, 26, 26),
+      ],
+    },
+    start: { x: 30, y: 110, heading: 0 },
+    timeLimit: 30,
+    failOnBump: true,
+    goals: [
+      {
+        id: 'sein-kiri',
+        label: l(
+          'Sein kiri menyala paling sedikit 0,5 detik sebelum belok',
+          'Left signal on for at least 0.5 seconds before the turn',
+        ),
+        // Judged once, at the moment the robot starts turning left.
+        check: (s, memo) => {
+          if (s.turning !== 'left' || memo.judged) return false;
+          memo.judged = true;
+          return s.signal === 'left' && s.signalFor >= 0.5;
+        },
+      },
+      {
+        id: 'sein-mati',
+        label: l('Sein mati lagi sebelum maju ke finis', 'Signal off again before driving on'),
+        check: (s) =>
+          s.met.has('sein-kiri') && s.turning === null && s.speed > 1 && s.signal === 'off',
+      },
+      stoppedIn('finish', l('Berhenti di zona finis', 'Stop in the finish zone')),
+    ],
+    hint: l(
+      'Pengemudi menyalakan sein dulu, menunggu sebentar, baru berbelok. Blok lampu sein ada di kategori "Wajah, lampu, bunyi".',
+      'Drivers switch the signal on first, wait a moment, and only then turn. The signal blocks are in "Face, lights, sound".',
+    ),
+    starter: starter(
+      { type: 'sim_drive_for', fields: { DIR: 'forward', SPEED: 50, SECONDS: 5.33 } },
+      { type: 'sim_drive_for', fields: { DIR: 'left', SPEED: 50, SECONDS: 0.63 } },
+      { type: 'sim_drive_for', fields: { DIR: 'forward', SPEED: 50, SECONDS: 5.33 } },
+    ),
+    solution: {
+      body: [
+        drive('forward', 50, 5.33),
+        signal('left'),
+        wait(1),
+        drive('left', 50, 0.63),
+        signal('off'),
+        drive('forward', 50, 5.33),
+      ],
     },
   },
   {

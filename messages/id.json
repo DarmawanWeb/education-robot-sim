@@ -1,7 +1,7 @@
 {
   "Meta": {
     "title": "Simulator robot SD v1 dan SMP v1",
-    "description": "Program SD v1 dan SMP v1 dengan blok, lalu jalankan misi sesuai kurikulum: maju, belok, ikuti garis, rintangan, radar, suhu, suara, dan Wi-Fi."
+    "description": "Program SD v1 dan SMP v1 dengan blok, lalu jalankan misi sesuai kurikulum: maju, belok, lampu sein, ikuti garis, rintangan, radar, suhu, suara, dan Wi-Fi."
   },
   "Sim": {
     "title": "Simulator robot",
