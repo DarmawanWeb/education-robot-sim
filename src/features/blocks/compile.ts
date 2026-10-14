@@ -6,6 +6,7 @@ import type {
   Note,
   Program,
   SensorId,
+  Signal,
   Statement,
 } from '../engine/types';
 
@@ -158,6 +159,15 @@ function statement(block: Blockly.Block): Statement | null {
       };
     case 'sim_oled_clear':
       return { kind: 'oledClear', blockId };
+    case 'sim_signal':
+      return {
+        kind: 'signal',
+        side: field('SIDE') as Signal,
+        tick: field('TICK') !== 'FALSE',
+        blockId,
+      };
+    case 'sim_signal_off':
+      return { kind: 'signal', side: 'off', tick: false, blockId };
     case 'sim_send':
       return {
         kind: 'send',

@@ -161,8 +161,8 @@ export const missions: readonly Mission[] = [
       },
     ],
     hint: l(
-      'Ambil blok wajah dan bip dari kategori Wajah dan suara, lalu blok maju.',
-      'Take the face and beep blocks from Face and sound, then a forward block.',
+      'Ambil blok wajah dan bip dari kategori "Wajah, lampu, bunyi", lalu blok maju.',
+      'Take the face and beep blocks from "Face, lights, sound", then a forward block.',
     ),
     starter: starter({ type: 'sim_face', fields: { FACE: 'senang' } }),
     solution: {

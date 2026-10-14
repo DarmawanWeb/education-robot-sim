@@ -119,6 +119,24 @@ const definitions: Record<string, () => object> = {
     ...statement,
     style: 'output_blocks',
   }),
+  sim_signal: () => ({
+    message0: msg('SIM_SIGNAL'),
+    args0: [
+      {
+        type: 'field_dropdown',
+        name: 'SIDE',
+        options: [
+          [msg('SIM_SIGNAL_LEFT'), 'left'],
+          [msg('SIM_SIGNAL_RIGHT'), 'right'],
+          [msg('SIM_SIGNAL_HAZARD'), 'hazard'],
+        ],
+      },
+      { type: 'field_checkbox', name: 'TICK', checked: true },
+    ],
+    ...statement,
+    style: 'output_blocks',
+  }),
+  sim_signal_off: () => ({ message0: msg('SIM_SIGNAL_OFF'), ...statement, style: 'output_blocks' }),
   sim_tone: () => ({
     message0: msg('SIM_TONE'),
     args0: [
@@ -228,7 +246,7 @@ export function buildToolbox(robot: RobotId): Blockly.utils.toolbox.ToolboxDefin
           block('sim_tone'),
           block('sim_face'),
         ]
-      : [block('sim_face'), block('sim_beep')];
+      : [block('sim_face'), block('sim_beep'), block('sim_signal'), block('sim_signal_off')];
 
   return {
     kind: 'categoryToolbox',

@@ -1,4 +1,4 @@
-import type { Expr, Face, Program, RobotId, SensorId, Statement } from '../engine/types';
+import type { Expr, Face, Program, RobotId, SensorId, Signal, Statement } from '../engine/types';
 
 const FACE: Record<Face, string> = {
   normal: 'Normal',
@@ -6,6 +6,13 @@ const FACE: Record<Face, string> = {
   bingung: 'Confused',
   waspada: 'Alert',
   berhasil: 'Success',
+};
+
+const SIGNAL: Record<Signal, string> = {
+  off: 'Off',
+  left: 'Left',
+  right: 'Right',
+  hazard: 'Hazard',
 };
 
 const SENSOR: Record<SensorId, (index?: number) => string> = {
@@ -131,6 +138,12 @@ function lines(statements: readonly Statement[], depth: number): string[] {
         return [`${pad}robot.print(${s.line}, ${expr(s.value)});`];
       case 'oledClear':
         return [`${pad}robot.clearDisplay();`];
+      case 'signal':
+        return [
+          s.side === 'off'
+            ? `${pad}robot.signal(Signal::Off);`
+            : `${pad}robot.signal(Signal::${SIGNAL[s.side]}, ${s.tick ? 'true' : 'false'});`,
+        ];
       case 'servo':
         return [`${pad}robot.servo(${expr(s.angle)});`];
       case 'send':

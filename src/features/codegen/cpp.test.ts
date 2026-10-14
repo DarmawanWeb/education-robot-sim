@@ -26,6 +26,28 @@ describe('toCpp', () => {
     );
   });
 
+  it('switches the SD turn signals on and off', () => {
+    const cpp = toCpp(
+      {
+        body: [
+          { kind: 'signal', side: 'left', tick: true },
+          { kind: 'wait', seconds: { kind: 'num', value: 1 } },
+          { kind: 'signal', side: 'hazard', tick: false },
+          { kind: 'signal', side: 'off', tick: false },
+        ],
+      },
+      'sd',
+    );
+    expect(cpp).toContain(
+      [
+        '  robot.signal(Signal::Left, true);',
+        '  delay(1000);',
+        '  robot.signal(Signal::Hazard, false);',
+        '  robot.signal(Signal::Off);',
+      ].join('\n'),
+    );
+  });
+
   it('declares variables and keeps else-if chains readable', () => {
     const cpp = toCpp(getMission('smp-radar')!.solution, 'smp');
     expect(cpp).toContain('float kiri = 0;');
