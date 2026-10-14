@@ -18,6 +18,7 @@ import type {
   Program,
   RobotModel,
   SensorId,
+  Signal,
   Snapshot,
   TelemetryPoint,
   Vec,
@@ -29,6 +30,11 @@ const BEEP_HZ = 2700;
 const WHITE = 80;
 const BLACK = 1000;
 const CLAP_SECONDS = 0.3;
+/** Turn signals flash about 85 times a minute, like a car's: lit for the first half of each period. */
+export const SIGNAL_PERIOD = 0.7;
+const TICK_SECONDS = 0.02;
+/** Turning slower than this (rad/s) counts as driving straight. */
+const TURNING = 0.3;
 
 export interface BuzzerEvent {
   frequency: number;
@@ -52,6 +58,14 @@ export class Simulation {
   bumped = false;
   beeps = 0;
   buzzingUntil = 0;
+  signal: Signal = 'off';
+  signalTick = false;
+  /** When the current signal came on; every flash is timed from here. */
+  signalSince = 0;
+  /** Buzzer clicks from the turn signals, counted apart from beeps. */
+  ticks = 0;
+  /** Which way the robot turned on the last step, if at all. */
+  turning: 'left' | 'right' | null = null;
   lineValues: number[] = [];
   linePosition = 0;
   distance = 0;
@@ -68,6 +82,7 @@ export class Simulation {
   telemetry: TelemetryPoint[] = [];
   dropped = 0;
   private manualClaps: number[] = [];
+  private signalWasLit = false;
   private runner: Runner | null = null;
   private memos = new Map<string, Record<string, unknown>>();
 
@@ -98,6 +113,14 @@ export class Simulation {
     },
     oledClear: () => {
       this.oled = ['', '', '', ''];
+    },
+    setSignal: (side, tick) => {
+      if (!this.model.hasSignals) return;
+      // Asking for the side that is already blinking keeps its rhythm, so a loop that
+      // keeps switching the left signal on does not hold the lamp on.
+      if (side !== this.signal) this.signalSince = this.time;
+      this.signal = side;
+      this.signalTick = side !== 'off' && tick;
     },
     servo: (angle) => {
       this.servoAngle = angle;
@@ -133,6 +156,9 @@ export class Simulation {
     this.bumped = false;
     this.beeps = 0;
     this.buzzingUntil = 0;
+    this.signalOff();
+    this.ticks = 0;
+    this.turning = null;
     this.activeBlock = undefined;
     this.trail = [{ x: this.pose.x, y: this.pose.y }];
     this.visited.clear();
@@ -153,11 +179,31 @@ export class Simulation {
     this.runner = new Runner(program, this.io);
   }
 
-  /** Stops the program and motors without judging the mission. */
+  /** Stops the program, motors, and turn signals without judging the mission. */
   halt(): void {
     this.runner = null;
     this.motors = { left: 0, right: 0 };
+    this.signalOff();
     this.activeBlock = undefined;
+  }
+
+  private signalOff(): void {
+    this.signal = 'off';
+    this.signalTick = false;
+    this.signalSince = 0;
+    this.signalWasLit = false;
+  }
+
+  /** Whether the turn-signal lamps are lit at this moment of their blink. */
+  get signalLit(): boolean {
+    return (
+      this.signal !== 'off' && (this.time - this.signalSince) % SIGNAL_PERIOD < SIGNAL_PERIOD / 2
+    );
+  }
+
+  /** The lamps as drawn: blinking while the program runs, held on once the run is over. */
+  get signalShown(): boolean {
+    return this.signal !== 'off' && (!this.active || this.signalLit);
   }
 
   get active(): boolean {
@@ -192,6 +238,7 @@ export class Simulation {
     this.runner.tick();
     this.integrate(dt);
     this.time += dt;
+    this.blink();
     this.env = this.environmentAt(this.time);
     this.sense();
     this.judge();
@@ -238,6 +285,7 @@ export class Simulation {
     };
     this.speed = blocked ? 0 : Math.abs(v);
     this.turnRate = Math.abs(omega);
+    this.turning = omega < -TURNING ? 'left' : omega > TURNING ? 'right' : null;
     this.stationaryFor = this.speed < 0.5 && this.turnRate < 0.05 ? this.stationaryFor + dt : 0;
 
     const last = this.trail.at(-1);
@@ -248,6 +296,16 @@ export class Simulation {
     for (const zone of this.mission.arena.zones) {
       if (pointInBox(this.pose, zone)) this.visited.add(zone.id);
     }
+  }
+
+  /** The buzzer clicks each time the turn-signal lamps come on, like a car's flasher. */
+  private blink(): void {
+    const lit = this.signalLit;
+    if (lit && !this.signalWasLit && this.signalTick) {
+      this.ticks += 1;
+      this.buzzerEvents.push({ frequency: BEEP_HZ, seconds: TICK_SECONDS });
+    }
+    this.signalWasLit = lit;
   }
 
   /** IR reflectance: tape reads ~1000, the white mat ~80, with a short soft edge. */
@@ -352,6 +410,9 @@ export class Simulation {
       bumped: this.bumped,
       face: this.face,
       beeps: this.beeps,
+      signal: this.signal,
+      signalFor: this.signal === 'off' ? 0 : this.time - this.signalSince,
+      turning: this.turning,
       oledText: this.oled.join(' '),
       programDone: this.programDone,
       distance: this.distance,

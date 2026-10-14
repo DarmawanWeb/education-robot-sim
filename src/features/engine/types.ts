@@ -13,6 +13,8 @@ export interface Pose extends Vec {
 export type RobotId = 'sd' | 'smp';
 export type Face = 'normal' | 'senang' | 'bingung' | 'waspada' | 'berhasil';
 export type Note = 'C5' | 'D5' | 'E5' | 'F5' | 'G5' | 'A5' | 'B5' | 'C6';
+/** Which turn-signal lamps blink: one side, both (hazard), or none. */
+export type Signal = 'off' | 'left' | 'right' | 'hazard';
 
 export interface RobotModel {
   id: RobotId;
@@ -28,6 +30,8 @@ export interface RobotModel {
   lineSensors: Vec[];
   sonar: { forward: number; range: number; halfCone: number };
   hasServo: boolean;
+  /** Orange turn-signal LEDs at the front corners, ticking on the buzzer. */
+  hasSignals: boolean;
 }
 
 export interface LinePath {
@@ -116,6 +120,7 @@ export type Statement = { blockId?: string } & (
   | { kind: 'tone'; note: Note; seconds: Expr }
   | { kind: 'oled'; line: number; value: Expr }
   | { kind: 'oledClear' }
+  | { kind: 'signal'; side: Signal; tick: boolean }
   | { kind: 'servo'; angle: Expr }
   | { kind: 'send'; key: string; value: Expr }
   | { kind: 'set'; name: string; value: Expr }
@@ -142,6 +147,11 @@ export interface Snapshot {
   bumped: boolean;
   face: Face;
   beeps: number;
+  /** The turn signal that is on, and for how many seconds it has been on (0 when off). */
+  signal: Signal;
+  signalFor: number;
+  /** Which way the robot is turning right now, if it is turning at all. */
+  turning: 'left' | 'right' | null;
   oledText: string;
   programDone: boolean;
   distance: number;

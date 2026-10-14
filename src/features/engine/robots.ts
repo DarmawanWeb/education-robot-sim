@@ -1,8 +1,8 @@
 import type { RobotId, RobotModel } from './types';
 
 /**
- * SD v1: two IR line sensors straddling the tape, low under the face at the front,
- * the ultrasonic sensor on top of the face, matched motors.
+ * SD v1: two IR line sensors straddling the tape under the front bumper, the ultrasonic
+ * sensor in the bumper, turn signals at the front corners, matched motors.
  */
 const sd: RobotModel = {
   id: 'sd',
@@ -18,6 +18,7 @@ const sd: RobotModel = {
   ],
   sonar: { forward: 8, range: 200, halfCone: 0.13 },
   hasServo: false,
+  hasSignals: true,
 };
 
 /** ESP32 modular robot (SMP): 5-in-1 line array, sonar on a servo, slightly unmatched motors. */
@@ -38,6 +39,7 @@ const smp: RobotModel = {
   ],
   sonar: { forward: 6, range: 300, halfCone: 0.13 },
   hasServo: true,
+  hasSignals: false,
 };
 
 export const robotModels: Record<RobotId, RobotModel> = { sd, smp };

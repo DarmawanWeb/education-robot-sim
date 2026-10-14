@@ -5,6 +5,7 @@ import type {
   Note,
   Program,
   SensorId,
+  Signal,
   Statement,
   Value,
 } from './types';
@@ -18,6 +19,8 @@ export interface RobotIO {
   beep: (seconds: number, frequency?: number) => void;
   oled: (line: number, text: string) => void;
   oledClear: () => void;
+  /** Turn signals blink on their own until switched off; `tick` adds the buzzer click. */
+  setSignal: (side: Signal, tick: boolean) => void;
   servo: (angle: number) => void;
   /** Sends a reading to the local dashboard; lost if Wi-Fi is down. */
   send: (key: string, value: Value) => void;
@@ -184,6 +187,9 @@ export class Runner {
         return;
       case 'oledClear':
         this.io.oledClear();
+        return;
+      case 'signal':
+        this.io.setSignal(statement.side, statement.tick);
         return;
       case 'servo':
         this.io.servo(clamp(this.num(statement.angle), 0, 180));

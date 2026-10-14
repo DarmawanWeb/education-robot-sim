@@ -3,8 +3,12 @@ import { describe, expect, it } from 'vitest';
 import { moverBox } from './geometry';
 import { Runner } from './interpreter';
 import { getMission, missions } from './missions';
-import { simulate } from './simulation';
-import type { Program } from './types';
+import { Simulation, simulate } from './simulation';
+import type { Program, Statement } from './types';
+
+const num = (value: number) => ({ kind: 'num' as const, value });
+const wait = (seconds: number): Statement => ({ kind: 'wait', seconds: num(seconds) });
+const signal = (side: 'left' | 'off', tick = true): Statement => ({ kind: 'signal', side, tick });
 
 describe('mission catalogue', () => {
   it('implements every mission listed on the website', () => {
@@ -101,6 +105,54 @@ describe('Wi-Fi telemetry', () => {
   });
 });
 
+describe('turn signals', () => {
+  // The first SD mission without its goals, so nothing ends the run early.
+  const bench = { ...getMission('sd-kenalan')!, goals: [] };
+
+  it('blinks and clicks the buzzer once per flash, apart from beeps', () => {
+    const result = simulate(bench, { body: [signal('left'), wait(5)] }, 2);
+    expect(result.signal).toBe('left');
+    expect(result.ticks).toBe(3);
+    expect(result.beeps).toBe(0);
+    expect(result.buzzerEvents).toHaveLength(3);
+  });
+
+  it('keeps its rhythm when a loop keeps switching it on', () => {
+    const result = simulate(
+      bench,
+      { body: [{ kind: 'forever', body: [signal('left'), wait(0.1)] }] },
+      2,
+    );
+    expect(result.ticks).toBe(3);
+  });
+
+  it('blinks silently without the tick', () => {
+    const result = simulate(bench, { body: [signal('left', false), wait(5)] }, 2);
+    expect(result.ticks).toBe(0);
+    expect(result.buzzerEvents).toHaveLength(0);
+  });
+
+  it('is lit for the first half of each flash', () => {
+    const simulation = new Simulation(bench);
+    simulation.start({ body: [signal('left'), wait(5)] });
+    const litAt = (seconds: number) => {
+      while (simulation.time < seconds) simulation.step();
+      return simulation.signalLit;
+    };
+    expect(litAt(0.2)).toBe(true);
+    expect(litAt(0.5)).toBe(false);
+    expect(litAt(0.8)).toBe(true);
+    simulation.halt();
+    expect(simulation.signal).toBe('off');
+  });
+
+  it('does nothing on SMP v1, which has no turn signals', () => {
+    const result = simulate(getMission('smp-bebas')!, { body: [signal('left'), wait(5)] }, 1);
+    expect(result.signal).toBe('off');
+    expect(result.ticks).toBe(0);
+  });
+});
+
 describe('moving obstacles', () => {
   it('slides between keyframes and holds at both ends', () => {
     const mover = {
@@ -142,6 +194,7 @@ describe('interpreter', () => {
         beep: () => {},
         oled: () => {},
         oledClear: () => {},
+        setSignal: () => {},
         servo: () => {},
         send: () => {},
         highlight: () => {},
