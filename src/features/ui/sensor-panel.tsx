@@ -5,6 +5,7 @@ import { Bell, Hand } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { RobotId } from '../engine/types';
 import { RobotFront } from './robot-front';
+import { signalLamps } from './robot-sprite';
 import { panelClass } from './styles';
 import type { PanelState } from './use-simulation';
 
@@ -47,6 +48,12 @@ export function SensorPanel({
   const t = useTranslations('Sim.panel');
   const yesNo = (on: boolean) => (on ? t('yes') : t('no'));
   const seen = panel.lineValues.map((value) => value > ON_LINE);
+  const signal = {
+    off: t('signalOff'),
+    left: t('signalLeft'),
+    right: t('signalRight'),
+    hazard: t('signalHazard'),
+  }[panel.signal];
 
   return (
     <section aria-label={t('title')} className={cn(panelClass, 'p-4')}>
@@ -62,6 +69,7 @@ export function SensorPanel({
               face={panel.face}
               oled={panel.oled}
               lineSeen={seen}
+              lamps={signalLamps(panel.signal, panel.signalShown)}
               label={t('frontLabel')}
             />
           </div>
@@ -85,6 +93,7 @@ export function SensorPanel({
                 part={t('ultrasonic')}
                 value={`${panel.distance.toFixed(1)} cm`}
               />
+              <Readout label={t('signal')} part="LED" value={signal} />
             </>
           ) : (
             <>

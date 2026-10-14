@@ -2,7 +2,15 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { type BuzzerEvent, DT, Simulation } from '../engine/simulation';
-import type { Environment, Face, Mission, Outcome, Program, TelemetryPoint } from '../engine/types';
+import type {
+  Environment,
+  Face,
+  Mission,
+  Outcome,
+  Program,
+  Signal,
+  TelemetryPoint,
+} from '../engine/types';
 
 export interface PanelState {
   time: number;
@@ -15,6 +23,9 @@ export interface PanelState {
   env: Environment;
   motors: { left: number; right: number };
   buzzing: boolean;
+  signal: Signal;
+  /** Whether the turn-signal lamps show lit right now. */
+  signalShown: boolean;
   met: string[];
   outcome: Outcome;
   programDone: boolean;
@@ -35,6 +46,8 @@ function panelOf(simulation: Simulation): PanelState {
     env: simulation.env,
     motors: { ...simulation.motors },
     buzzing: simulation.time < simulation.buzzingUntil,
+    signal: simulation.signal,
+    signalShown: simulation.signalShown,
     met: [...simulation.met],
     outcome: simulation.outcome,
     programDone: simulation.programDone,

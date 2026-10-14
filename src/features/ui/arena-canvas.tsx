@@ -6,7 +6,7 @@ import { type RefObject, useEffect, useRef, useState } from 'react';
 import { moverBox } from '../engine/geometry';
 import type { Simulation } from '../engine/simulation';
 import type { Box } from '../engine/types';
-import { buzzerPosition, drawRobot, silhouette } from './robot-sprite';
+import { buzzerPosition, drawRobot, signalLamps, silhouette } from './robot-sprite';
 
 const ZONE_STYLE = {
   start: { fill: 'rgba(255,210,63,0.28)', stroke: '#c99700' },
@@ -173,6 +173,7 @@ function drawArena(
     lineValues: simulation.lineValues,
     servoAngle: simulation.servoAngle,
     wheelTravel: simulation.wheelTravel,
+    lamps: signalLamps(simulation.signal, simulation.signalShown),
   });
   context.restore();
 

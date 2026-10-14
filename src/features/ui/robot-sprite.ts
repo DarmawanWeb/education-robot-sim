@@ -1,4 +1,4 @@
-import type { RobotModel, Vec } from '../engine/types';
+import type { RobotModel, Signal, Vec } from '../engine/types';
 
 /** What the sprite needs from the simulation on each frame. */
 export interface RobotFrame {
@@ -6,6 +6,21 @@ export interface RobotFrame {
   lineValues: readonly number[];
   servoAngle: number;
   wheelTravel: { left: number; right: number };
+  /** Which turn-signal lamps are lit at this moment of the blink. */
+  lamps: SignalLamps;
+}
+
+export interface SignalLamps {
+  left: boolean;
+  right: boolean;
+}
+
+/** The lamps a signal lights while its blink is in the lit half. */
+export function signalLamps(signal: Signal, lit: boolean): SignalLamps {
+  return {
+    left: lit && (signal === 'left' || signal === 'hazard'),
+    right: lit && (signal === 'right' || signal === 'hazard'),
+  };
 }
 
 type Ctx = CanvasRenderingContext2D;
@@ -17,9 +32,11 @@ function rect(ctx: Ctx, x0: number, y0: number, x1: number, y1: number, radius =
   ctx.roundRect(x0, y0, x1 - x0, y1 - y0, radius);
 }
 
+type Box4 = readonly [number, number, number, number];
+
 function fillRect(
   ctx: Ctx,
-  [x0, y0, x1, y1]: readonly [number, number, number, number],
+  [x0, y0, x1, y1]: Box4,
   fill: string,
   options: { radius?: number; stroke?: string; line?: number } = {},
 ) {
@@ -33,7 +50,7 @@ function fillRect(
   }
 }
 
-function dot(ctx: Ctx, x: number, y: number, radius: number, fill: string) {
+function dot(ctx: Ctx, x: number, y: number, radius: number, fill: string | CanvasGradient) {
   ctx.beginPath();
   ctx.arc(x, y, radius, 0, Math.PI * 2);
   ctx.fillStyle = fill;
@@ -42,14 +59,14 @@ function dot(ctx: Ctx, x: number, y: number, radius: number, fill: string) {
 
 /**
  * A tyre seen from above. The tread stripes slide with the distance the wheel has rolled,
- * so students can see each wheel's direction and speed. `outer` is the side the yellow rim faces.
+ * so students can see each wheel's direction and speed. `outer` is the side the rim faces.
  */
 function wheel(
   ctx: Ctx,
   centreY: number,
   outer: 1 | -1,
   travel: number,
-  { diameter, width }: { diameter: number; width: number },
+  { diameter, width, hub }: { diameter: number; width: number; hub: string },
 ) {
   const half = diameter / 2;
   const inner = centreY - (outer * width) / 2;
@@ -72,15 +89,13 @@ function wheel(
   }
   ctx.stroke();
   ctx.restore();
-  // The yellow hub shows at the outer edge of the tyre.
+  // The hub shows at the outer edge of the tyre.
   const rimY = outerEdge - outer * 0.42;
   fillRect(
     ctx,
     [-half * 0.62, Math.min(rimY, outerEdge), half * 0.62, Math.max(rimY, outerEdge)],
-    '#f4c20d',
-    {
-      radius: 0.15,
-    },
+    hub,
+    { radius: 0.15 },
   );
 }
 
@@ -115,79 +130,139 @@ function perforation(ctx: Ctx, holes: readonly Vec[], colour: string) {
   for (const hole of holes) dot(ctx, hole.x, hole.y, 0.24, colour);
 }
 
+/** SD v1's buzzer, under a grille on the roof. */
+const BUZZER: Vec = { x: -3.3, y: -2.6 };
+
 const range = (from: number, to: number, step: number) =>
   Array.from({ length: Math.floor((to - from) / step) + 1 }, (_, index) => from + index * step);
 
 /**
- * SD v1: red aluminium plate, black tyres on yellow hubs, the blue face housing at the front
- * with the ultrasonic "eyes" on top, two IR sensors in yellow housings below the face,
- * the Nano carrier and the buzzer. No status LEDs or buttons: the SD kit dropped them.
+ * The SD v1 body seen from above, traced clockwise so it can share a path with other shapes:
+ * a narrow tail between the wheels that flares into a wide nose.
+ */
+function sdBody(ctx: Ctx) {
+  ctx.moveTo(-5.7, 0);
+  ctx.lineTo(-5.7, -3.5);
+  ctx.quadraticCurveTo(-5.7, -4.4, -4.9, -4.4);
+  ctx.lineTo(3.2, -4.4);
+  ctx.bezierCurveTo(3.9, -4.4, 4.0, -5.7, 4.8, -5.7);
+  ctx.lineTo(6.4, -5.7);
+  ctx.quadraticCurveTo(7.5, -5.7, 7.5, -4.6);
+  ctx.quadraticCurveTo(7.9, -2.4, 7.75, 0);
+  ctx.quadraticCurveTo(7.9, 2.4, 7.5, 4.6);
+  ctx.quadraticCurveTo(7.5, 5.7, 6.4, 5.7);
+  ctx.lineTo(4.8, 5.7);
+  ctx.bezierCurveTo(4.0, 5.7, 3.9, 4.4, 3.2, 4.4);
+  ctx.lineTo(-4.9, 4.4);
+  ctx.quadraticCurveTo(-5.7, 4.4, -5.7, 3.5);
+  ctx.closePath();
+}
+
+const SD_CHIN: Box4 = [8.0, -2.6, 9.3, 2.6];
+const SD_SPOILER: Box4 = [-6.2, -4.5, -5.0, 4.5];
+/** Turn-signal LEDs at the front corners, left then right. */
+const SD_LAMPS = [
+  { x: 6.85, y: -5.0 },
+  { x: 6.85, y: 5.0 },
+] as const;
+
+/** An orange turn-signal LED; lit, it throws a soft glow on the mat around the corner. */
+function signalLamp(ctx: Ctx, at: Vec, lit: boolean) {
+  if (lit) {
+    const glow = ctx.createRadialGradient(at.x, at.y, 0, at.x, at.y, 3.4);
+    glow.addColorStop(0, 'rgba(255,176,32,0.9)');
+    glow.addColorStop(0.35, 'rgba(255,150,20,0.45)');
+    glow.addColorStop(1, 'rgba(255,140,0,0)');
+    dot(ctx, at.x, at.y, 3.4, glow);
+  }
+  dot(ctx, at.x, at.y, 0.62, lit ? '#ffb020' : '#8a4a10');
+  dot(ctx, at.x, at.y, 0.42, lit ? '#fff1c1' : '#d9822b');
+}
+
+/**
+ * SD v1: a red car-shaped shell with a white racing stripe, the black visor that holds the
+ * OLED eyes, white-hub wheels at the back, the HC-SR04 in a red bumper, two IR sensors on a
+ * chin plate under it, and an orange turn-signal LED at each front corner. The buzzer sits
+ * under a small grille on the roof.
  */
 function drawSd(ctx: Ctx, frame: RobotFrame) {
-  const { model, lineValues, wheelTravel } = frame;
+  const { model, lineValues, wheelTravel, lamps } = frame;
   const halfBase = model.wheelBase / 2;
-  const tyre = { diameter: 6.5, width: 2.6 };
+  const tyre = { diameter: 6.5, width: 2.6, hub: '#eceff1' };
+
+  // Chin plate with the IR sensors: the lowest part, so it goes down first.
+  fillRect(ctx, SD_CHIN, '#1c1d1f', { radius: 0.35, stroke: '#000000', line: 0.12 });
 
   wheel(ctx, -halfBase, -1, wheelTravel.left, tyre);
   wheel(ctx, halfBase, 1, wheelTravel.right, tyre);
 
-  // Chassis plate with a ring of holes.
-  fillRect(ctx, [-6.6, -4.7, 5.8, 4.7], '#d4252c', { radius: 1.4, stroke: '#8c1218' });
-  perforation(
-    ctx,
-    [
-      ...range(-5.4, 4.2, 1.6).flatMap((x) => [
-        { x, y: -3.95 },
-        { x, y: 3.95 },
-      ]),
-      ...range(-2.4, 2.4, 1.6).map((y) => ({ x: -5.95, y })),
-    ],
-    '#8c1218',
-  );
+  // Silver base plate, showing as a thin edge beside the wheels.
+  fillRect(ctx, [-5.2, -4.65, 4.4, 4.65], '#c4c9cf', { radius: 0.5 });
 
-  // Nano on its protected carrier, USB socket facing the back for the teacher.
-  fillRect(ctx, [-4.7, -2.9, 2.7, 2.9], '#16302a', { radius: 0.5, stroke: '#0b1a16', line: 0.18 });
-  fillRect(ctx, [-3.9, -1.0, 0.9, 1.0], '#2160c4', { radius: 0.2 });
-  fillRect(ctx, [-2.3, -0.55, -0.7, 0.55], '#111111', { radius: 0.1 });
-  fillRect(ctx, [-4.35, -0.5, -3.75, 0.5], '#b9bfc7', { radius: 0.08 });
-  ctx.strokeStyle = '#d8b04a';
-  ctx.lineWidth = 0.14;
-  ctx.setLineDash([0.12, 0.2]);
+  // The shell, lighter along the roof line, with its outline.
+  const shade = ctx.createLinearGradient(0, -5.7, 0, 5.7);
+  shade.addColorStop(0, '#b81c22');
+  shade.addColorStop(0.5, '#e2363c');
+  shade.addColorStop(1, '#b81c22');
   ctx.beginPath();
-  ctx.moveTo(-3.6, -0.82);
-  ctx.lineTo(0.6, -0.82);
-  ctx.moveTo(-3.6, 0.82);
-  ctx.lineTo(0.6, 0.82);
+  sdBody(ctx);
+  ctx.fillStyle = shade;
+  ctx.fill();
+  ctx.save();
+  ctx.clip();
+  // Racing stripe from the tail to the nose, and the raised roof behind the visor.
+  fillRect(ctx, [-6, -1.45, 8, 1.45], '#f5f5f0');
+  ctx.strokeStyle = 'rgba(0,0,0,0.14)';
+  ctx.lineWidth = 0.16;
+  rect(ctx, -4.9, -3.65, 2.4, 3.65, 1.1);
   ctx.stroke();
-  ctx.setLineDash([]);
+  ctx.restore();
+  ctx.beginPath();
+  sdBody(ctx);
+  ctx.strokeStyle = '#8c1218';
+  ctx.lineWidth = 0.25;
+  ctx.stroke();
 
-  // Active buzzer.
-  dot(ctx, -5.1, -2.55, 1.05, '#161616');
-  dot(ctx, -5.1, -2.55, 0.62, '#2c2c2c');
-  dot(ctx, -5.1, -2.55, 0.18, '#000000');
+  // Rear spoiler, striped like the shell.
+  fillRect(ctx, SD_SPOILER, '#b51a21', { radius: 0.5, stroke: '#7d0f14' });
+  fillRect(ctx, [SD_SPOILER[0] + 0.1, -1.45, SD_SPOILER[2] - 0.1, 1.45], '#ecece6');
 
-  // IR sensors sit low, poking out under the face.
-  for (const [index, sensor] of model.lineSensors.entries()) {
-    fillRect(ctx, [sensor.x - 0.75, sensor.y - 0.78, sensor.x + 0.75, sensor.y + 0.78], '#f5c518', {
+  // Buzzer grille on the roof.
+  dot(ctx, BUZZER.x, BUZZER.y, 0.8, '#7d0f14');
+  for (const hole of [
+    { x: 0, y: 0 },
+    { x: 0.32, y: 0 },
+    { x: -0.32, y: 0 },
+    { x: 0, y: 0.32 },
+    { x: 0, y: -0.32 },
+  ])
+    dot(ctx, BUZZER.x + hole.x, BUZZER.y + hole.y, 0.1, '#2a0507');
+
+  // Visor with the two OLED eyes.
+  fillRect(ctx, [2.0, -3.6, 3.7, 3.6], '#0d0f14', { radius: 0.55 });
+  fillRect(ctx, [2.15, -3.35, 2.4, 3.35], 'rgba(255,255,255,0.18)', { radius: 0.1 });
+  for (const side of [-1, 1]) {
+    fillRect(ctx, [2.4, side * 1.05 - 0.48, 3.3, side * 1.05 + 0.48], 'rgba(95,240,255,0.3)', {
       radius: 0.3,
-      stroke: '#a77f00',
-      line: 0.15,
     });
+    fillRect(ctx, [2.55, side * 1.05 - 0.33, 3.15, side * 1.05 + 0.33], '#5ff0ff', {
+      radius: 0.15,
+    });
+  }
+
+  // Red bumper holding the HC-SR04; the transducers face forward from the sonar's origin.
+  fillRect(ctx, [7.15, -2.75, 8.25, 2.75], '#b0191f', { radius: 0.3, stroke: '#7d0f14' });
+  sonarPair(ctx, 7.3, model.sonar.forward + 0.15, 1.3, 0.78);
+
+  // IR sensors at their real positions, each in a pale housing; the lens glows over the tape.
+  for (const [index, sensor] of model.lineSensors.entries()) {
+    dot(ctx, sensor.x, sensor.y, 0.6, '#b9c0c8');
     irLens(ctx, sensor, lineValues[index] ?? 0, 0.42);
   }
 
-  // Face housing, yellow trim, and the ultrasonic sensor mounted on top of it.
-  fillRect(ctx, [5.0, -5.8, 8.3, 5.8], '#2263da', { radius: 1.3, stroke: '#123a8b' });
-  ctx.strokeStyle = '#ffcd1c';
-  ctx.lineWidth = 0.45;
-  ctx.beginPath();
-  ctx.moveTo(8.0, -4.8);
-  ctx.lineTo(8.0, 4.8);
-  ctx.stroke();
-  dot(ctx, 5.75, -5.05, 0.28, '#d5d9de');
-  dot(ctx, 5.75, 5.05, 0.28, '#d5d9de');
-  fillRect(ctx, [5.35, -2.6, 6.0, 2.6], '#1a4fb4', { radius: 0.2 });
-  sonarPair(ctx, 5.7, 8.05, 1.35, 0.82);
+  // Turn signals last, so their glow lies over everything else.
+  signalLamp(ctx, SD_LAMPS[0], lamps.left);
+  signalLamp(ctx, SD_LAMPS[1], lamps.right);
 }
 
 /**
@@ -198,7 +273,7 @@ function drawSd(ctx: Ctx, frame: RobotFrame) {
 function drawSmp(ctx: Ctx, frame: RobotFrame) {
   const { model, lineValues, wheelTravel, servoAngle } = frame;
   const halfBase = model.wheelBase / 2;
-  const tyre = { diameter: 6.5, width: 2.6 };
+  const tyre = { diameter: 6.5, width: 2.6, hub: '#f4c20d' };
 
   // The IR bar is the lowest part, so it goes down first.
   const sensorX = model.lineSensors[0]?.x ?? 8;
@@ -293,19 +368,16 @@ function drawSmp(ctx: Ctx, frame: RobotFrame) {
 /** Adds the robot's outline (body and tyres) to the current path, for the drop shadow. */
 export function silhouette(ctx: Ctx, model: RobotModel): void {
   const halfBase = model.wheelBase / 2;
-  const shapes: [number, number, number, number][] =
+  const shapes: Box4[] =
     model.id === 'sd'
-      ? [
-          [-6.6, -4.7, 5.8, 4.7],
-          [5.0, -5.8, 8.3, 5.8],
-          [7.9, -2.4, 9.4, 2.4],
-        ]
+      ? [SD_CHIN, SD_SPOILER, [7.15, -2.75, 8.25, 2.75]]
       : [
           [-8.0, -5.0, 6.6, 5.0],
           [6.5, -4.7, 9.2, 4.7],
         ];
   ctx.beginPath();
-  for (const [x0, y0, x1, y1] of shapes) ctx.roundRect(x0, y0, x1 - x0, y1 - y0, 1);
+  if (model.id === 'sd') sdBody(ctx);
+  for (const [x0, y0, x1, y1] of shapes) ctx.roundRect(x0, y0, x1 - x0, y1 - y0, 0.6);
   for (const side of [-1, 1]) ctx.roundRect(-3.25, side * halfBase - 1.3, 6.5, 2.6, 0.9);
 }
 
@@ -317,5 +389,5 @@ export function drawRobot(ctx: Ctx, frame: RobotFrame): void {
 
 /** Where the buzzer sits, so the canvas can draw sound rings around it. */
 export function buzzerPosition(model: RobotModel): Vec {
-  return model.id === 'sd' ? { x: -5.1, y: -2.55 } : { x: -5.9, y: 0 };
+  return model.id === 'sd' ? BUZZER : { x: -5.9, y: 0 };
 }
