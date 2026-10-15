@@ -1,4 +1,4 @@
-import type { Localized } from '@taksu/content';
+import type { Localized } from '@ulik/catalog';
 import { arc, roundedTrack } from './geometry';
 import type {
   DriveDirection,
@@ -143,8 +143,8 @@ const followSd = (speed: number): Statement => ({
 
 export const missions: readonly Mission[] = [
   {
-    id: 'sd-kenalan',
-    robot: 'sd',
+    id: 'ciko-kenalan',
+    robot: 'ciko',
     arena: { width: 160, height: 100, lines: [], boxes: [], zones: [] },
     start: { x: 40, y: 50, heading: 0 },
     timeLimit: 20,
@@ -176,8 +176,8 @@ export const missions: readonly Mission[] = [
     },
   },
   {
-    id: 'sd-finish',
-    robot: 'sd',
+    id: 'ciko-finish',
+    robot: 'ciko',
     arena: {
       width: 200,
       height: 100,
@@ -205,8 +205,8 @@ export const missions: readonly Mission[] = [
     solution: { body: [drive('forward', 60, 7.3)] },
   },
   {
-    id: 'sd-belok',
-    robot: 'sd',
+    id: 'ciko-belok',
+    robot: 'ciko',
     arena: {
       width: 180,
       height: 140,
@@ -242,8 +242,8 @@ export const missions: readonly Mission[] = [
     },
   },
   {
-    id: 'sd-sein',
-    robot: 'sd',
+    id: 'ciko-sein',
+    robot: 'ciko',
     arena: {
       width: 180,
       height: 140,
@@ -301,8 +301,8 @@ export const missions: readonly Mission[] = [
     },
   },
   {
-    id: 'sd-kotak',
-    robot: 'sd',
+    id: 'ciko-kotak',
+    robot: 'ciko',
     arena: {
       width: 180,
       height: 140,
@@ -348,8 +348,8 @@ export const missions: readonly Mission[] = [
     },
   },
   {
-    id: 'sd-rintangan',
-    robot: 'sd',
+    id: 'ciko-rintangan',
+    robot: 'ciko',
     arena: {
       width: 200,
       height: 100,
@@ -384,8 +384,8 @@ export const missions: readonly Mission[] = [
     },
   },
   {
-    id: 'sd-hindar',
-    robot: 'sd',
+    id: 'ciko-hindar',
+    robot: 'ciko',
     arena: {
       width: 200,
       height: 100,
@@ -453,8 +453,8 @@ export const missions: readonly Mission[] = [
     },
   },
   {
-    id: 'sd-garis',
-    robot: 'sd',
+    id: 'ciko-garis',
+    robot: 'ciko',
     arena: {
       width: 200,
       height: 140,
@@ -484,8 +484,8 @@ export const missions: readonly Mission[] = [
     solution: { body: [{ kind: 'forever', body: [followSd(40)] }] },
   },
   {
-    id: 'sd-persimpangan',
-    robot: 'sd',
+    id: 'ciko-persimpangan',
+    robot: 'ciko',
     arena: {
       width: 200,
       height: 120,
@@ -564,8 +564,8 @@ export const missions: readonly Mission[] = [
     },
   },
   {
-    id: 'sd-misi-akhir',
-    robot: 'sd',
+    id: 'ciko-misi-akhir',
+    robot: 'ciko',
     arena: {
       width: 200,
       height: 120,
@@ -613,8 +613,8 @@ export const missions: readonly Mission[] = [
     },
   },
   {
-    id: 'smp-sistem',
-    robot: 'smp',
+    id: 'momo-sistem',
+    robot: 'momo',
     arena: {
       width: 160,
       height: 100,
@@ -703,8 +703,8 @@ export const missions: readonly Mission[] = [
     },
   },
   {
-    id: 'smp-pwm',
-    robot: 'smp',
+    id: 'momo-pwm',
+    robot: 'momo',
     arena: {
       width: 200,
       height: 100,
@@ -736,8 +736,8 @@ export const missions: readonly Mission[] = [
     solution: { body: [motors(n(60), n(64)), wait(4.17), stop] },
   },
   {
-    id: 'smp-garis',
-    robot: 'smp',
+    id: 'momo-garis',
+    robot: 'momo',
     arena: {
       width: 200,
       height: 140,
@@ -779,8 +779,8 @@ export const missions: readonly Mission[] = [
     },
   },
   {
-    id: 'smp-radar',
-    robot: 'smp',
+    id: 'momo-radar',
+    robot: 'momo',
     arena: {
       width: 160,
       height: 140,
@@ -835,8 +835,8 @@ export const missions: readonly Mission[] = [
     },
   },
   {
-    id: 'smp-lingkungan',
-    robot: 'smp',
+    id: 'momo-lingkungan',
+    robot: 'momo',
     arena: { width: 120, height: 80, lines: [], boxes: [], zones: [] },
     start: { x: 60, y: 40, heading: 0 },
     timeLimit: 12,
@@ -887,8 +887,8 @@ export const missions: readonly Mission[] = [
     },
   },
   {
-    id: 'smp-suara',
-    robot: 'smp',
+    id: 'momo-suara',
+    robot: 'momo',
     arena: {
       width: 200,
       height: 80,
@@ -935,8 +935,8 @@ export const missions: readonly Mission[] = [
     },
   },
   {
-    id: 'smp-telemetri',
-    robot: 'smp',
+    id: 'momo-telemetri',
+    robot: 'momo',
     arena: { width: 120, height: 80, lines: [], boxes: [], zones: [] },
     start: { x: 60, y: 40, heading: 0 },
     timeLimit: 14,
@@ -1028,8 +1028,8 @@ export const missions: readonly Mission[] = [
     },
   },
   {
-    id: 'smp-bebas',
-    robot: 'smp',
+    id: 'momo-bebas',
+    robot: 'momo',
     arena: {
       width: 220,
       height: 150,

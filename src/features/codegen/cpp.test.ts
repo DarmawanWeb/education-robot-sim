@@ -3,12 +3,12 @@ import { getMission } from '../engine/missions';
 import { identifier, toCpp } from './cpp';
 
 describe('toCpp', () => {
-  it('turns the SD obstacle solution into Arduino C++', () => {
-    expect(toCpp(getMission('sd-rintangan')!.solution, 'sd')).toBe(
+  it('turns Ciko’s obstacle solution into Arduino C++', () => {
+    expect(toCpp(getMission('ciko-rintangan')!.solution, 'ciko')).toBe(
       [
         '#include <RobotKit.h>',
         '',
-        'RobotKit robot(RobotKit::SD);',
+        'RobotKit robot(RobotKit::CIKO);',
         '',
         'void setup() {',
         '  robot.begin();',
@@ -26,7 +26,7 @@ describe('toCpp', () => {
     );
   });
 
-  it('switches the SD turn signals on and off', () => {
+  it('switches Ciko’s turn signals on and off', () => {
     const cpp = toCpp(
       {
         body: [
@@ -36,7 +36,7 @@ describe('toCpp', () => {
           { kind: 'signal', side: 'off', tick: false },
         ],
       },
-      'sd',
+      'ciko',
     );
     expect(cpp).toContain(
       [
@@ -49,7 +49,7 @@ describe('toCpp', () => {
   });
 
   it('declares variables and keeps else-if chains readable', () => {
-    const cpp = toCpp(getMission('smp-radar')!.solution, 'smp');
+    const cpp = toCpp(getMission('momo-radar')!.solution, 'momo');
     expect(cpp).toContain('float kiri = 0;');
     expect(cpp).toContain('kanan = robot.distance();');
     expect(cpp).toContain('if ((kiri > kanan)) {');
@@ -57,7 +57,7 @@ describe('toCpp', () => {
   });
 
   it('formats OLED text joins as Arduino Strings', () => {
-    expect(toCpp(getMission('smp-lingkungan')!.solution, 'smp')).toContain(
+    expect(toCpp(getMission('momo-lingkungan')!.solution, 'momo')).toContain(
       'robot.print(1, String("Suhu ") + String(robot.temperature()));',
     );
   });
@@ -80,7 +80,7 @@ describe('toCpp', () => {
           },
         ],
       },
-      'smp',
+      'momo',
     );
     expect(cpp).toContain('if (robot.wifiConnected()) {');
     expect(cpp).toContain('robot.send("suhu", robot.temperature());');

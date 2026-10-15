@@ -92,9 +92,9 @@ function Lamp({ cx, cy, lit }: { cx: number; cy: number; lit: boolean }) {
 }
 
 /**
- * The robot seen from the front, as it sits on the classroom floor. SD v1 shows its red shell
+ * The robot seen from the front, as it sits on the classroom floor. Ciko shows its red shell
  * and white stripe, the OLED eyes behind the black visor, the HC-SR04 in its bumper, the two
- * turn signals, and the IR sensors on the chin; SMP v1 shows its SSD1306 OLED board. Left
+ * turn signals, and the IR sensors on the chin; Momo shows its SSD1306 OLED board. Left
  * parts are drawn on the left, as the student thinks of them. The screen mirrors the program.
  */
 export function RobotFront({
@@ -110,11 +110,11 @@ export function RobotFront({
   oled: readonly string[];
   /** Whether each IR sensor sees the tape, left to right. */
   lineSeen: readonly boolean[];
-  /** Which turn-signal LEDs are lit (SD v1). */
+  /** Which turn-signal LEDs are lit (Ciko). */
   lamps?: SignalLamps;
   label: string;
 }) {
-  if (robot === 'sd') {
+  if (robot === 'ciko') {
     return (
       <svg viewBox="0 0 160 124" role="img" aria-label={label} className="h-auto w-full">
         <ellipse cx="80" cy="120" rx="74" ry="3.5" fill="#000000" opacity="0.12" />

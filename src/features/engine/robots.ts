@@ -1,11 +1,11 @@
 import type { RobotId, RobotModel } from './types';
 
 /**
- * SD v1: two IR line sensors straddling the tape under the front bumper, the ultrasonic
+ * Ciko: two IR line sensors straddling the tape under the front bumper, the ultrasonic
  * sensor in the bumper, turn signals at the front corners, matched motors.
  */
-const sd: RobotModel = {
-  id: 'sd',
+const ciko: RobotModel = {
+  id: 'ciko',
   length: 16,
   width: 13,
   radius: 8.5,
@@ -21,9 +21,9 @@ const sd: RobotModel = {
   hasSignals: true,
 };
 
-/** ESP32 modular robot (SMP): 5-in-1 line array, sonar on a servo, slightly unmatched motors. */
-const smp: RobotModel = {
-  id: 'smp',
+/** Momo, the ESP32 modular robot: 5-in-1 line array, sonar on a servo, slightly unmatched motors. */
+const momo: RobotModel = {
+  id: 'momo',
   length: 18,
   width: 14,
   radius: 9.5,
@@ -42,4 +42,4 @@ const smp: RobotModel = {
   hasSignals: false,
 };
 
-export const robotModels: Record<RobotId, RobotModel> = { sd, smp };
+export const robotModels: Record<RobotId, RobotModel> = { ciko, momo };

@@ -1,4 +1,4 @@
-import type { Locale } from '@taksu/content';
+import type { Locale } from '@ulik/catalog';
 import { notFound } from 'next/navigation';
 import { hasLocale } from 'next-intl';
 import { setRequestLocale } from 'next-intl/server';

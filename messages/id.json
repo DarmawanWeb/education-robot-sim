@@ -1,22 +1,20 @@
 {
   "Meta": {
-    "title": "Simulator robot SD v1 dan SMP v1",
-    "description": "Program SD v1 dan SMP v1 dengan blok, lalu jalankan misi sesuai kurikulum: maju, belok, lampu sein, ikuti garis, rintangan, radar, suhu, suara, dan Wi-Fi."
+    "title": "Simulator ULIK: program Ciko dan Momo dengan blok",
+    "description": "Coba robot ULIK di browser sebelum membeli. Program Ciko dan Momo dengan blok: maju, belok, lampu sein, ikuti garis, rintangan, radar, suhu, suara, dan Wi-Fi. Gratis, tanpa daftar."
   },
   "Sim": {
-    "title": "Simulator robot",
+    "title": "Simulator",
     "backToSite": "Kembali ke {brand}",
     "theme": "Ganti tema terang atau gelap",
     "language": "Bahasa",
     "robot": "Robot",
-    "robotSd": "SD v1",
-    "robotSmp": "SMP v1",
     "mission": "Misi",
-    "module": "Modul {n}",
+    "step": "Langkah {n} dari {total}",
+    "stepOption": "{n}. {title}",
     "finishedOption": "{title} (selesai)",
     "progress": "{done} dari {total} misi selesai",
-    "meetings": "Pertemuan {list}",
-    "inSyllabus": "Lihat modul ini di silabus",
+    "inPath": "Lihat langkah ini di jalur Ngulik {robot}",
     "newTab": "(terbuka di tab baru)",
     "goals": "Tujuan misi",
     "hint": "Petunjuk",
@@ -113,7 +111,7 @@
     "SIM_CAT_SENSORS": "Sensor",
     "SIM_CAT_LOGIC": "Logika dan angka",
     "SIM_CAT_OUTPUT": "Wajah, lampu, bunyi",
-    "SIM_CAT_OUTPUT_SMP": "Servo, OLED, suara",
+    "SIM_CAT_OUTPUT_MOMO": "Servo, OLED, suara",
     "SIM_CAT_VARIABLES": "Variabel",
     "SIM_CAT_WIFI": "Wi-Fi",
     "SIM_START": "saat mulai",

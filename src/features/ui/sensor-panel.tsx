@@ -1,6 +1,6 @@
 'use client';
 
-import { cn } from '@taksu/ui/lib/utils';
+import { cn } from '@ulik/ui/lib/utils';
 import { Bell, Hand } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { RobotId } from '../engine/types';
@@ -61,7 +61,7 @@ export function SensorPanel({
       <div className="grid gap-4 sm:grid-cols-[12rem_1fr]">
         <div>
           <p className="text-muted-foreground mb-1 text-xs">
-            {robot === 'sd' ? t('front') : t('oled')}
+            {robot === 'ciko' ? t('front') : t('oled')}
           </p>
           <div className="mx-auto max-w-[14rem] sm:max-w-none">
             <RobotFront
@@ -84,7 +84,7 @@ export function SensorPanel({
           </p>
         </div>
         <dl className="grid content-start grid-cols-2 gap-2 lg:grid-cols-3">
-          {robot === 'sd' ? (
+          {robot === 'ciko' ? (
             <>
               <Readout label={t('lineLeft')} part="IR" value={yesNo(seen[0] ?? false)} />
               <Readout label={t('lineRight')} part="IR" value={yesNo(seen[1] ?? false)} />
@@ -140,7 +140,7 @@ export function SensorPanel({
           )}
           <Readout
             label={t('motors')}
-            part={robot === 'smp' ? 'TB6612FNG' : undefined}
+            part={robot === 'momo' ? 'TB6612FNG' : undefined}
             value={`${Math.round(panel.motors.left)} / ${Math.round(panel.motors.right)}`}
             className="col-span-2 lg:col-span-1"
           />
@@ -173,7 +173,7 @@ export function SensorPanel({
           <button
             type="button"
             onClick={onClap}
-            className="border-edge bg-surface hover:bg-surface-muted inline-flex h-10 items-center gap-2 rounded-md border-2 px-4 font-bold"
+            className="border-border bg-surface hover:bg-surface-muted inline-flex h-10 items-center gap-2 rounded-md border px-4 font-bold"
           >
             <Hand className="size-4" aria-hidden />
             {t('clap')}

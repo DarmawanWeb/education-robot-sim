@@ -1,5 +1,5 @@
 @import 'tailwindcss';
-@import '@taksu/ui/edu.css';
+@import '@ulik/ui/ulik.css';
 
 @source '../../../../packages/ui/src';
 
@@ -10,7 +10,7 @@
  */
 .blocklyToolbox {
   padding: 0.5rem 0.375rem;
-  border-right: 2px solid var(--edge);
+  border-right: 1px solid var(--border);
 }
 
 .blocklyToolbox .blocklyToolboxCategoryContainer {

@@ -1,4 +1,4 @@
-import type { Localized } from '@taksu/content';
+import type { Localized } from '@ulik/catalog';
 
 export interface Vec {
   x: number;
@@ -10,7 +10,7 @@ export interface Pose extends Vec {
   heading: number;
 }
 
-export type RobotId = 'sd' | 'smp';
+export type RobotId = 'ciko' | 'momo';
 export type Face = 'normal' | 'senang' | 'bingung' | 'waspada' | 'berhasil';
 export type Note = 'C5' | 'D5' | 'E5' | 'F5' | 'G5' | 'A5' | 'B5' | 'C6';
 /** Which turn-signal lamps blink: one side, both (hazard), or none. */
@@ -24,7 +24,7 @@ export interface RobotModel {
   wheelBase: number;
   /** Wheel speed at 100 % in cm/s. */
   maxSpeed: number;
-  /** Real motors are never identical; the SMP robot drifts unless calibrated. */
+  /** Real motors are never identical; Momo drifts unless calibrated. */
   motorBias: { left: number; right: number };
   /** Sensor offsets in the robot frame: x forward, y to the right. Left to right order. */
   lineSensors: Vec[];

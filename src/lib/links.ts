@@ -1,12 +1,12 @@
-import type { Locale, SimRobot } from '@taksu/content';
+import type { Locale, SimRobot } from '@ulik/catalog';
 
-/** The education site, where the simulator is introduced and the syllabus lives. */
-export const eduUrl = (process.env.NEXT_PUBLIC_EDU_URL ?? 'http://localhost:3003').replace(
+/** The store site, where every robot's learning path lives. */
+export const webUrl = (process.env.NEXT_PUBLIC_WEB_URL ?? 'http://localhost:3100').replace(
   /\/+$/,
   '',
 );
 
-/** A module on the kit's syllabus page. */
-export function syllabusUrl(locale: Locale, robot: SimRobot, moduleId: string): string {
-  return `${eduUrl}/${locale}/curriculum/${robot}#${moduleId}`;
+/** A step on a robot's learning path, on the store site. */
+export function learnStepUrl(locale: Locale, robot: SimRobot, stepId: string): string {
+  return `${webUrl}/${locale}/belajar/${robot}#${stepId}`;
 }

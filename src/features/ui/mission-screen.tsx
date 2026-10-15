@@ -1,7 +1,6 @@
 'use client';
 
-import { type Locale, missionPlace, pick, type SimMissionInfo } from '@taksu/content';
-import { Badge } from '@taksu/ui/components/badge';
+import { getRobot, type Locale, missionStep, pick, type SimMissionInfo } from '@ulik/catalog';
 import {
   Dialog,
   DialogContent,
@@ -9,13 +8,13 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@taksu/ui/components/dialog';
-import { cn } from '@taksu/ui/lib/utils';
+} from '@ulik/ui/components/dialog';
+import { cn } from '@ulik/ui/lib/utils';
 import { CheckCircle2, Circle, Play, RotateCcw, Square, Undo2 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useMessages, useTranslations } from 'next-intl';
 import { useCallback, useRef, useState } from 'react';
-import { syllabusUrl } from '@/lib/links';
+import { learnStepUrl } from '@/lib/links';
 import type { WorkspaceApi } from '../blocks/blockly-workspace';
 import type { CompileResult } from '../blocks/compile';
 import type { Mission, Outcome } from '../engine/types';
@@ -84,10 +83,8 @@ export function MissionScreen({
       : mission.free
         ? t('status.free')
         : t('status.idle');
-  const place = missionPlace(info);
-  const meetingList = place
-    ? new Intl.ListFormat(locale, { type: 'conjunction' }).format(place.meetings.map(String))
-    : '';
+  const place = missionStep(info.id);
+  const robotName = getRobot(mission.robot)?.name ?? '';
   const outcomeKey =
     result && result.status !== 'running'
       ? result.status === 'success'
@@ -97,13 +94,13 @@ export function MissionScreen({
 
   return (
     <div className="grid gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
-      <section className="border-edge h-[60vh] min-h-[26rem] overflow-hidden rounded-lg border-2 xl:sticky xl:top-[5.5rem] xl:h-[calc(100dvh-7.5rem)]">
+      <section className="border-border h-[60vh] min-h-[26rem] overflow-hidden rounded-lg border xl:sticky xl:top-[5.5rem] xl:h-[calc(100dvh-7.5rem)]">
         <BlocklyWorkspace
           robot={mission.robot}
           locale={locale}
           dark={dark}
           messages={blockMessages}
-          storageKey={`taksu-sim:${mission.id}`}
+          storageKey={`ulik-sim:${mission.id}`}
           starter={mission.starter}
           apiRef={apiRef}
           onProgramChange={setProgram}
@@ -113,15 +110,24 @@ export function MissionScreen({
 
       <div className="flex min-w-0 flex-col gap-4">
         <section className={cn(panelClass, 'p-5')}>
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-            <Badge variant={mission.robot}>{t('module', { n: place?.module ?? 0 })}</Badge>
-            {place ? (
-              <span className="text-muted-foreground text-sm font-semibold">
-                {t('meetings', { count: place.meetings.length, list: meetingList })}
+          {place ? (
+            <p className="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm font-bold">
+              <span
+                className={cn(
+                  'rounded-full px-2.5 py-0.5',
+                  mission.robot === 'ciko'
+                    ? 'bg-robot-ciko text-white'
+                    : 'bg-robot-momo text-black',
+                )}
+              >
+                {robotName}
               </span>
-            ) : null}
-          </div>
-          <h1 className="type-label mt-3 text-[1.75rem]">{pick(info.title, locale)}</h1>
+              <span className="text-muted-foreground">
+                {t('step', { n: place.number, total: place.total })}
+              </span>
+            </p>
+          ) : null}
+          <h1 className="type-display mt-3 text-[1.75rem]">{pick(info.title, locale)}</h1>
           <p className="text-muted-foreground mt-2">{pick(info.brief, locale)}</p>
           {mission.goals.length > 0 ? (
             <>
@@ -135,10 +141,7 @@ export function MissionScreen({
                       className={cn('flex items-center gap-2 text-sm', met && 'font-bold')}
                     >
                       {met ? (
-                        <CheckCircle2
-                          className="dark:text-level-smp size-4 shrink-0 text-[#0e6b57]"
-                          aria-hidden
-                        />
+                        <CheckCircle2 className="text-success size-4 shrink-0" aria-hidden />
                       ) : (
                         <Circle className="text-muted-foreground size-4 shrink-0" aria-hidden />
                       )}
@@ -155,12 +158,12 @@ export function MissionScreen({
           </details>
           {place ? (
             <a
-              href={syllabusUrl(locale, mission.robot, place.moduleId)}
+              href={learnStepUrl(locale, mission.robot, place.step.id)}
               target="_blank"
               rel="noopener"
               className="decoration-primary mt-3 inline-block text-sm font-semibold underline decoration-2 underline-offset-4"
             >
-              {t('inSyllabus')}
+              {t('inPath', { robot: robotName })}
               <span className="sr-only"> {t('newTab')}</span>
             </a>
           ) : null}
@@ -245,7 +248,7 @@ export function MissionScreen({
       </div>
 
       <Dialog open={outcomeKey !== null} onOpenChange={(open) => (open ? null : setResult(null))}>
-        <DialogContent closeLabel={t('close')} className="border-edge rounded-lg border-2">
+        <DialogContent closeLabel={t('close')} className="rounded-lg">
           {outcomeKey ? (
             <>
               <DialogHeader>

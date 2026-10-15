@@ -1,6 +1,6 @@
 'use client';
 
-import { cn } from '@taksu/ui/lib/utils';
+import { cn } from '@ulik/ui/lib/utils';
 import { ScanSearch } from 'lucide-react';
 import { type RefObject, useEffect, useRef, useState } from 'react';
 import { moverBox } from '../engine/geometry';
@@ -301,7 +301,7 @@ export function ArenaCanvas({
         ref={canvasRef}
         role="img"
         aria-label={label}
-        className="border-edge block w-full rounded-lg border-2"
+        className="border-border block w-full rounded-lg border"
         style={{ aspectRatio: `${width} / ${height}` }}
       />
       <button
@@ -309,7 +309,7 @@ export function ArenaCanvas({
         aria-pressed={follow}
         onClick={() => setFollow((value) => !value)}
         className={cn(
-          'border-edge absolute top-3 right-3 inline-flex items-center gap-1.5 rounded-md border-2 px-2.5 py-1.5 text-xs font-bold',
+          'border-border absolute top-3 right-3 inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs font-bold shadow-sm',
           follow ? 'bg-accent text-black' : 'bg-surface text-foreground hover:bg-surface-muted',
         )}
       >

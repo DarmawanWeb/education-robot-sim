@@ -1,23 +1,22 @@
 'use client';
 
 import {
+  brand,
+  getRobot,
   type Locale,
-  type Localized,
-  missionPlace,
-  names,
+  missionStep,
   pick,
-  type SimMissionInfo,
   type SimRobot,
   simMissions,
-} from '@taksu/content';
-import { EduWordmark } from '@taksu/ui/brand/edu-wordmark';
-import { ThemeToggle } from '@taksu/ui/brand/theme-toggle';
-import { cn } from '@taksu/ui/lib/utils';
+} from '@ulik/catalog';
+import { ThemeToggle } from '@ulik/ui/brand/theme-toggle';
+import { Wordmark } from '@ulik/ui/brand/wordmark';
+import { cn } from '@ulik/ui/lib/utils';
 import { useSearchParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { useSyncExternalStore } from 'react';
 import { useRouter } from '@/i18n/navigation';
-import { eduUrl } from '@/lib/links';
+import { webUrl } from '@/lib/links';
 import { getMission } from '../engine/missions';
 import { MissionScreen } from './mission-screen';
 import { useFinishedMissions } from './progress';
@@ -38,18 +37,13 @@ function useDarkMode(): boolean {
   );
 }
 
-/** Missions under their syllabus module, for the picker. */
-function groupByModule(list: readonly SimMissionInfo[]) {
-  const groups: { module: number; title: Localized; missions: SimMissionInfo[] }[] = [];
-  for (const entry of list) {
-    const place = missionPlace(entry);
-    if (!place) continue;
-    const group = groups.find((item) => item.module === place.module);
-    if (group) group.missions.push(entry);
-    else groups.push({ module: place.module, title: place.moduleTitle, missions: [entry] });
-  }
-  return groups;
-}
+const ROBOTS: readonly SimRobot[] = ['ciko', 'momo'];
+
+/** Each robot's own colour on its switch: Ciko red, Momo yellow. */
+const ROBOT_FILL: Record<SimRobot, string> = {
+  ciko: 'bg-robot-ciko text-white',
+  momo: 'bg-robot-momo text-black',
+};
 
 export function SimApp() {
   const t = useTranslations('Sim');
@@ -60,13 +54,13 @@ export function SimApp() {
   const finished = useFinishedMissions();
 
   const requested = getMission(searchParams.get('mission') ?? '');
-  const robot: SimRobot = requested?.robot ?? (searchParams.get('robot') === 'smp' ? 'smp' : 'sd');
+  const robot: SimRobot =
+    requested?.robot ?? (searchParams.get('robot') === 'momo' ? 'momo' : 'ciko');
   const list = simMissions.filter((entry) => entry.robot === robot);
   const info = (requested && list.find((entry) => entry.id === requested.id)) ?? list[0];
   const mission = info ? getMission(info.id) : undefined;
   const index = info ? list.indexOf(info) : -1;
   const next = list[index + 1];
-  const groups = groupByModule(list);
 
   const open = (target: { robot: SimRobot; mission?: string }, nextLocale: Locale = locale) => {
     const query: Record<string, string> = { robot: target.robot };
@@ -78,33 +72,28 @@ export function SimApp() {
 
   return (
     <div className="bg-background text-foreground min-h-dvh">
-      <header className="border-edge bg-background/95 sticky top-0 z-20 border-b-2 backdrop-blur">
+      <header className="border-border bg-background/95 sticky top-0 z-20 border-b backdrop-blur">
         <div className="flex flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3 sm:px-6">
           <a
-            href={`${eduUrl}/${locale}/simulator`}
-            aria-label={t('backToSite', { brand: names.edu })}
-            className="shrink-0 rounded-sm"
+            href={`${webUrl}/${locale}`}
+            aria-label={t('backToSite', { brand: brand.name })}
+            className="group flex shrink-0 items-baseline gap-2 rounded-sm"
           >
-            <EduWordmark name={names.edu} />
+            <Wordmark title="" className="h-6 translate-y-0.5" />
+            <span className="type-display text-muted-foreground text-lg">{t('title')}</span>
           </a>
-          <span className="text-muted-foreground hidden text-lg font-bold 2xl:inline">
-            {t('title')}
-          </span>
           {/* Robot and mission take their own row until there is room for everything. */}
           <div className="order-last flex min-w-0 basis-full items-center gap-3 xl:order-none xl:basis-auto">
             <fieldset aria-label={t('robot')} className={segmentGroupClass}>
-              {(['sd', 'smp'] as const).map((id) => (
+              {ROBOTS.map((id) => (
                 <button
                   key={id}
                   type="button"
                   aria-pressed={robot === id}
                   onClick={() => open({ robot: id })}
-                  className={segmentClass(
-                    robot === id,
-                    id === 'sd' ? 'bg-level-sd text-black' : 'bg-level-smp text-black',
-                  )}
+                  className={segmentClass(robot === id, ROBOT_FILL[id])}
                 >
-                  {id === 'sd' ? t('robotSd') : t('robotSmp')}
+                  {getRobot(id)?.name}
                 </button>
               ))}
             </fieldset>
@@ -113,22 +102,19 @@ export function SimApp() {
               <select
                 value={info.id}
                 onChange={(event) => open({ robot, mission: event.target.value })}
-                className="border-edge bg-surface h-10 min-w-0 flex-1 rounded-md border-2 px-3 font-semibold"
+                className="border-border bg-surface h-10 min-w-0 flex-1 rounded-md border px-3 font-semibold"
               >
-                {groups.map((group) => (
-                  <optgroup
-                    key={group.module}
-                    label={`${t('module', { n: group.module })}: ${pick(group.title, locale)}`}
-                  >
-                    {group.missions.map((entry) => (
-                      <option key={entry.id} value={entry.id}>
-                        {finished.has(entry.id)
-                          ? t('finishedOption', { title: pick(entry.title, locale) })
-                          : pick(entry.title, locale)}
-                      </option>
-                    ))}
-                  </optgroup>
-                ))}
+                {list.map((entry) => {
+                  const title = t('stepOption', {
+                    n: missionStep(entry.id)?.number ?? 0,
+                    title: pick(entry.title, locale),
+                  });
+                  return (
+                    <option key={entry.id} value={entry.id}>
+                      {finished.has(entry.id) ? t('finishedOption', { title }) : title}
+                    </option>
+                  );
+                })}
               </select>
             </label>
             <span className="text-muted-foreground hidden text-sm font-semibold whitespace-nowrap tabular-nums md:inline">

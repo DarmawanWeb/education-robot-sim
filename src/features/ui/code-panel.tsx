@@ -16,9 +16,9 @@ export function CodePanel({ result, robot }: { result: CompileResult | null; rob
   );
 
   return (
-    <details open={robot === 'smp'} className={panelClass}>
+    <details open={robot === 'momo'} className={panelClass}>
       <summary className="cursor-pointer px-4 py-3 font-bold">{t('title')}</summary>
-      <div className="border-edge border-t-2 p-4">
+      <div className="border-border border-t p-4">
         <p className="text-muted-foreground mb-3 text-sm">{t('note')}</p>
         {code ? (
           <>

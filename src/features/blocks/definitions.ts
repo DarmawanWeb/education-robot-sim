@@ -197,7 +197,7 @@ const shadowNumber = (value: number) => ({
 });
 const shadowText = (value: string) => ({ shadow: { type: 'text', fields: { TEXT: value } } });
 
-/** Per-robot toolbox: SD keeps to the blocks in the primary curriculum; SMP adds motors, servo, OLED, data. */
+/** Per-robot toolbox: Ciko keeps to the beginner blocks; Momo adds motors, servo, OLED, and data. */
 export function buildToolbox(robot: RobotId): Blockly.utils.toolbox.ToolboxDefinition {
   const control = [
     block('sim_wait'),
@@ -214,10 +214,10 @@ export function buildToolbox(robot: RobotId): Blockly.utils.toolbox.ToolboxDefin
     block('logic_negate'),
     block('logic_boolean'),
     block('math_number'),
-    ...(robot === 'smp' ? [block('math_arithmetic'), block('text'), block('text_join')] : []),
+    ...(robot === 'momo' ? [block('math_arithmetic'), block('text'), block('text_join')] : []),
   ];
   const motion =
-    robot === 'smp'
+    robot === 'momo'
       ? [
           block('sim_motors', { inputs: { LEFT: shadowNumber(50), RIGHT: shadowNumber(50) } }),
           block('sim_drive_for'),
@@ -226,7 +226,7 @@ export function buildToolbox(robot: RobotId): Blockly.utils.toolbox.ToolboxDefin
         ]
       : [block('sim_drive_for'), block('sim_drive'), block('sim_stop')];
   const sensors =
-    robot === 'smp'
+    robot === 'momo'
       ? [
           block('sim_line_position'),
           block('sim_line_value'),
@@ -238,7 +238,7 @@ export function buildToolbox(robot: RobotId): Blockly.utils.toolbox.ToolboxDefin
         ]
       : [block('sim_line_left'), block('sim_line_right'), block('sim_distance')];
   const output =
-    robot === 'smp'
+    robot === 'momo'
       ? [
           block('sim_servo', { inputs: { ANGLE: shadowNumber(90) } }),
           block('sim_oled', { inputs: { VALUE: shadowText('Halo') } }),
@@ -283,11 +283,11 @@ export function buildToolbox(robot: RobotId): Blockly.utils.toolbox.ToolboxDefin
       },
       {
         kind: 'category',
-        name: msg(robot === 'smp' ? 'SIM_CAT_OUTPUT_SMP' : 'SIM_CAT_OUTPUT'),
+        name: msg(robot === 'momo' ? 'SIM_CAT_OUTPUT_MOMO' : 'SIM_CAT_OUTPUT'),
         categorystyle: 'output_category',
         contents: output,
       },
-      ...(robot === 'smp'
+      ...(robot === 'momo'
         ? [
             {
               kind: 'category',

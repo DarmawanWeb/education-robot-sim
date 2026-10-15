@@ -130,14 +130,14 @@ function perforation(ctx: Ctx, holes: readonly Vec[], colour: string) {
   for (const hole of holes) dot(ctx, hole.x, hole.y, 0.24, colour);
 }
 
-/** SD v1's buzzer, under a grille on the roof. */
+/** Ciko's buzzer, under a grille on the roof. */
 const BUZZER: Vec = { x: -3.3, y: -2.6 };
 
 const range = (from: number, to: number, step: number) =>
   Array.from({ length: Math.floor((to - from) / step) + 1 }, (_, index) => from + index * step);
 
 /**
- * The SD v1 body seen from above, traced clockwise so it can share a path with other shapes:
+ * The Ciko body seen from above, traced clockwise so it can share a path with other shapes:
  * a narrow tail between the wheels that flares into a wide nose.
  */
 function sdBody(ctx: Ctx) {
@@ -180,7 +180,7 @@ function signalLamp(ctx: Ctx, at: Vec, lit: boolean) {
 }
 
 /**
- * SD v1: a red car-shaped shell with a white racing stripe, the black visor that holds the
+ * Ciko: a red car-shaped shell with a white racing stripe, the black visor that holds the
  * OLED eyes, white-hub wheels at the back, the HC-SR04 in a red bumper, two IR sensors on a
  * chin plate under it, and an orange turn-signal LED at each front corner. The buzzer sits
  * under a small grille on the roof.
@@ -266,7 +266,7 @@ function drawSd(ctx: Ctx, frame: RobotFrame) {
 }
 
 /**
- * SMP v1 with every module fitted: red aluminium frame on brass standoffs, yellow-hub wheels,
+ * Momo with every module fitted: red aluminium frame on brass standoffs, yellow-hub wheels,
  * the 5-in-1 IR bar at the front, the HC-SR04 riding on the servo, the OLED board,
  * the ESP32 on the custom PCB, the TB6612FNG driver, the AHT10 and the microphone.
  */
@@ -369,25 +369,25 @@ function drawSmp(ctx: Ctx, frame: RobotFrame) {
 export function silhouette(ctx: Ctx, model: RobotModel): void {
   const halfBase = model.wheelBase / 2;
   const shapes: Box4[] =
-    model.id === 'sd'
+    model.id === 'ciko'
       ? [SD_CHIN, SD_SPOILER, [7.15, -2.75, 8.25, 2.75]]
       : [
           [-8.0, -5.0, 6.6, 5.0],
           [6.5, -4.7, 9.2, 4.7],
         ];
   ctx.beginPath();
-  if (model.id === 'sd') sdBody(ctx);
+  if (model.id === 'ciko') sdBody(ctx);
   for (const [x0, y0, x1, y1] of shapes) ctx.roundRect(x0, y0, x1 - x0, y1 - y0, 0.6);
   for (const side of [-1, 1]) ctx.roundRect(-3.25, side * halfBase - 1.3, 6.5, 2.6, 0.9);
 }
 
 /** Draws the robot in its own frame: origin between the wheels, +x forward, +y to the right. */
 export function drawRobot(ctx: Ctx, frame: RobotFrame): void {
-  if (frame.model.id === 'sd') drawSd(ctx, frame);
+  if (frame.model.id === 'ciko') drawSd(ctx, frame);
   else drawSmp(ctx, frame);
 }
 
 /** Where the buzzer sits, so the canvas can draw sound rings around it. */
 export function buzzerPosition(model: RobotModel): Vec {
-  return model.id === 'sd' ? BUZZER : { x: -5.9, y: 0 };
+  return model.id === 'ciko' ? BUZZER : { x: -5.9, y: 0 };
 }

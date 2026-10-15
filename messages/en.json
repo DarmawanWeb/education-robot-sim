@@ -1,22 +1,20 @@
 {
   "Meta": {
-    "title": "SD v1 and SMP v1 robot simulator",
-    "description": "Program SD v1 and SMP v1 with blocks, then run missions that follow the curriculum: driving, turning, turn signals, line following, obstacles, radar, temperature, sound, and Wi-Fi."
+    "title": "ULIK Simulator: program Ciko and Momo with blocks",
+    "description": "Try ULIK robots in your browser before you buy. Program Ciko and Momo with blocks: driving, turning, turn signals, line following, obstacles, radar, temperature, sound, and Wi-Fi. Free, no sign-up."
   },
   "Sim": {
-    "title": "Robot simulator",
+    "title": "Simulator",
     "backToSite": "Back to {brand}",
     "theme": "Switch light or dark theme",
     "language": "Language",
     "robot": "Robot",
-    "robotSd": "SD v1",
-    "robotSmp": "SMP v1",
     "mission": "Mission",
-    "module": "Module {n}",
+    "step": "Step {n} of {total}",
+    "stepOption": "{n}. {title}",
     "finishedOption": "{title} (done)",
     "progress": "{done} of {total} missions done",
-    "meetings": "{count, plural, one {Meeting} other {Meetings}} {list}",
-    "inSyllabus": "See this module in the syllabus",
+    "inPath": "See this step on {robot}’s learning path",
     "newTab": "(opens in a new tab)",
     "goals": "Mission goals",
     "hint": "Hint",
@@ -113,7 +111,7 @@
     "SIM_CAT_SENSORS": "Sensors",
     "SIM_CAT_LOGIC": "Logic and numbers",
     "SIM_CAT_OUTPUT": "Face, lights, sound",
-    "SIM_CAT_OUTPUT_SMP": "Servo, OLED, sound",
+    "SIM_CAT_OUTPUT_MOMO": "Servo, OLED, sound",
     "SIM_CAT_VARIABLES": "Variables",
     "SIM_CAT_WIFI": "Wi-Fi",
     "SIM_START": "when started",

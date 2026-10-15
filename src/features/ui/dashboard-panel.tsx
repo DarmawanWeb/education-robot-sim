@@ -1,6 +1,6 @@
 'use client';
 
-import { cn } from '@taksu/ui/lib/utils';
+import { cn } from '@ulik/ui/lib/utils';
 import { Wifi, WifiOff } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { TelemetryPoint } from '../engine/types';
@@ -79,7 +79,7 @@ export function DashboardPanel({
         <span
           className={cn(
             'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold',
-            online ? 'bg-mat text-white' : 'bg-surface-muted text-muted-foreground',
+            online ? 'bg-success text-white' : 'bg-surface-muted text-muted-foreground',
           )}
         >
           {online ? (
