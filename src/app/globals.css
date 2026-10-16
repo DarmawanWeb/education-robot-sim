@@ -1,7 +1,7 @@
 @import 'tailwindcss';
-@import '@taksu/ui/taksu.css';
+@import '@taksu/edu-ui/taksu.css';
 
-@source '../../../../packages/ui/src';
+@source '../../../../packages/edu-ui/src';
 
 /*
  * Blockly's category list, dressed like the rest of the site: bold labels on colour-coded

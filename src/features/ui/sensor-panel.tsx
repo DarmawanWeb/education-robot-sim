@@ -1,6 +1,6 @@
 'use client';
 
-import { cn } from '@taksu/ui/lib/utils';
+import { cn } from '@taksu/edu-ui/lib/utils';
 import { Bell, Hand } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { RobotId } from '../engine/types';

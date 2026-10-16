@@ -4,7 +4,7 @@ import '@fontsource-variable/atkinson-hyperlegible-next';
 import '@fontsource-variable/atkinson-hyperlegible-mono';
 import '../globals.css';
 
-import { ThemeProvider } from '@taksu/ui/brand/theme-provider';
+import { ThemeProvider } from '@taksu/edu-ui/brand/theme-provider';
 import type { Metadata } from 'next';
 import { NextIntlClientProvider } from 'next-intl';
 import { getTranslations } from 'next-intl/server';

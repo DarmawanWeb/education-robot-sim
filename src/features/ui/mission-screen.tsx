@@ -8,8 +8,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@taksu/ui/components/dialog';
-import { cn } from '@taksu/ui/lib/utils';
+} from '@taksu/edu-ui/components/dialog';
+import { cn } from '@taksu/edu-ui/lib/utils';
 import { CheckCircle2, Circle, Play, RotateCcw, Square, Undo2 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useMessages, useTranslations } from 'next-intl';

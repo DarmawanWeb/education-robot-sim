@@ -1,4 +1,4 @@
-# This app is a submodule of the education-robot workspace: install and build from there.
+# This app is a submodule of the TaksuTech workspace: install and build from there.
 node_modules/
 .next/
 .turbo/

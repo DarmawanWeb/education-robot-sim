@@ -4,9 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "node scripts/copy-blockly-media.mjs && next dev --port 3102",
+    "dev": "node scripts/copy-blockly-media.mjs && next dev --port 3002",
     "build": "node scripts/copy-blockly-media.mjs && next build",
-    "start": "next start --port 3102",
+    "start": "next start --port 3002",
     "lint": "biome lint .",
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run"
@@ -16,7 +16,7 @@
     "@fontsource-variable/atkinson-hyperlegible-mono": "^5.3.0",
     "@fontsource-variable/atkinson-hyperlegible-next": "^5.3.0",
     "@taksu/catalog": "workspace:*",
-    "@taksu/ui": "workspace:*",
+    "@taksu/edu-ui": "workspace:*",
     "blockly": "^13.3.0",
     "lucide-react": "^1.52.0",
     "next": "^16.3.8",
