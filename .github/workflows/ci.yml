@@ -1,6 +1,6 @@
 name: CI
 
-# This app builds inside the education-robot workspace, which holds the shared packages and the
+# This app builds inside the TaksuTech workspace, which holds the shared packages and the
 # lockfile. CI checks out the workspace, puts the commit under test at apps/sim, and checks it.
 on:
   push:
@@ -20,11 +20,11 @@ jobs:
     name: Biome, typecheck, test, build
     runs-on: ubuntu-latest
     steps:
-      - name: Check out the education-robot workspace
+      - name: Check out the TaksuTech workspace
         uses: actions/checkout@v5
         with:
-          repository: DarmawanWeb/education-robot
-          submodules: recursive
+          repository: DarmawanWeb/TaksuTech
+          submodules: true
       - name: Check out the commit under test
         uses: actions/checkout@v5
         with:
