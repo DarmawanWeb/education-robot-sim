@@ -2,16 +2,16 @@
 
 ## Setup
 
-The simulator builds inside the [education-robot](https://github.com/DarmawanWeb/education-robot)
-workspace, which holds the lockfile and the shared packages (`@taksu/catalog`, `@taksu/ui`,
+The simulator builds inside the [TaksuTech](https://github.com/DarmawanWeb/TaksuTech)
+workspace, which holds the lockfile and the shared packages (`@taksu/catalog`, `@taksu/edu-ui`,
 `@taksu/typescript-config`).
 
 ```bash
-git clone --recursive https://github.com/DarmawanWeb/education-robot.git && cd education-robot
+git clone --recursive https://github.com/DarmawanWeb/TaksuTech.git && cd TaksuTech
 corepack enable                 # pnpm 10, Node 22.12 or newer
 pnpm install                    # also points this submodule's git hooks at the workspace's
-pnpm dev:sim                    # http://localhost:3102/id
-pnpm dev:web                    # http://localhost:3100/id, for the learning-path links
+pnpm dev:sim                    # http://localhost:3002/id
+pnpm dev:edu                    # http://localhost:3003/id, for the learning-path links
 ```
 
 ## Scripts
@@ -20,7 +20,7 @@ Run from the workspace root (`pnpm --filter @taksu/sim <script>`) or from `apps/
 
 | Script | Does |
 |---|---|
-| `dev` | Copies Blockly's media, then the Next.js dev server on port 3102 |
+| `dev` | Copies Blockly's media, then the Next.js dev server on port 3002 |
 | `build`, `start` | Production build (standalone) and server |
 | `typecheck` | `next typegen`, then `tsc --noEmit` |
 | `test` | Vitest: every mission's reference solution, the interpreter, C++ output, messages |
@@ -55,7 +55,7 @@ Commits, lower-case subject).
 4. Add its text to `messages/id.json` and `messages/en.json` under `Blocks`.
 
 **A robot.** Add its model to `engine/robots.ts` (sizes, speed, motor bias, sensor positions),
-its sprite to `ui/robot-sprite.ts`, its colour to `@taksu/ui`, and its catalogue entry with
+its sprite to `ui/robot-sprite.ts`, its colour to `@taksu/edu-ui`, and its catalogue entry with
 `sim:` in `packages/catalog/src/robots.ts`.
 
 ## The C++ contract
@@ -67,7 +67,7 @@ not have yet needs that call added to the library first.
 
 ## CI
 
-[ci.yml](../.github/workflows/ci.yml) checks out the education-robot workspace with its
+[ci.yml](../.github/workflows/ci.yml) checks out the TaksuTech workspace with its
 submodules, replaces `apps/sim` with the commit under test, installs, and runs Biome, the
 typecheck, the tests, and the build for `@taksu/sim`. On pull requests it also runs commitlint.
 Images are published by the workspace repository.

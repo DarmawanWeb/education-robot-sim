@@ -24,8 +24,8 @@ the robot arrives. In Indonesian and English, light and dark.**
 
 ---
 
-Part of [Taksu Education Robots](https://github.com/DarmawanWeb/education-robot), which deploys it
-as `sim` next to the [store](https://github.com/DarmawanWeb/education-robot-web). Every mission is
+Part of [Taksu Tech](https://github.com/DarmawanWeb/TaksuTech), which deploys it as `sim`
+ next to the [store](https://github.com/DarmawanWeb/education-robot-web). Every mission is
 a step on a robot's learning path in the store, and links back to it. Free, in the browser, with no
 account: progress stays in the browser that made it.
 
@@ -79,14 +79,14 @@ scripts/                  copies Blockly's media into public/ before dev and bui
 ## Develop
 
 ```bash
-git clone --recursive https://github.com/DarmawanWeb/education-robot.git && cd education-robot
+git clone --recursive https://github.com/DarmawanWeb/TaksuTech.git && cd TaksuTech
 pnpm install                    # the workspace, plus the commit hooks in each submodule
-pnpm dev:sim                    # http://localhost:3102/id
+pnpm dev:sim                    # http://localhost:3002/id
 pnpm --filter @taksu/sim test   # every mission's reference solution, codegen, messages
 ```
 
-CI ([ci.yml](.github/workflows/ci.yml)) checks out the education-robot workspace, puts this commit
+CI ([ci.yml](.github/workflows/ci.yml)) checks out the TaksuTech workspace, puts this commit
 at `apps/sim`, and runs Biome, the typecheck, the tests, and the build. The images are built by the
-[education-robot](https://github.com/DarmawanWeb/education-robot) repository.
+[TaksuTech](https://github.com/DarmawanWeb/TaksuTech) repository.
 
 Proprietary. Copyright (c) 2026 Taksu Tech, part of Ezra Robotics. All rights reserved.
