@@ -1,4 +1,4 @@
-import type { Localized } from '@ulik/catalog';
+import type { Localized } from '@taksu/catalog';
 import { arc, roundedTrack } from './geometry';
 import type {
   DriveDirection,

@@ -1,6 +1,6 @@
 'use client';
 
-import { cn } from '@ulik/ui/lib/utils';
+import { cn } from '@taksu/ui/lib/utils';
 import { ScanSearch } from 'lucide-react';
 import { type RefObject, useEffect, useRef, useState } from 'react';
 import { moverBox } from '../engine/geometry';

@@ -1,6 +1,6 @@
 'use client';
 
-import { getRobot, type Locale, missionStep, pick, type SimMissionInfo } from '@ulik/catalog';
+import { getRobot, type Locale, missionStep, pick, type SimMissionInfo } from '@taksu/catalog';
 import {
   Dialog,
   DialogContent,
@@ -8,8 +8,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@ulik/ui/components/dialog';
-import { cn } from '@ulik/ui/lib/utils';
+} from '@taksu/ui/components/dialog';
+import { cn } from '@taksu/ui/lib/utils';
 import { CheckCircle2, Circle, Play, RotateCcw, Square, Undo2 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useMessages, useTranslations } from 'next-intl';
@@ -100,7 +100,7 @@ export function MissionScreen({
           locale={locale}
           dark={dark}
           messages={blockMessages}
-          storageKey={`ulik-sim:${mission.id}`}
+          storageKey={`taksu-sim:${mission.id}`}
           starter={mission.starter}
           apiRef={apiRef}
           onProgramChange={setProgram}

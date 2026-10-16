@@ -8,10 +8,10 @@ import {
   pick,
   type SimRobot,
   simMissions,
-} from '@ulik/catalog';
-import { ThemeToggle } from '@ulik/ui/brand/theme-toggle';
-import { Wordmark } from '@ulik/ui/brand/wordmark';
-import { cn } from '@ulik/ui/lib/utils';
+} from '@taksu/catalog';
+import { ThemeToggle } from '@taksu/ui/brand/theme-toggle';
+import { Wordmark } from '@taksu/ui/brand/wordmark';
+import { cn } from '@taksu/ui/lib/utils';
 import { useSearchParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { useSyncExternalStore } from 'react';

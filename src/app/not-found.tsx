@@ -1,4 +1,4 @@
-import { brand } from '@ulik/catalog';
+import { brand } from '@taksu/catalog';
 import Link from 'next/link';
 
 /** Fallback for requests outside any locale (rare, the proxy redirects most of them). */

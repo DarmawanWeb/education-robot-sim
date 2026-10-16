@@ -1,4 +1,4 @@
-import { Button } from '@ulik/ui/components/button';
+import { Button } from '@taksu/ui/components/button';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 

@@ -1,4 +1,4 @@
-import { simMissions } from '@ulik/catalog';
+import { simMissions } from '@taksu/catalog';
 import { describe, expect, it } from 'vitest';
 import { moverBox } from './geometry';
 import { Runner } from './interpreter';

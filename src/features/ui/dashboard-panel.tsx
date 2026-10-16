@@ -1,6 +1,6 @@
 'use client';
 
-import { cn } from '@ulik/ui/lib/utils';
+import { cn } from '@taksu/ui/lib/utils';
 import { Wifi, WifiOff } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { TelemetryPoint } from '../engine/types';

@@ -1,4 +1,4 @@
-import { cn } from '@ulik/ui/lib/utils';
+import { cn } from '@taksu/ui/lib/utils';
 
 /**
  * The simulator dresses like the store: white panels with a hairline border on the chalk

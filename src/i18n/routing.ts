@@ -1,4 +1,4 @@
-import { defaultLocale, locales } from '@ulik/catalog';
+import { defaultLocale, locales } from '@taksu/catalog';
 import { defineRouting } from 'next-intl/routing';
 
 export const routing = defineRouting({

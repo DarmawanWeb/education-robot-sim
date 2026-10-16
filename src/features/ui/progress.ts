@@ -3,7 +3,7 @@
 import { useMemo, useSyncExternalStore } from 'react';
 
 /** Missions finished in this browser. Nothing leaves the device. */
-const KEY = 'ulik-sim:done';
+const KEY = 'taksu-sim:done';
 const listeners = new Set<() => void>();
 
 function readRaw(): string {

@@ -1,5 +1,5 @@
 @import 'tailwindcss';
-@import '@ulik/ui/ulik.css';
+@import '@taksu/ui/taksu.css';
 
 @source '../../../../packages/ui/src';
 

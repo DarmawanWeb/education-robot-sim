@@ -1,4 +1,4 @@
-import type { Localized } from '@ulik/catalog';
+import type { Localized } from '@taksu/catalog';
 
 export interface Vec {
   x: number;
