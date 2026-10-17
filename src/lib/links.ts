@@ -1,7 +1,7 @@
 import type { Locale, SimRobot } from '@taksu/catalog';
 
 /** The store site, where every robot's learning path lives. */
-export const webUrl = (process.env.NEXT_PUBLIC_WEB_URL ?? 'http://localhost:3003').replace(
+export const webUrl = (process.env.NEXT_PUBLIC_WEB_URL ?? 'http://localhost:3103').replace(
   /\/+$/,
   '',
 );

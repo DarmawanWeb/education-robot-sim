@@ -81,7 +81,7 @@ scripts/                  copies Blockly's media into public/ before dev and bui
 ```bash
 git clone --recursive https://github.com/DarmawanWeb/TaksuTech.git && cd TaksuTech
 pnpm install                    # the workspace, plus the commit hooks in each submodule
-pnpm dev:sim                    # http://localhost:3002/id
+pnpm dev:sim                    # http://localhost:3102/id
 pnpm --filter @taksu/sim test   # every mission's reference solution, codegen, messages
 ```
 

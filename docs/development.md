@@ -10,8 +10,8 @@ workspace, which holds the lockfile and the shared packages (`@taksu/catalog`, `
 git clone --recursive https://github.com/DarmawanWeb/TaksuTech.git && cd TaksuTech
 corepack enable                 # pnpm 10, Node 22.12 or newer
 pnpm install                    # also points this submodule's git hooks at the workspace's
-pnpm dev:sim                    # http://localhost:3002/id
-pnpm dev:edu                    # http://localhost:3003/id, for the learning-path links
+pnpm dev:sim                    # http://localhost:3102/id
+pnpm dev:edu                    # http://localhost:3103/id, for the learning-path links
 ```
 
 ## Scripts
@@ -20,7 +20,7 @@ Run from the workspace root (`pnpm --filter @taksu/sim <script>`) or from `apps/
 
 | Script | Does |
 |---|---|
-| `dev` | Copies Blockly's media, then the Next.js dev server on port 3002 |
+| `dev` | Copies Blockly's media, then the Next.js dev server on port 3102 |
 | `build`, `start` | Production build (standalone) and server |
 | `typecheck` | `next typegen`, then `tsc --noEmit` |
 | `test` | Vitest: every mission's reference solution, the interpreter, C++ output, messages |
