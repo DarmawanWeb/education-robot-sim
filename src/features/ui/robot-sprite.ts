@@ -266,14 +266,14 @@ function drawSd(ctx: Ctx, frame: RobotFrame) {
 }
 
 /**
- * Momo with every module fitted: red aluminium frame on brass standoffs, yellow-hub wheels,
- * the 5-in-1 IR bar at the front, the HC-SR04 riding on the servo, the OLED board,
- * the ESP32 on the custom PCB, the TB6612FNG driver, the AHT10 and the microphone.
+ * Momo with every module fitted: slate frame on brass standoffs, white-hub wheels, the 5-in-1
+ * IR bar at the front, the HC-SR04 in its teal plug-and-code mount on the servo, the OLED board,
+ * the ESP32 on the black custom PCB, the TB6612FNG driver, the AHT10 and the microphone.
  */
 function drawSmp(ctx: Ctx, frame: RobotFrame) {
   const { model, lineValues, wheelTravel, servoAngle } = frame;
   const halfBase = model.wheelBase / 2;
-  const tyre = { diameter: 6.5, width: 2.6, hub: '#f4c20d' };
+  const tyre = { diameter: 6.5, width: 2.6, hub: '#f2f3f5' };
 
   // The IR bar is the lowest part, so it goes down first.
   const sensorX = model.lineSensors[0]?.x ?? 8;
@@ -293,16 +293,16 @@ function drawSmp(ctx: Ctx, frame: RobotFrame) {
   wheel(ctx, halfBase, 1, wheelTravel.right, tyre);
 
   // Frame and the custom PCB on top of it.
-  fillRect(ctx, [-8.0, -5.0, 6.6, 5.0], '#d32b2b', { radius: 0.8, stroke: '#861414' });
+  fillRect(ctx, [-8.0, -5.0, 6.6, 5.0], '#3a4352', { radius: 0.8, stroke: '#1f252e' });
   perforation(
     ctx,
     range(-6.6, 5.4, 1.5).flatMap((x) => [
       { x, y: -4.45 },
       { x, y: 4.45 },
     ]),
-    '#861414',
+    '#1f252e',
   );
-  fillRect(ctx, [-7.2, -3.8, 4.3, 3.8], '#124a3c', { radius: 0.45, stroke: '#082a22', line: 0.18 });
+  fillRect(ctx, [-7.2, -3.8, 4.3, 3.8], '#17191c', { radius: 0.45, stroke: '#08090a', line: 0.18 });
   for (const corner of [
     { x: -7.25, y: -4.35 },
     { x: -7.25, y: 4.35 },
@@ -351,15 +351,15 @@ function drawSmp(ctx: Ctx, frame: RobotFrame) {
 
   // Servo, then the HC-SR04 that it turns. 90 degrees faces forward, 180 faces left.
   const pivot = { x: model.sonar.forward - 1.25, y: 0 };
-  fillRect(ctx, [pivot.x - 2.1, -1.15, pivot.x + 0.25, 1.15], '#2856c9', {
+  fillRect(ctx, [pivot.x - 2.1, -1.15, pivot.x + 0.25, 1.15], '#f2f3f5', {
     radius: 0.2,
-    stroke: '#183a8c',
+    stroke: '#9aa3ad',
     line: 0.15,
   });
   ctx.save();
   ctx.translate(pivot.x, pivot.y);
   ctx.rotate((-(servoAngle - 90) * Math.PI) / 180);
-  fillRect(ctx, [-0.55, -2.3, 0.05, 2.3], '#1d4fb8', { radius: 0.1 });
+  fillRect(ctx, [-0.55, -2.3, 0.05, 2.3], '#22b3a3', { radius: 0.1 });
   dot(ctx, -0.25, 0, 0.35, '#f2f2f2');
   sonarPair(ctx, 0.0, 1.3, 1.3, 0.8);
   ctx.restore();
