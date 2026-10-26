@@ -1,9 +1,8 @@
-# Architecture
+# Simulator
 
 The simulator is one page per language where a student builds a program with blocks, runs it on a
-virtual track, and reads the Arduino C++ it becomes. It lives at `apps/sim` in the
-[TaksuTech](https://github.com/DarmawanWeb/TaksuTech) workspace and reads the mission
-titles and learning-path places from `@dctedu/catalog`.
+virtual track, and reads the Arduino C++ it becomes. It is the Next.js app in `apps/simulator` and
+reads the mission titles and learning-path places from `@dctedu/catalog`.
 
 ## Stack
 
@@ -65,7 +64,7 @@ goals left unfinished), shown in the result dialog.
 
 Titles, briefs, and the order of missions come from `packages/catalog/src/sim-missions.ts`; each
 mission's place on a learning path (`missionStep`) gives the "step n of N" label and the link back
-to `https://<store>/<locale>/belajar/<robot>#<step>`.
+to `https://<store>/<locale>/learn/<robot>#<step>`.
 
 ## The screen
 
@@ -74,14 +73,22 @@ to `https://<store>/<locale>/belajar/<robot>#<step>`.
 reset, speed 1x, 2x, 4x, restore the starter), the arena canvas with a follow camera, the sensor
 panel, the dashboard panel when the mission uses Wi-Fi, and the C++ panel.
 
+## Blockly and Tailwind
+
+Blockly hides parts of its SVG with the `display="none"` attribute, the flyout's scrollbar among
+them once the flyout closes. Tailwind's preflight sets `svg { display: block }`, and any CSS rule
+beats a presentation attribute, so `src/app/globals.css` puts `display: none` back for those
+elements inside Blockly's injection div. Without it the closed flyout's scrollbar stays on the
+workspace as a grey line after a block is dragged out.
+
 ## Storage
 
-Nothing leaves the browser. Each mission's blocks are saved under `taksu-sim:<mission>` and the
-finished missions under `taksu-sim:done` in `localStorage`, guarded so a blocked storage only
+Nothing leaves the browser. Each mission's blocks are saved under `dctedu-sim:<mission>` and the
+finished missions under `dctedu-sim:done` in `localStorage`, guarded so a blocked storage only
 means starting fresh.
 
 ## Configuration
 
 | Variable | Purpose |
 |---|---|
-| `NEXT_PUBLIC_WEB_URL` | The store's address, for the header link and "see this step" links |
+| `NEXT_PUBLIC_STORE_URL` | The store's address, for the header link and "see this step" links |

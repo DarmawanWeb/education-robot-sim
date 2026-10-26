@@ -1,7 +1,7 @@
 name: CI
 
-# This app builds inside the TaksuTech workspace, which holds the shared packages and the
-# lockfile. CI checks out the workspace, puts the commit under test at apps/sim, and checks it.
+# This app builds inside the DCTEdu workspace, which holds the shared packages and the lockfile.
+# CI checks out the workspace, puts the commit under test at apps/simulator, and checks it.
 on:
   push:
     branches: [main]
@@ -20,17 +20,17 @@ jobs:
     name: Biome, typecheck, test, build
     runs-on: ubuntu-latest
     steps:
-      - name: Check out the TaksuTech workspace
+      - name: Check out the DCTEdu workspace
         uses: actions/checkout@v5
         with:
-          repository: DarmawanWeb/TaksuTech
+          repository: DarmawanWeb/DCTEdu
           submodules: true
       - name: Check out the commit under test
         uses: actions/checkout@v5
         with:
           path: under-test
           fetch-depth: 0
-      - run: rm -rf apps/sim && mv under-test apps/sim
+      - run: rm -rf apps/simulator && mv under-test apps/simulator
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v5
         with:
@@ -40,7 +40,7 @@ jobs:
       - run: pnpm install --no-frozen-lockfile
       - name: Conventional commits
         if: github.event_name == 'pull_request'
-        working-directory: apps/sim
+        working-directory: apps/simulator
         run: pnpm commitlint --from ${{ github.event.pull_request.base.sha }} --to ${{ github.event.pull_request.head.sha }} --verbose
-      - run: pnpm biome ci apps/sim
-      - run: pnpm turbo run typecheck test build --filter=@taksu/sim
+      - run: pnpm biome ci apps/simulator
+      - run: pnpm turbo run typecheck test build --filter=@dctedu/simulator
