@@ -55,7 +55,7 @@ flowchart LR
 
 ## Missions
 
-`engine/missions.ts` defines 18 missions (10 Ciko, 8 Momo). A mission has an arena (size, taped
+`engine/missions.ts` defines 20 missions (11 Ciko, 9 Momo). A mission has an arena (size, taped
 lines, boxes, zones, moving hands), a start pose, a time limit, whether a bump fails it, goals, a
 hint, a starter program, and a reference `solution`. A goal is a check over a snapshot of the run
 (pose, sensors, face, beeps, signals, telemetry, zones visited); final goals are judged once the
@@ -85,10 +85,21 @@ workspace as a grey line after a block is dragged out.
 
 `scripts/arena-banners.ts` (`pnpm arena:pdf`) draws the arena banners sold in the store as
 print-ready PDFs in `print/`: `arena-ciko.pdf` and `arena-momo.pdf`, each the arena of that
-robot's Follow the line mission (`ciko-garis`, `momo-garis`) at full size, 200 × 140 cm, in
-vector. The tape, start pose, checkpoints, and finish come from `missions.ts`, so the banner
-never drifts from the simulator: change a mission's track and run the script again. The page is
-the banner itself; the print shop prints it at 100 % and adds any bleed or eyelets.
+robot's Arena challenge mission at full size, 200 × 140 cm, in vector.
+
+- `ciko-arena`: a figure eight crossing square in the middle, a tight pocket, and a chicane;
+  one lap in 70 seconds. The two-sensor line program finishes it at a speed of 35.
+- `momo-arena`: a hairpin, two zigzags, steps, near-sharp corners, and a square crossing; one
+  lap in 32 seconds, which takes raising the speed and the proportional gain together (the
+  reference runs at 60 with a gain of 0.5).
+
+Both tracks are `cornerTrack`s (`geometry.ts`): straight runs between corners, each rounded to
+its own radius, so they close on themselves and can cross square. The tape, start pose, zones,
+and time limit come from `missions.ts`, and the tests run each reference solution, so the
+banner never drifts from a mission that can be finished: change the track and run the script
+again. On paper only the tape is dark; zones, labels, and the start mark are pale and kept off
+the tape, so a real robot's infrared sensors read nothing but the line. The page is the banner
+itself; the print shop prints it at 100 % and adds any bleed or eyelets.
 
 ## Storage
 

@@ -1,5 +1,5 @@
 import type { Localized } from '@dctedu/catalog';
-import { arc, roundedTrack } from './geometry';
+import { arc, cornerTrack, roundedTrack } from './geometry';
 import type {
   DriveDirection,
   Expr,
@@ -128,6 +128,59 @@ const stadium: LinePath = {
     ...arc({ x: 60, y: 70 }, 40, Math.PI / 2, (3 * Math.PI) / 2, 18),
   ],
 };
+
+/**
+ * The arena challenges, printed as the arena banners the store sells. Ciko's is a figure eight
+ * with a square crossing, a tight pocket at the bottom left, and a chicane on the right.
+ */
+const cikoArena = cornerTrack(
+  [
+    { x: 20, y: 35, r: 12 },
+    { x: 20, y: 105, r: 8 },
+    { x: 38, y: 105, r: 9 },
+    { x: 38, y: 125, r: 9 },
+    { x: 66, y: 125, r: 9 },
+    { x: 66, y: 104, r: 10 },
+    { x: 135, y: 35, r: 15 },
+    { x: 180, y: 35, r: 12 },
+    { x: 180, y: 55, r: 8 },
+    { x: 162, y: 70, r: 8 },
+    { x: 180, y: 85, r: 8 },
+    { x: 180, y: 105, r: 12 },
+    { x: 135, y: 105, r: 15 },
+    { x: 65, y: 35, r: 15 },
+  ],
+  tape,
+);
+
+/** Momo's: a hairpin, two zigzags, steps, near-sharp corners, and a square crossing. */
+const momoArena = cornerTrack(
+  [
+    { x: 20, y: 35, r: 2 },
+    { x: 20, y: 48, r: 5 },
+    { x: 48, y: 60, r: 5 },
+    { x: 20, y: 72, r: 5 },
+    { x: 20, y: 120, r: 2 },
+    { x: 50, y: 120, r: 6 },
+    { x: 50, y: 100, r: 6 },
+    { x: 70, y: 100, r: 5 },
+    { x: 135, y: 35, r: 8 },
+    { x: 145, y: 35, r: 5 },
+    { x: 145, y: 14, r: 7 },
+    { x: 162, y: 14, r: 7 },
+    { x: 162, y: 40, r: 7 },
+    { x: 182, y: 40, r: 2 },
+    { x: 182, y: 52, r: 5 },
+    { x: 154, y: 64, r: 5 },
+    { x: 182, y: 76, r: 5 },
+    { x: 182, y: 120, r: 2 },
+    { x: 150, y: 120, r: 2 },
+    { x: 150, y: 105, r: 6 },
+    { x: 135, y: 105, r: 8 },
+    { x: 65, y: 35, r: 8 },
+  ],
+  tape,
+);
 
 const lineLeft = sensor('lineLeft');
 const lineRight = sensor('lineRight');
@@ -613,6 +666,41 @@ export const missions: readonly Mission[] = [
     },
   },
   {
+    id: 'ciko-arena',
+    robot: 'ciko',
+    arena: {
+      width: 200,
+      height: 140,
+      lines: [cikoArena],
+      boxes: [],
+      zones: [
+        zone('c1', 'checkpoint', 52, 120, 28, 28),
+        zone('c2', 'checkpoint', 168, 70, 28, 28),
+        zone('c3', 'checkpoint', 150, 105, 28, 28),
+        zone('lap', 'finish', 32, 35, 28, 28),
+      ],
+    },
+    start: { x: 50, y: 35, heading: Math.PI },
+    timeLimit: 70,
+    failOnBump: false,
+    goals: [
+      visit('c1', l('Kantong kiri bawah', 'Bottom-left pocket')),
+      visit('c2', l('Chicane kanan', 'Right chicane'), 'c1'),
+      visit('c3', l('Sudut kanan bawah', 'Bottom-right corner'), 'c2'),
+      visit(
+        'lap',
+        l('Kembali ke start dalam 70 detik', 'Back to the start within 70 seconds'),
+        'c3',
+      ),
+    ],
+    hint: l(
+      'Program Ikuti garis sudah cukup, asal kecepatannya pas. Di persimpangan kedua sensor melihat hitam: jalan lurus. Terlalu cepat, Ciko lepas di kantong; terlalu pelan, waktunya habis.',
+      'The Follow the line program is enough if the speed is right. At the crossing both sensors see black: go straight. Too fast and Ciko slips out of the pocket; too slow and time runs out.',
+    ),
+    starter: starter({ type: 'sim_forever' }),
+    solution: { body: [{ kind: 'forever', body: [followSd(35)] }] },
+  },
+  {
     id: 'momo-sistem',
     robot: 'momo',
     arena: {
@@ -772,6 +860,53 @@ export const missions: readonly Mission[] = [
             motors(
               add(n(45), times(n(0.35), sensor('linePosition'))),
               minus(n(48), times(n(0.35), sensor('linePosition'))),
+            ),
+          ],
+        },
+      ],
+    },
+  },
+  {
+    id: 'momo-arena',
+    robot: 'momo',
+    arena: {
+      width: 200,
+      height: 140,
+      lines: [momoArena],
+      boxes: [],
+      zones: [
+        zone('c1', 'checkpoint', 35, 110, 28, 28),
+        zone('c2', 'checkpoint', 153, 20, 28, 28),
+        zone('c3', 'checkpoint', 168, 95, 28, 28),
+        zone('lap', 'finish', 30, 35, 28, 28),
+      ],
+    },
+    start: { x: 45, y: 35, heading: Math.PI },
+    timeLimit: 32,
+    failOnBump: false,
+    goals: [
+      visit('c1', l('Tangga kiri bawah', 'Bottom-left steps')),
+      visit('c2', l('Hairpin', 'Hairpin'), 'c1'),
+      visit('c3', l('Zigzag kanan', 'Right zigzag'), 'c2'),
+      visit(
+        'lap',
+        l('Kembali ke start dalam 32 detik', 'Back to the start within 32 seconds'),
+        'c3',
+      ),
+    ],
+    hint: l(
+      'Dengan kecepatan 45 dan gain 0,35 dari misi Ikuti garis, Momo terlalu lambat. Naikkan kecepatan, lalu naikkan juga gain-nya supaya tidak lepas di hairpin.',
+      'At the speed of 45 and gain of 0.35 from the line mission, Momo is too slow. Raise the speed, then raise the gain too so it holds the hairpin.',
+    ),
+    starter: starter({ type: 'sim_forever' }),
+    solution: {
+      body: [
+        {
+          kind: 'forever',
+          body: [
+            motors(
+              add(n(60), times(n(0.5), sensor('linePosition'))),
+              minus(n(63), times(n(0.5), sensor('linePosition'))),
             ),
           ],
         },

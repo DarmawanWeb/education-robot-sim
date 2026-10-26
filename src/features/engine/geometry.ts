@@ -112,3 +112,47 @@ export function roundedTrack(
   ];
   return { points, closed: true, width };
 }
+
+/** A corner of a {@link cornerTrack}: where the tape turns, and how round the turn is (0 is sharp). */
+export interface Corner extends Vec {
+  r: number;
+}
+
+/**
+ * A closed track of straight runs between corners, each corner rounded to its own radius, like
+ * tape laid on a mat. The runs may cross each other; cross them square, so a line follower reads
+ * the crossing as straight on.
+ */
+export function cornerTrack(corners: readonly Corner[], width: number): LinePath {
+  const points: Vec[] = [];
+  const count = corners.length;
+  for (let index = 0; index < count; index += 1) {
+    const previous = corners[(index + count - 1) % count] as Corner;
+    const corner = corners[index] as Corner;
+    const next = corners[(index + 1) % count] as Corner;
+    const inAngle = Math.atan2(corner.y - previous.y, corner.x - previous.x);
+    const outAngle = Math.atan2(next.y - corner.y, next.x - corner.x);
+    let turn = outAngle - inAngle;
+    while (turn > Math.PI) turn -= 2 * Math.PI;
+    while (turn < -Math.PI) turn += 2 * Math.PI;
+    if (corner.r <= 0 || Math.abs(turn) < 1e-6) {
+      points.push({ x: corner.x, y: corner.y });
+      continue;
+    }
+    // The arc meets both runs at this distance from the corner.
+    const reach = corner.r * Math.tan(Math.abs(turn) / 2);
+    const side = Math.sign(turn);
+    const entry = {
+      x: corner.x - reach * Math.cos(inAngle),
+      y: corner.y - reach * Math.sin(inAngle),
+    };
+    const center = {
+      x: entry.x - side * corner.r * Math.sin(inAngle),
+      y: entry.y + side * corner.r * Math.cos(inAngle),
+    };
+    const startAngle = inAngle - (side * Math.PI) / 2;
+    const steps = Math.max(2, Math.ceil(Math.abs(turn) / (Math.PI / 18)));
+    points.push(...arc(center, corner.r, startAngle, startAngle + turn, steps));
+  }
+  return { points, closed: true, width };
+}
