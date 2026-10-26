@@ -1,7 +1,18 @@
 @import 'tailwindcss';
 @import '@dctedu/ui/theme.css';
 
-@source '../../../../packages/edu-ui/src';
+@source '../../../../packages/ui/src';
+
+/*
+ * Blockly hides parts of its SVG (the flyout's scrollbar once the flyout closes, for one) with
+ * the display="none" attribute. Tailwind's preflight sets `svg { display: block }`, and any CSS
+ * rule beats a presentation attribute, so without this the hidden scrollbar stays on screen as a
+ * grey line across the blocks.
+ */
+.injectionDiv svg[display='none'],
+.injectionDiv g[display='none'] {
+  display: none;
+}
 
 /*
  * Blockly's category list, dressed like the rest of the site: bold labels on colour-coded
