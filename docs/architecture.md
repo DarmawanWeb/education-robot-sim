@@ -81,6 +81,15 @@ beats a presentation attribute, so `src/app/globals.css` puts `display: none` ba
 elements inside Blockly's injection div. Without it the closed flyout's scrollbar stays on the
 workspace as a grey line after a block is dragged out.
 
+## Arena banners
+
+`scripts/arena-banners.ts` (`pnpm arena:pdf`) draws the arena banners sold in the store as
+print-ready PDFs in `print/`: `arena-ciko.pdf` and `arena-momo.pdf`, each the arena of that
+robot's Follow the line mission (`ciko-garis`, `momo-garis`) at full size, 200 × 140 cm, in
+vector. The tape, start pose, checkpoints, and finish come from `missions.ts`, so the banner
+never drifts from the simulator: change a mission's track and run the script again. The page is
+the banner itself; the print shop prints it at 100 % and adds any bleed or eyelets.
+
 ## Storage
 
 Nothing leaves the browser. Each mission's blocks are saved under `dctedu-sim:<mission>` and the
