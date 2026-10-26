@@ -100,7 +100,7 @@ export function MissionScreen({
           locale={locale}
           dark={dark}
           messages={blockMessages}
-          storageKey={`taksu-sim:${mission.id}`}
+          storageKey={`dctedu-sim:${mission.id}`}
           starter={mission.starter}
           apiRef={apiRef}
           onProgramChange={setProgram}
