@@ -1,4 +1,4 @@
-import type { Locale } from '@taksu/catalog';
+import type { Locale } from '@dctedu/catalog';
 import { notFound } from 'next/navigation';
 import { hasLocale } from 'next-intl';
 import { setRequestLocale } from 'next-intl/server';

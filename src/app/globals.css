@@ -1,5 +1,5 @@
 @import 'tailwindcss';
-@import '@taksu/edu-ui/taksu.css';
+@import '@dctedu/ui/theme.css';
 
 @source '../../../../packages/edu-ui/src';
 

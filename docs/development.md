@@ -3,8 +3,8 @@
 ## Setup
 
 The simulator builds inside the [TaksuTech](https://github.com/DarmawanWeb/TaksuTech)
-workspace, which holds the lockfile and the shared packages (`@taksu/catalog`, `@taksu/edu-ui`,
-`@taksu/typescript-config`).
+workspace, which holds the lockfile and the shared packages (`@dctedu/catalog`, `@dctedu/ui`,
+`@dctedu/typescript-config`).
 
 ```bash
 git clone --recursive https://github.com/DarmawanWeb/TaksuTech.git && cd TaksuTech
@@ -16,7 +16,7 @@ pnpm dev:edu                    # http://localhost:3003/id, for the learning-pat
 
 ## Scripts
 
-Run from the workspace root (`pnpm --filter @taksu/sim <script>`) or from `apps/sim`.
+Run from the workspace root (`pnpm --filter @dctedu/simulator <script>`) or from `apps/sim`.
 
 | Script | Does |
 |---|---|
@@ -55,7 +55,7 @@ Commits, lower-case subject).
 4. Add its text to `messages/id.json` and `messages/en.json` under `Blocks`.
 
 **A robot.** Add its model to `engine/robots.ts` (sizes, speed, motor bias, sensor positions),
-its sprite to `ui/robot-sprite.ts`, its colour to `@taksu/edu-ui`, and its catalogue entry with
+its sprite to `ui/robot-sprite.ts`, its colour to `@dctedu/ui`, and its catalogue entry with
 `sim:` in `packages/catalog/src/robots.ts`.
 
 ## The C++ contract
@@ -69,5 +69,5 @@ not have yet needs that call added to the library first.
 
 [ci.yml](../.github/workflows/ci.yml) checks out the TaksuTech workspace with its
 submodules, replaces `apps/sim` with the commit under test, installs, and runs Biome, the
-typecheck, the tests, and the build for `@taksu/sim`. On pull requests it also runs commitlint.
+typecheck, the tests, and the build for `@dctedu/simulator`. On pull requests it also runs commitlint.
 Images are published by the workspace repository.

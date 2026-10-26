@@ -9,7 +9,7 @@ const nextConfig: NextConfig = {
   output: 'standalone',
   outputFileTracingRoot: monorepoRoot,
   turbopack: { root: monorepoRoot },
-  transpilePackages: ['@taksu/edu-ui', '@taksu/catalog'],
+  transpilePackages: ['@dctedu/ui', '@dctedu/catalog'],
   poweredByHeader: false,
   agentRules: false,
   reactStrictMode: true,

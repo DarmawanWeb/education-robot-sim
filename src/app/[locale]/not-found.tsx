@@ -1,4 +1,4 @@
-import { Button } from '@taksu/edu-ui/components/button';
+import { Button } from '@dctedu/ui/components/button';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 

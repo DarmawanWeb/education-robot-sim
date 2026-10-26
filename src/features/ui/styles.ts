@@ -1,4 +1,4 @@
-import { cn } from '@taksu/edu-ui/lib/utils';
+import { cn } from '@dctedu/ui/lib/utils';
 
 /**
  * The simulator dresses like the store: white panels with a hairline border on the chalk

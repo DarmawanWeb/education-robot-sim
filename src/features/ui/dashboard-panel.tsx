@@ -1,6 +1,6 @@
 'use client';
 
-import { cn } from '@taksu/edu-ui/lib/utils';
+import { cn } from '@dctedu/ui/lib/utils';
 import { Wifi, WifiOff } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { TelemetryPoint } from '../engine/types';

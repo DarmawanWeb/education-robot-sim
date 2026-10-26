@@ -82,7 +82,7 @@ scripts/                  copies Blockly's media into public/ before dev and bui
 git clone --recursive https://github.com/DarmawanWeb/TaksuTech.git && cd TaksuTech
 pnpm install                    # the workspace, plus the commit hooks in each submodule
 pnpm dev:sim                    # http://localhost:3002/id
-pnpm --filter @taksu/sim test   # every mission's reference solution, codegen, messages
+pnpm --filter @dctedu/simulator test   # every mission's reference solution, codegen, messages
 ```
 
 CI ([ci.yml](.github/workflows/ci.yml)) checks out the TaksuTech workspace, puts this commit

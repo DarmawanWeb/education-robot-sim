@@ -3,7 +3,7 @@
 The simulator is one page per language where a student builds a program with blocks, runs it on a
 virtual track, and reads the Arduino C++ it becomes. It lives at `apps/sim` in the
 [TaksuTech](https://github.com/DarmawanWeb/TaksuTech) workspace and reads the mission
-titles and learning-path places from `@taksu/catalog`.
+titles and learning-path places from `@dctedu/catalog`.
 
 ## Stack
 
@@ -12,7 +12,7 @@ titles and learning-path places from `@taksu/catalog`.
 | Framework | Next.js 16, App Router, `output: 'standalone'`, one prerendered page per locale |
 | Blocks | Blockly 13, its media copied into `public/blockly-media` by `scripts/copy-blockly-media.mjs` |
 | Rendering | Canvas 2D for the arena; React 19 and Tailwind CSS 4 for the panels |
-| Theme | `@taksu/edu-ui` tokens, light and dark (next-themes), dark meant for projectors |
+| Theme | `@dctedu/ui` tokens, light and dark (next-themes), dark meant for projectors |
 | Languages | next-intl 4, `/id` and `/en`; block text comes from the same message files |
 | Tests | Vitest: every mission's reference solution, the interpreter, codegen, messages |
 

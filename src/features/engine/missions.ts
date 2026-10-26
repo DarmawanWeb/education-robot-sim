@@ -1,4 +1,4 @@
-import type { Localized } from '@taksu/catalog';
+import type { Localized } from '@dctedu/catalog';
 import { arc, roundedTrack } from './geometry';
 import type {
   DriveDirection,

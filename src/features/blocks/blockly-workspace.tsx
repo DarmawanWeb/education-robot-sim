@@ -1,6 +1,6 @@
 'use client';
 
-import type { Locale } from '@taksu/catalog';
+import type { Locale } from '@dctedu/catalog';
 import * as Blockly from 'blockly/core';
 import 'blockly/blocks';
 import * as En from 'blockly/msg/en';
