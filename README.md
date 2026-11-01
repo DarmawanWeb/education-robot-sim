@@ -1,10 +1,10 @@
 <div align="center">
 
-<img src="docs/logo.svg" width="96" alt="DCTEdu logo">
+<img src="docs/logo.svg" width="96" alt="DCT Edu logo">
 
-# DCTEdu Simulator
+# DCT Edu Simulator
 
-**Program DCTEdu's robots with blocks in the browser: Ciko and Momo drive a virtual track, the
+**Program DCT Edu's robots with blocks in the browser: Ciko and Momo drive a virtual track, the
 missions are steps on their learning paths, and the same program comes out as Arduino C++. Free,
 with no account, in Indonesian and English.**
 
@@ -67,6 +67,6 @@ pnpm dev:simulator              # http://localhost:3001/id
 pnpm --filter @dctedu/simulator test
 ```
 
-DCTEdu is the education robot line of PT Dharma Cipta Teknologi.
+DCT Edu is the education robot line of PT Dharma Cipta Teknologi.
 
 Proprietary. Copyright (c) 2026 PT Dharma Cipta Teknologi. All rights reserved.
