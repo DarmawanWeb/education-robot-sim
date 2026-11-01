@@ -1,7 +1,7 @@
 {
   "Meta": {
-    "title": "Simulator DCTEdu: program Ciko dan Momo dengan blok",
-    "description": "Coba robot DCTEdu di browser sebelum membeli. Program Ciko dan Momo dengan blok: maju, belok, lampu sein, ikuti garis, rintangan, radar, suhu, suara, dan Wi-Fi. Gratis, tanpa daftar."
+    "title": "Simulator DCT Edu: program Ciko dan Momo dengan blok",
+    "description": "Coba robot DCT Edu di browser sebelum membeli. Program Ciko dan Momo dengan blok: maju, belok, lampu sein, ikuti garis, rintangan, radar, suhu, suara, dan Wi-Fi. Gratis, tanpa daftar. Dari PT Dharma Cipta Teknologi."
   },
   "Sim": {
     "title": "Simulator",
@@ -14,7 +14,7 @@
     "stepOption": "{n}. {title}",
     "finishedOption": "{title} (selesai)",
     "progress": "{done} dari {total} misi selesai",
-    "inPath": "Lihat langkah ini di jalur Ngulik {robot}",
+    "inPath": "Lihat langkah ini di jalur belajar {robot}",
     "newTab": "(terbuka di tab baru)",
     "goals": "Tujuan misi",
     "hint": "Petunjuk",

@@ -83,7 +83,7 @@ const banners: Banner[] = [
   },
 ];
 
-/** The DCTEdu wordmark, read from the file the ui package generates, so it never drifts. */
+/** The DCT Edu wordmark, read from the file the ui package generates, so it never drifts. */
 function readWordmark() {
   const source = readFileSync(
     join(here, '..', '..', '..', 'packages', 'ui', 'src', 'brand', 'wordmark-path.ts'),
@@ -278,7 +278,7 @@ function rules(doc: PDFKit.PDFDocument, banner: Banner) {
     .fillColor(INK)
     .text('20 cm', (x + 21.5) * CM, (bar - 0.5) * CM, { lineBreak: false });
   line('Cetak 100 %, tanpa skala. Print at 100 %, no scaling.', 20.5, 1.2, MUTED);
-  line('DCTEdu · PT Dharma Cipta Teknologi', 22.5, 1.2, MUTED);
+  line('DCT Edu · PT Dharma Cipta Teknologi', 22.5, 1.2, MUTED);
 }
 
 function draw(banner: Banner, wordmark: Wordmark): Promise<string> {
@@ -291,7 +291,7 @@ function draw(banner: Banner, wordmark: Wordmark): Promise<string> {
     size: [width * CM, height * CM],
     margin: 0,
     info: {
-      Title: `DCTEdu Arena ${banner.robot} (${width} × ${height} cm)`,
+      Title: `DCT Edu Arena ${banner.robot} (${width} × ${height} cm)`,
       Author: 'PT Dharma Cipta Teknologi',
       Subject: `Print-ready arena banner for ${banner.robot}, mission ${banner.mission}`,
     },
