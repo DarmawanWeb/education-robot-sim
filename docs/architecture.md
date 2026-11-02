@@ -27,9 +27,10 @@ flowchart LR
 ```
 
 - **Blocks** (`features/blocks/definitions.ts`) define the toolbox per robot: Ciko gets turn
-  signals, Momo gets the servo, the five-sensor line array, environment sensors, and telemetry.
+  signals, Momo gets the servo, the five-sensor line array, environment sensors, telemetry, the
+  "count with" loop, remainder, and printing to the Serial Monitor.
 - **Compile** (`compile.ts`) turns the workspace into a `Program`: statements (`drive`, `motors`,
-  `repeat`, `if`, `face`, `signal`, `servo`, `send`, ...) and expressions (numbers, sensors,
+  `repeat`, `for`, `if`, `face`, `signal`, `servo`, `send`, `print`, ...) and expressions (numbers, sensors,
   variables, comparisons, logic, maths). Each statement keeps its block id, so the running block
   is highlighted.
 - **Runner** (`interpreter.ts`) executes the program as a generator: waits and loops yield, like a
@@ -37,9 +38,12 @@ flowchart LR
 - **Simulation** (`simulation.ts`) steps the physics at a fixed 120 Hz: differential drive with
   each robot's wheel base, top speed, and motor bias; line sensors sampled against the taped
   paths; a sonar cone against walls, boxes, and moving hands; the buzzer, OLED, signals, servo,
-  Wi-Fi, scripted claps, and environment timelines.
+  Wi-Fi, scripted claps, environment timelines, and the Serial Monitor's lines.
 - **Codegen** (`codegen/cpp.ts`) prints the same program as Arduino C++ for the RobotKit library:
   `#include <RobotKit.h>`, `RobotKit robot(RobotKit::CIKO);`, and the program in `setup()`.
+  Variables are `long` when they only ever hold whole numbers (so `Serial.println` prints 5050,
+  not 5050.00), `bool` for true and false, `String` for text, and `float` otherwise; printing adds
+  `Serial.begin(115200);`.
 
 ## Robots
 
@@ -57,7 +61,11 @@ flowchart LR
 
 `engine/missions.ts` defines every mission: the steps on each robot's learning path, then a few
 extra challenges per robot that sit off the path (a greeter, reverse parking, and a corridor patrol
-for Ciko; a temperature alarm, a clap counter, and following a hand for Momo). A mission has an arena (size, taped
+for Ciko; a temperature alarm, a clap counter, and following a hand for Momo), then Momo's
+algorithm practice for junior high: printing, counting up and down, even numbers, a running total,
+a times table, FizzBuzz, Fibonacci, primes, and an average of sensor readings. Those use
+`view: 'serial'`: the screen shows the Serial Monitor instead of the arena, and their goals check
+the printed lines. A mission has an arena (size, taped
 lines, boxes, zones, moving hands), a start pose, a time limit, whether a bump fails it, goals, a
 hint, a starter program, and a reference `solution`. A goal is a check over a snapshot of the run
 (pose, sensors, face, beeps, signals, telemetry, zones visited); final goals are judged once the
@@ -66,24 +74,27 @@ goals left unfinished), shown in the result dialog.
 
 Titles, briefs, and the order of missions come from `packages/catalog/src/sim-missions.ts`; each
 mission's place on a learning path (`missionStep`) gives the "step n of N" label and the link back
-to `https://<store>/<locale>/learn/<robot>#<step>`. Missions marked `extra` have no step; they are
-labelled as extra challenges instead.
+to `https://<store>/<locale>/learn/<robot>#<step>`. Missions with a `group` (`extra` or `algo`)
+have no step; they are labelled with their group instead.
 
 ## The screen
 
 `features/ui/sim-app.tsx` reads `?robot=` and `?mission=`, and switches robot and mission. The
 mission picker (`mission-picker.tsx`, a popover from `@dctedu/ui`) lists the robot's path missions
-with their step numbers, then its extra challenges with a star, marks the finished ones, and shows
-the progress.
+with their step numbers, then its extra challenges (a star) and algorithm practice (braces), marks
+the finished ones, and shows the progress.
 
 `mission-screen.tsx` places the workspace next to the brief and goals. The workspace has its own
-toolbar (`workspace-toolbar.tsx`): undo and redo, zoom, show every block, and back to the starter
-blocks, which can be undone. Blockly's own zoom buttons and bin are off; blocks are deleted by
-dragging them onto the categories or with the Delete key. The program is framed in the middle when
+toolbar (`workspace-toolbar.tsx`): undo and redo, zoom, show every block, back to the starter
+blocks (which can be undone), and a bin. Blockly's own zoom buttons and trashcan are off. The bin
+is registered with Blockly as a delete area (`ToolbarBin` in `blockly-workspace.tsx`), so a block
+dropped on it is deleted and the bin turns red while a block hovers over it; pressing it deletes the
+selected block. Dragging a block onto the categories or pressing Delete still works. The program is framed in the middle when
 it loads, and stays framed through layout changes until it is edited.
 
 The arena sits under a dark control bar: run or stop, reset, speed 1x, 2x, 4x, the clock against
-the mission's time limit, and the follow camera. Under it come the sensor panel, the dashboard
+the mission's time limit, and the follow camera. Algorithm practice shows the Serial Monitor
+(`serial-monitor.tsx`) there instead. Under it come the sensor panel, the dashboard
 panel when the mission uses Wi-Fi, and the C++ panel.
 
 ## Blockly and Tailwind

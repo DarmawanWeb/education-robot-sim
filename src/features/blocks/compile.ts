@@ -64,6 +64,13 @@ function expression(block: Blockly.Block | null, fallback: Expr = { kind: 'num',
       return { kind: 'not', value: input('BOOL', { kind: 'bool', value: false }) };
     case 'math_arithmetic':
       return { kind: 'math', op: block.getFieldValue('OP'), a: input('A'), b: input('B') };
+    case 'math_modulo':
+      return {
+        kind: 'math',
+        op: 'MODULO',
+        a: input('DIVIDEND'),
+        b: input('DIVISOR', { kind: 'num', value: 1 }),
+      };
     case 'text_join': {
       const parts: Expr[] = [];
       for (let index = 0; block.getInput(`ADD${index}`); index += 1) {
@@ -124,6 +131,16 @@ function statement(block: Blockly.Block): Statement | null {
         body: chain(block.getInputTargetBlock('DO')),
         blockId,
       };
+    case 'controls_for':
+      return {
+        kind: 'for',
+        name: block.getField('VAR')?.getText() ?? 'i',
+        from: input('FROM', { kind: 'num', value: 1 }),
+        to: input('TO', { kind: 'num', value: 10 }),
+        by: input('BY', { kind: 'num', value: 1 }),
+        body: chain(block.getInputTargetBlock('DO')),
+        blockId,
+      };
     case 'controls_if': {
       const branches: { cond: Expr; body: Statement[] }[] = [];
       for (let index = 0; block.getInput(`IF${index}`); index += 1) {
@@ -175,6 +192,8 @@ function statement(block: Blockly.Block): Statement | null {
         value: input('VALUE'),
         blockId,
       };
+    case 'sim_print':
+      return { kind: 'print', value: input('VALUE', { kind: 'text', value: '' }), blockId };
     case 'sim_servo':
       return { kind: 'servo', angle: input('ANGLE', { kind: 'num', value: 90 }), blockId };
     case 'variables_set':

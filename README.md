@@ -31,8 +31,10 @@ challenges. Progress stays in the browser that made it.
 - **Simulate**: two-wheel differential drive at 120 steps a second with each robot's size, speed,
   and motor mismatch; Ciko's two IR line sensors and bumper sonar; Momo's five-sensor line array,
   sonar on a servo, temperature, humidity, sound, and Wi-Fi.
-- **Missions**: 20 missions, 11 for Ciko and 9 for Momo, ending in an arena challenge printed as a banner, with live goals, a hint, a starter
-  program, and a reference solution the tests run, so every mission can be finished.
+- **Missions**: each robot's learning path, ending in an arena challenge printed as a banner, then
+  extra challenges, and algorithm practice for junior high on a Serial Monitor (counting,
+  FizzBuzz, Fibonacci, primes, averages). Every mission has live goals, a hint, a starter program,
+  and a reference solution the tests run, so it can be finished.
 - **Use**: deep links (`?robot=momo&mission=momo-radar`) from the learning paths, speed 1x, 2x,
   4x, a follow camera, and dark mode for projectors in class.
 

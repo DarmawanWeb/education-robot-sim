@@ -24,6 +24,8 @@ export interface RobotIO {
   servo: (angle: number) => void;
   /** Sends a reading to the local dashboard; lost if Wi-Fi is down. */
   send: (key: string, value: Value) => void;
+  /** Prints one line on the Serial Monitor. */
+  print: (text: string) => void;
   highlight: (blockId: string | undefined) => void;
 }
 
@@ -158,6 +160,18 @@ export class Runner {
           yield;
         }
         return;
+      case 'for': {
+        const from = this.num(statement.from);
+        const to = this.num(statement.to);
+        const by = Math.abs(this.num(statement.by)) || 1;
+        const up = from <= to;
+        for (let value = from; up ? value <= to + 1e-9 : value >= to - 1e-9; ) {
+          this.vars.set(statement.name, value);
+          yield* this.block(statement.body);
+          value = toNumber(this.vars.get(statement.name) ?? value) + (up ? by : -by);
+        }
+        return;
+      }
       case 'if':
         for (const branch of statement.branches) {
           if (truthy(this.evaluate(branch.cond))) {
@@ -196,6 +210,9 @@ export class Runner {
         return;
       case 'send':
         this.io.send(statement.key, this.evaluate(statement.value));
+        return;
+      case 'print':
+        this.io.print(formatValue(this.evaluate(statement.value)));
         return;
       case 'set':
         this.vars.set(statement.name, this.evaluate(statement.value));
@@ -266,6 +283,8 @@ export class Runner {
             return y === 0 ? 0 : x / y;
           case 'POWER':
             return x ** y;
+          case 'MODULO':
+            return y === 0 ? 0 : x % y;
         }
         return 0;
       }

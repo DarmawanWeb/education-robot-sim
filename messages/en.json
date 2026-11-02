@@ -85,6 +85,14 @@
       "incomplete": {
         "title": "Not there yet",
         "body": "The program finished but the goals are not met. Change the speed or duration and try again."
+      },
+      "output": {
+        "title": "Not the right output yet",
+        "body": "The program finished, but the printed lines do not match the goals yet. Compare the Serial Monitor with the goals, then change your program."
+      },
+      "outputTime": {
+        "title": "Time is up",
+        "body": "The program did not finish in time. Check for a loop that never stops."
       }
     },
     "nextMission": "Next mission",
@@ -104,6 +112,7 @@
     "missionsOf": "{robot} missions",
     "pathGroup": "Learning path",
     "extras": "Extra challenges",
+    "algoGroup": "Algorithm practice",
     "finished": "finished",
     "tools": {
       "history": "Undo and redo",
@@ -113,7 +122,16 @@
       "zoomOut": "Zoom out",
       "zoomIn": "Zoom in",
       "fit": "Show all blocks",
-      "restore": "Starter blocks"
+      "restore": "Starter blocks",
+      "bin": "Delete block",
+      "binHint": "Delete a block: drag it here, or select it and press this button"
+    },
+    "serial": {
+      "title": "Serial Monitor",
+      "baud": "115200 baud",
+      "empty": "Press Run. What your program prints shows up here, one line per print block.",
+      "label": "Serial Monitor output",
+      "lines": "{count} lines"
     }
   },
   "Blocks": {
@@ -126,6 +144,7 @@
     "SIM_CAT_OUTPUT_MOMO": "Servo, OLED, sound",
     "SIM_CAT_VARIABLES": "Variables",
     "SIM_CAT_WIFI": "Wi-Fi",
+    "SIM_CAT_SERIAL": "Serial Monitor",
     "SIM_START": "when started",
     "SIM_DRIVE_FOR": "%1 at %2 %% for %3 seconds",
     "SIM_DRIVE": "%1 continuously at %2 %%",
@@ -165,7 +184,9 @@
     "SIM_SIGNAL_HAZARD": "both (hazard)",
     "SIM_SIGNAL_OFF": "turn signals off",
     "SIM_SEND": "send to dashboard %1 value %2",
-    "SIM_WIFI": "Wi-Fi connected"
+    "SIM_WIFI": "Wi-Fi connected",
+    "SIM_PRINT": "print to Serial Monitor %1",
+    "CONTROLS_FOR_TITLE": "count with %1 from %2 to %3 by %4"
   },
   "NotFound": {
     "title": "Page not found",

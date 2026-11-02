@@ -204,6 +204,91 @@ const hand = (y: number, keys: [number, number][]) => ({
   h: 13,
   keys: keys.map(([t, x]) => ({ t, x, y: y - 6.5 })),
 });
+// ---- algorithm practice: only the Serial Monitor matters ----
+/** Compare lines the way a teacher would: ignore case and extra spaces. */
+const tidy = (line: string) => line.trim().toLowerCase().replace(/\s+/g, ' ');
+/** Times-table lines match with or without spaces, and with x, × or *. */
+const tidyProduct = (line: string) => tidy(line).replace(/[×*]/g, 'x').replace(/\s/g, '');
+const linesStart = (
+  lines: readonly string[],
+  expected: readonly (string | number)[],
+  norm = tidy,
+) =>
+  lines.length >= expected.length &&
+  expected.every((value, index) => norm(lines[index] ?? '') === norm(String(value)));
+/** The opening lines are right (judged while the program runs). */
+const opensWith = (
+  id: string,
+  expected: readonly (string | number)[],
+  label: Localized,
+  norm = tidy,
+): Goal => ({
+  id,
+  label,
+  check: (s) => linesStart(s.serial, expected, norm),
+});
+/** Exactly these lines and nothing else, judged once the program has finished. */
+const printsExactly = (
+  expected: readonly (string | number)[],
+  label: Localized,
+  norm = tidy,
+): Goal => ({
+  id: 'output',
+  label,
+  final: true,
+  check: (s) =>
+    s.programDone && s.serial.length === expected.length && linesStart(s.serial, expected, norm),
+});
+const range = (from: number, to: number, step = 1) =>
+  Array.from({ length: Math.floor((to - from) / step) + 1 }, (_, index) => from + index * step);
+/** A desk: Momo sits still and only its Serial Monitor is shown. */
+const desk: Mission['arena'] = { width: 120, height: 80, lines: [], boxes: [], zones: [] };
+const algo: Pick<Mission, 'robot' | 'arena' | 'start' | 'failOnBump' | 'view'> = {
+  robot: 'momo',
+  arena: desk,
+  start: { x: 60, y: 40, heading: 0 },
+  failOnBump: false,
+  view: 'serial',
+};
+const print = (value: Expr): Statement => ({ kind: 'print', value });
+const set = (name: string, value: Expr): Statement => ({ kind: 'set', name, value });
+const countWith = (name: string, from: Expr, to: Expr, body: Statement[], by = 1): Statement => ({
+  kind: 'for',
+  name,
+  from,
+  to,
+  by: n(by),
+  body,
+});
+const mod = (a: Expr, b: Expr): Expr => ({ kind: 'math', op: 'MODULO', a, b });
+const eq = (a: Expr, b: Expr): Expr => ({ kind: 'compare', op: 'EQ', a, b });
+const join = (...parts: Expr[]): Expr => ({ kind: 'join', parts });
+// Starter blocks for the algorithm practice.
+const getVar = (name: string): StarterBlock => ({
+  type: 'variables_get',
+  fields: { VAR: { name } },
+});
+const setVar = (name: string, value: number): StarterBlock => ({
+  type: 'variables_set',
+  fields: { VAR: { name } },
+  inputs: { VALUE: plug({ type: 'math_number', fields: { NUM: value } }) },
+});
+const printBlock = (value: StarterBlock): StarterBlock => ({
+  type: 'sim_print',
+  inputs: { VALUE: plug(value) },
+});
+const textBlock = (text: string): StarterBlock => ({ type: 'text', fields: { TEXT: text } });
+const countBlock = (name: string, from: number, to: number, body?: StarterBlock): StarterBlock => ({
+  type: 'controls_for',
+  fields: { VAR: { name } },
+  inputs: {
+    FROM: shadowNum(from),
+    TO: shadowNum(to),
+    BY: shadowNum(1),
+    ...(body ? { DO: plug(body) } : {}),
+  },
+});
+
 /** Scripted claps for the clap counter; the goal checks the count against them. */
 const counterClaps = [1.5, 3.5, 5.5];
 
@@ -1633,6 +1718,379 @@ export const missions: readonly Mission[] = [
             ),
           ],
         },
+      ],
+    },
+  },
+  {
+    ...algo,
+    id: 'algo-halo',
+    timeLimit: 10,
+    goals: [
+      {
+        id: 'hello',
+        label: l('Baris pertama menyapa: Halo, dunia!', 'The first line says hello: Hello, world!'),
+        check: (s) => /halo|hello/i.test(s.serial[0] ?? ''),
+      },
+      {
+        id: 'name',
+        label: l('Baris kedua: namamu', 'The second line: your name'),
+        final: true,
+        check: (s) => s.programDone && s.serial.length >= 2 && tidy(s.serial[1] ?? '').length > 0,
+      },
+    ],
+    hint: l(
+      'Blok cetak ada di kategori "Serial Monitor". Setiap blok cetak menulis satu baris baru.',
+      'The print block is in the "Serial Monitor" category. Each print block writes a new line.',
+    ),
+    starter: starter(printBlock(textBlock('Halo, dunia!'))),
+    solution: { body: [print(text('Halo, dunia!')), print(text('Budi'))] },
+  },
+  {
+    ...algo,
+    id: 'algo-hitung',
+    timeLimit: 10,
+    goals: [
+      opensWith('first', [1], l('Baris pertama: 1', 'The first line: 1')),
+      printsExactly(
+        range(1, 10),
+        l('Cetak 1 sampai 10, satu angka per baris', 'Print 1 to 10, one number per line'),
+      ),
+    ],
+    hint: l(
+      'Blok "hitung dengan i" mengisi variabel i dengan 1, 2, 3, … sampai 10. Masukkan blok cetak berisi variabel i ke dalamnya.',
+      'The "count with i" block sets the variable i to 1, 2, 3, … up to 10. Put a print block with the variable i inside it.',
+    ),
+    starter: starter(countBlock('i', 1, 10)),
+    solution: { body: [countWith('i', n(1), n(10), [print(v('i'))])] },
+  },
+  {
+    ...algo,
+    id: 'algo-mundur',
+    timeLimit: 10,
+    goals: [
+      opensWith(
+        'down',
+        range(1, 10).reverse(),
+        l('Hitung dari 10 turun ke 1', 'Count from 10 down to 1'),
+      ),
+      {
+        id: 'launch',
+        label: l('Lalu cetak "Meluncur!"', 'Then print "Lift off!"'),
+        final: true,
+        check: (s) =>
+          s.programDone && s.serial.length === 11 && /meluncur|lift ?off/i.test(s.serial[10] ?? ''),
+      },
+    ],
+    hint: l(
+      'Hitungan juga bisa turun: hitung dengan i dari 10 sampai 1. Blok cetak "Meluncur!" ditaruh setelah perulangan, bukan di dalamnya.',
+      'Counting can go down too: count with i from 10 to 1. The "Lift off!" print goes after the loop, not inside it.',
+    ),
+    starter: starter(countBlock('i', 1, 10, printBlock(getVar('i')))),
+    solution: { body: [countWith('i', n(10), n(1), [print(v('i'))]), print(text('Meluncur!'))] },
+  },
+  {
+    ...algo,
+    id: 'algo-genap',
+    timeLimit: 10,
+    goals: [
+      opensWith('start', [2, 4], l('Mulai dari 2, lalu 4', 'Start at 2, then 4')),
+      printsExactly(
+        range(2, 20, 2),
+        l('Cetak semua bilangan genap sampai 20', 'Print every even number up to 20'),
+      ),
+    ],
+    hint: l(
+      'Ada dua cara. Hitung dari 2 sampai 20 setiap 2, atau hitung 1 sampai 20 dan cetak hanya jika sisa bagi 2 sama dengan 0.',
+      'There are two ways. Count from 2 to 20 by 2, or count 1 to 20 and print only when the remainder of dividing by 2 is 0.',
+    ),
+    starter: starter(countBlock('i', 1, 20)),
+    solution: { body: [countWith('i', n(2), n(20), [print(v('i'))], 2)] },
+  },
+  {
+    ...algo,
+    id: 'algo-jumlah',
+    timeLimit: 10,
+    goals: [
+      {
+        id: 'sum',
+        label: l('Cetak jumlah yang benar', 'Print the right total'),
+        final: true,
+        check: (s) => s.programDone && numbersIn(s.serial.at(-1) ?? '').includes(5050),
+      },
+      {
+        id: 'once',
+        label: l('Hanya hasil akhirnya, dalam satu baris', 'Only the final result, on one line'),
+        final: true,
+        check: (s) => s.programDone && s.serial.length === 1,
+      },
+    ],
+    hint: l(
+      'Buat variabel jumlah = 0. Hitung dengan i dari 1 sampai 100: ubah jumlah sebesar i. Cetak jumlah setelah perulangan selesai.',
+      'Make a variable total = 0. Count with i from 1 to 100: change total by i. Print total once the loop is over.',
+    ),
+    starter: starter(setVar('jumlah', 0), countBlock('i', 1, 100)),
+    solution: {
+      body: [
+        set('jumlah', n(0)),
+        countWith('i', n(1), n(100), [{ kind: 'change', name: 'jumlah', delta: v('i') }]),
+        print(v('jumlah')),
+      ],
+    },
+  },
+  {
+    ...algo,
+    id: 'algo-perkalian',
+    timeLimit: 10,
+    goals: [
+      opensWith(
+        'first',
+        ['7 x 1 = 7'],
+        l('Baris pertama: 7 x 1 = 7', 'The first line: 7 x 1 = 7'),
+        tidyProduct,
+      ),
+      printsExactly(
+        range(1, 10).map((i) => `7 x ${i} = ${7 * i}`),
+        l('Sampai 7 x 10 = 70', 'Through 7 x 10 = 70'),
+        tidyProduct,
+      ),
+    ],
+    hint: l(
+      'Gabungkan teks dengan blok "buat teks dengan": 7, " x ", i, " = ", lalu hasil 7 × i dari blok hitung.',
+      'Join text with the "create text with" block: 7, " x ", i, " = ", then 7 × i from the arithmetic block.',
+    ),
+    starter: starter(
+      countBlock(
+        'i',
+        1,
+        10,
+        printBlock({
+          type: 'text_join',
+          extraState: { itemCount: 2 },
+          inputs: { ADD0: plug(textBlock('7 x ')), ADD1: plug(getVar('i')) },
+        }),
+      ),
+    ),
+    solution: {
+      body: [
+        countWith('i', n(1), n(10), [
+          print(join(text('7 x '), v('i'), text(' = '), times(n(7), v('i')))),
+        ]),
+      ],
+    },
+  },
+  {
+    ...algo,
+    id: 'algo-fizzbuzz',
+    timeLimit: 10,
+    goals: [
+      {
+        id: 'fizz',
+        label: l('Angka 3 jadi Fizz', '3 becomes Fizz'),
+        check: (s) => tidy(s.serial[2] ?? '') === 'fizz',
+      },
+      {
+        id: 'buzz',
+        label: l('Angka 5 jadi Buzz', '5 becomes Buzz'),
+        check: (s) => tidy(s.serial[4] ?? '') === 'buzz',
+      },
+      printsExactly(
+        [
+          '1',
+          '2',
+          'Fizz',
+          '4',
+          'Buzz',
+          'Fizz',
+          '7',
+          '8',
+          'Fizz',
+          'Buzz',
+          '11',
+          'Fizz',
+          '13',
+          '14',
+          'FizzBuzz',
+        ],
+        l(
+          'Angka 15 jadi FizzBuzz, dan semua baris benar',
+          '15 becomes FizzBuzz, and every line is right',
+        ),
+      ),
+    ],
+    hint: l(
+      'Pakai blok sisa bagi. Cek kelipatan 15 lebih dulu, baru 3 lalu 5, karena 15 juga kelipatan 3 dan 5. Tambahkan cabang lewat ikon roda gigi pada blok jika.',
+      'Use the remainder block. Check multiples of 15 first, then 3, then 5, because 15 is also a multiple of 3 and 5. Add branches with the gear icon on the if block.',
+    ),
+    starter: starter(
+      countBlock('i', 1, 15, {
+        type: 'controls_if',
+        extraState: { hasElse: true },
+        inputs: {
+          IF0: plug({
+            type: 'logic_compare',
+            fields: { OP: 'EQ' },
+            inputs: {
+              A: plug({
+                type: 'math_modulo',
+                inputs: { DIVIDEND: plug(getVar('i')), DIVISOR: shadowNum(3) },
+              }),
+              B: plug({ type: 'math_number', fields: { NUM: 0 } }),
+            },
+          }),
+          DO0: plug(printBlock(textBlock('Fizz'))),
+          ELSE: plug(printBlock(getVar('i'))),
+        },
+      }),
+    ),
+    solution: {
+      body: [
+        countWith('i', n(1), n(15), [
+          {
+            kind: 'if',
+            branches: [
+              { cond: eq(mod(v('i'), n(15)), n(0)), body: [print(text('FizzBuzz'))] },
+              { cond: eq(mod(v('i'), n(3)), n(0)), body: [print(text('Fizz'))] },
+              { cond: eq(mod(v('i'), n(5)), n(0)), body: [print(text('Buzz'))] },
+            ],
+            otherwise: [print(v('i'))],
+          },
+        ]),
+      ],
+    },
+  },
+  {
+    ...algo,
+    id: 'algo-fibonacci',
+    timeLimit: 10,
+    goals: [
+      opensWith('start', [0, 1, 1], l('Mulai dari 0, 1, 1', 'Start with 0, 1, 1')),
+      printsExactly(
+        [0, 1, 1, 2, 3, 5, 8, 13, 21, 34],
+        l('Sepuluh angka pertama, semuanya benar', 'The first ten numbers, all right'),
+      ),
+    ],
+    hint: l(
+      'Simpan dua angka terakhir di variabel a dan b. Ulangi 10 kali: cetak a, lalu c = a + b, a = b, b = c.',
+      'Keep the last two numbers in variables a and b. Repeat 10 times: print a, then c = a + b, a = b, b = c.',
+    ),
+    starter: starter(setVar('a', 0), setVar('b', 1), {
+      type: 'sim_repeat',
+      fields: { TIMES: 10 },
+      inputs: { DO: plug(printBlock(getVar('a'))) },
+    }),
+    solution: {
+      body: [
+        set('a', n(0)),
+        set('b', n(1)),
+        {
+          kind: 'repeat',
+          times: n(10),
+          body: [print(v('a')), set('c', add(v('a'), v('b'))), set('a', v('b')), set('b', v('c'))],
+        },
+      ],
+    },
+  },
+  {
+    ...algo,
+    id: 'algo-prima',
+    timeLimit: 15,
+    goals: [
+      opensWith('start', [2, 3, 5], l('Mulai dari 2, 3, 5', 'Start with 2, 3, 5')),
+      printsExactly(
+        [2, 3, 5, 7, 11, 13, 17, 19, 23, 29],
+        l(
+          'Semua bilangan prima sampai 30, tanpa yang bukan',
+          'Every prime up to 30, and nothing else',
+        ),
+      ),
+    ],
+    hint: l(
+      'Dua perulangan bertumpuk. Untuk setiap n dari 2 sampai 30: prima = benar dan d = 2. Ulangi selama d < n: jika sisa bagi n oleh d sama dengan 0, prima = salah; ubah d sebesar 1. Setelah itu, cetak n jika prima.',
+      'Two nested loops. For each n from 2 to 30: prime = true and d = 2. Repeat while d < n: if the remainder of n divided by d is 0, prime = false; change d by 1. Then print n if it is still prime.',
+    ),
+    starter: starter(countBlock('n', 2, 30, printBlock(getVar('n')))),
+    solution: {
+      body: [
+        countWith('n', n(2), n(30), [
+          set('prima', { kind: 'bool', value: true }),
+          set('d', n(2)),
+          {
+            kind: 'loop',
+            until: false,
+            cond: lt(v('d'), v('n')),
+            body: [
+              {
+                kind: 'if',
+                branches: [
+                  {
+                    cond: eq(mod(v('n'), v('d')), n(0)),
+                    body: [set('prima', { kind: 'bool', value: false })],
+                  },
+                ],
+                otherwise: [],
+              },
+              { kind: 'change', name: 'd', delta: n(1) },
+            ],
+          },
+          { kind: 'if', branches: [{ cond: v('prima'), body: [print(v('n'))] }], otherwise: [] },
+        ]),
+      ],
+    },
+  },
+  {
+    ...algo,
+    id: 'algo-rata',
+    timeLimit: 12,
+    // Readings change between the one-second reads, never on them.
+    envTimeline: [
+      { t: 0, temperature: 27, humidity: 60 },
+      { t: 0.5, temperature: 28 },
+      { t: 1.5, temperature: 30 },
+      { t: 2.5, temperature: 29 },
+      { t: 3.5, temperature: 31 },
+    ],
+    goals: [
+      opensWith(
+        'each',
+        [27, 28, 30, 29, 31],
+        l('Cetak lima bacaan suhu, satu per detik', 'Print five readings, one a second'),
+      ),
+      {
+        id: 'average',
+        label: l('Lalu cetak rata-ratanya', 'Then print the average'),
+        final: true,
+        check: (s) =>
+          s.programDone && s.serial.length === 6 && numbersIn(s.serial[5] ?? '').includes(29),
+      },
+    ],
+    hint: l(
+      'Buat variabel total = 0. Ulangi 5 kali: cetak suhu, tambahkan ke total, tunggu 1 detik. Rata-rata adalah total dibagi 5.',
+      'Make a variable total = 0. Repeat 5 times: print the temperature, add it to total, wait 1 second. The average is total divided by 5.',
+    ),
+    starter: starter(setVar('total', 0), {
+      type: 'sim_repeat',
+      fields: { TIMES: 5 },
+      inputs: {
+        DO: plug({
+          ...printBlock({ type: 'sim_temperature' }),
+          next: plug({ type: 'sim_wait', fields: { SECONDS: 1 } }),
+        }),
+      },
+    }),
+    solution: {
+      body: [
+        set('total', n(0)),
+        {
+          kind: 'repeat',
+          times: n(5),
+          body: [
+            set('t', sensor('temperature')),
+            print(v('t')),
+            { kind: 'change', name: 'total', delta: v('t') },
+            wait(1),
+          ],
+        },
+        print(join(text('Rata-rata '), { kind: 'math', op: 'DIVIDE', a: v('total'), b: n(5) })),
       ],
     },
   },

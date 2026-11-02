@@ -19,6 +19,8 @@ export interface WorkspaceApi {
   zoom: (steps: number) => void;
   /** Bring every block into view, at no more than a comfortable size. */
   fit: () => void;
+  /** Throw away the selected block and everything inside it (undoable). */
+  deleteSelected: () => void;
 }
 
 /** Whether there is anything to undo or redo, for the workspace toolbar. */
@@ -38,7 +40,40 @@ export interface BlocklyWorkspaceProps {
   apiRef: RefObject<WorkspaceApi | null>;
   onProgramChange: (result: CompileResult) => void;
   onHistory?: (history: History) => void;
+  /** The toolbar's bin: blocks dropped on it are deleted, like on Blockly's own trashcan. */
+  binRef?: RefObject<HTMLElement | null>;
+  /** Whether the selected block can be thrown away, so the bin can be pressed. */
+  onSelection?: (deletable: boolean) => void;
   label: string;
+}
+
+/**
+ * The bin in our toolbar, registered as a Blockly delete area: Blockly asks for its rectangle on
+ * screen while a block is dragged, and deletes the block when it is dropped there.
+ */
+class ToolbarBin extends Blockly.DeleteArea {
+  constructor(private readonly element: () => HTMLElement | null) {
+    super();
+    this.id = 'dctToolbarBin';
+  }
+
+  override getClientRect(): Blockly.utils.Rect | null {
+    const rect = this.element()?.getBoundingClientRect();
+    if (!rect || rect.width === 0) return null;
+    return new Blockly.utils.Rect(rect.top, rect.bottom, rect.left, rect.right);
+  }
+
+  override onDragEnter(): void {
+    if (this.wouldDelete_) this.element()?.setAttribute('data-over', '');
+  }
+
+  override onDragExit(): void {
+    this.element()?.removeAttribute('data-over');
+  }
+
+  override onDrop(): void {
+    this.element()?.removeAttribute('data-over');
+  }
 }
 
 function readSaved(key: string): object | null {
@@ -61,12 +96,14 @@ export default function BlocklyWorkspace({
   apiRef,
   onProgramChange,
   onHistory,
+  binRef,
+  onSelection,
   label,
 }: BlocklyWorkspaceProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const latest = useRef({ messages, starter, onProgramChange, onHistory });
+  const latest = useRef({ messages, starter, onProgramChange, onHistory, onSelection, binRef });
   useEffect(() => {
-    latest.current = { messages, starter, onProgramChange, onHistory };
+    latest.current = { messages, starter, onProgramChange, onHistory, onSelection, binRef };
   });
 
   useEffect(() => {
@@ -84,8 +121,8 @@ export default function BlocklyWorkspace({
       theme: dark ? darkTheme : lightTheme,
       renderer: 'zelos',
       media: '/blockly-media/',
-      // Zoom, fit, undo and redo live in our own toolbar; blocks are deleted by dragging them
-      // back onto the categories, or with the Delete key.
+      // Zoom, fit, undo, redo and the bin live in our own toolbar (see ToolbarBin). Blocks can
+      // also be dragged back onto the categories, or deleted with the Delete key.
       trashcan: false,
       sounds: false,
       // A dot every 2 cm, like the squared mat on the edu site.
@@ -94,10 +131,23 @@ export default function BlocklyWorkspace({
       move: { scrollbars: true, drag: true, wheel: true },
     });
 
+    workspace.getComponentManager().addComponent({
+      component: new ToolbarBin(() => latest.current.binRef?.current ?? null),
+      weight: 1,
+      capabilities: [
+        Blockly.ComponentManager.Capability.DELETE_AREA,
+        Blockly.ComponentManager.Capability.DRAG_TARGET,
+      ],
+    });
+    const selection = () => {
+      const selected = Blockly.getSelected();
+      latest.current.onSelection?.(selected instanceof Blockly.BlockSvg && selected.isDeletable());
+    };
+
     // Until the program is edited, keep it framed: the panel can still change size after the first
     // paint (fonts, the sticky layout), and Blockly keeps the old scroll offset when it does.
     let autoFit = true;
-    const fit = () => {
+    const frameAll = () => {
       workspace.zoomToFit();
       // A short program would fill the screen at maximum zoom: keep it at a readable size and put
       // its first stack in the middle. (scrollCenter() also counts the hidden flyout's width.)
@@ -132,7 +182,7 @@ export default function BlocklyWorkspace({
       if (!undoable) workspace.clearUndo();
       history();
       autoFit = true;
-      requestAnimationFrame(fit);
+      requestAnimationFrame(frameAll);
     };
     const save = () => {
       try {
@@ -148,6 +198,7 @@ export default function BlocklyWorkspace({
 
     load(readSaved(storageKey) ?? latest.current.starter);
     workspace.addChangeListener((event: Blockly.Events.Abstract) => {
+      if (event.type === Blockly.Events.SELECTED) selection();
       if (event.isUiEvent) return;
       autoFit = false;
       save();
@@ -157,7 +208,7 @@ export default function BlocklyWorkspace({
 
     const resizeObserver = new ResizeObserver(() => {
       Blockly.svgResize(workspace);
-      if (autoFit) fit();
+      if (autoFit) frameAll();
     });
     resizeObserver.observe(container);
 
@@ -171,7 +222,12 @@ export default function BlocklyWorkspace({
         autoFit = false;
         workspace.zoomCenter(steps);
       },
-      fit,
+      fit: frameAll,
+      deleteSelected: () => {
+        const selected = Blockly.getSelected();
+        if (selected instanceof Blockly.BlockSvg && selected.isDeletable())
+          selected.checkAndDelete();
+      },
     };
 
     return () => {

@@ -32,6 +32,7 @@ export interface PanelState {
   online: boolean;
   telemetry: TelemetryPoint[];
   dropped: number;
+  serial: string[];
 }
 
 function panelOf(simulation: Simulation): PanelState {
@@ -54,6 +55,7 @@ function panelOf(simulation: Simulation): PanelState {
     online: simulation.online,
     telemetry: [...simulation.telemetry],
     dropped: simulation.dropped,
+    serial: [...simulation.serial],
   };
 }
 

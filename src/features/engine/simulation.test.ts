@@ -113,6 +113,43 @@ describe('failure cases', () => {
     const result = run('ciko-garis', { body: [{ kind: 'forever', body: [] }] });
     expect(result.outcome).toEqual({ status: 'fail', reason: 'time' });
   });
+  describe('algorithm practice', () => {
+    const print = (name: string) => ({
+      kind: 'print' as const,
+      value: { kind: 'var' as const, name },
+    });
+    const count = (body: Statement[]) => ({
+      kind: 'for' as const,
+      name: 'i',
+      from: num(1),
+      to: num(100),
+      by: num(1),
+      body,
+    });
+
+    it('wants the total printed once, after the loop', () => {
+      const result = run('algo-jumlah', {
+        body: [
+          { kind: 'set', name: 'jumlah', value: num(0) },
+          count([
+            { kind: 'change', name: 'jumlah', delta: { kind: 'var', name: 'i' } },
+            print('jumlah'),
+          ]),
+        ],
+      });
+      expect(result.serial).toHaveLength(100);
+      expect([...result.met]).toEqual(['sum']);
+      expect(result.outcome).toEqual({ status: 'fail', reason: 'incomplete' });
+    });
+
+    it('counts down when the loop starts above where it ends', () => {
+      const result = run('algo-mundur', {
+        body: [{ ...count([print('i')]), from: num(3), to: num(1) }],
+      });
+      expect(result.serial).toEqual(['3', '2', '1']);
+    });
+  });
+
   describe('extra missions', () => {
     const sensor = (name: 'distance' | 'sound') => ({ kind: 'sensor' as const, sensor: name });
     const compare = (op: 'LT' | 'GT', a: ReturnType<typeof sensor>, value: number) => ({
@@ -302,6 +339,7 @@ describe('interpreter', () => {
         setSignal: () => {},
         servo: () => {},
         send: () => {},
+        print: () => {},
         highlight: () => {},
       },
     );

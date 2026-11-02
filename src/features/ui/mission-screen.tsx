@@ -10,7 +10,7 @@ import {
   DialogTitle,
 } from '@dctedu/ui/components/dialog';
 import { cn } from '@dctedu/ui/lib/utils';
-import { CheckCircle2, Circle, Play, RotateCcw, ScanSearch, Square, Star } from 'lucide-react';
+import { CheckCircle2, Circle, Play, RotateCcw, ScanSearch, Square } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useMessages, useTranslations } from 'next-intl';
 import { useCallback, useRef, useState } from 'react';
@@ -21,8 +21,10 @@ import type { Mission, Outcome } from '../engine/types';
 import { ArenaCanvas } from './arena-canvas';
 import { CodePanel } from './code-panel';
 import { DashboardPanel } from './dashboard-panel';
+import { GROUPS } from './groups';
 import { markFinished } from './progress';
 import { SensorPanel } from './sensor-panel';
+import { SerialMonitor } from './serial-monitor';
 import { actionClass, panelClass } from './styles';
 import { useSimulation } from './use-simulation';
 import { WorkspaceToolbar } from './workspace-toolbar';
@@ -58,6 +60,8 @@ export function MissionScreen({
   const [speed, setSpeed] = useState<(typeof SPEEDS)[number]>(1);
   const [history, setHistory] = useState<History>({ undo: false, redo: false });
   const [follow, setFollow] = useState(false);
+  const [canDelete, setCanDelete] = useState(false);
+  const binRef = useRef<HTMLButtonElement>(null);
 
   const sim = useSimulation(mission, {
     onFinish: (outcome) => {
@@ -88,12 +92,19 @@ export function MissionScreen({
         : t('status.idle');
   const metCount = mission.goals.filter((goal) => sim.panel.met.includes(goal.id)).length;
   const place = missionStep(info.id);
+  const group = info.group ? GROUPS[info.group] : undefined;
+  const serialView = mission.view === 'serial';
   const robotName = getRobot(mission.robot)?.name ?? '';
   const outcomeKey =
     result && result.status !== 'running'
       ? result.status === 'success'
         ? 'success'
-        : result.reason
+        : // Algorithm practice has no robot to blame: talk about the printed lines instead.
+          serialView && result.reason !== 'bump'
+          ? result.reason === 'time'
+            ? 'outputTime'
+            : 'output'
+          : result.reason
       : null;
 
   return (
@@ -110,11 +121,16 @@ export function MissionScreen({
           apiRef={apiRef}
           onProgramChange={setProgram}
           onHistory={setHistory}
+          binRef={binRef}
+          onSelection={setCanDelete}
           label={t('workspaceLabel')}
         />
         <WorkspaceToolbar
           className="absolute right-3 bottom-3"
           history={history}
+          canDelete={canDelete}
+          binRef={binRef}
+          onDelete={() => apiRef.current?.deleteSelected()}
           onUndo={() => apiRef.current?.undo()}
           onRedo={() => apiRef.current?.redo()}
           onZoom={(steps) => apiRef.current?.zoom(steps)}
@@ -138,12 +154,12 @@ export function MissionScreen({
               <span className="text-muted-foreground">
                 {t('step', { n: place.number, total: place.total })}
               </span>
-            ) : (
-              <span className="inline-flex items-center gap-1.5 text-[#b07400] dark:text-[#ffb020]">
-                <Star className="size-4" strokeWidth={2.5} aria-hidden />
-                {t('extras')}
+            ) : group ? (
+              <span className={cn('inline-flex items-center gap-1.5', group.tone)}>
+                <group.icon className="size-4" strokeWidth={2.5} aria-hidden />
+                {t(group.label)}
               </span>
-            )}
+            ) : null}
           </p>
           <h1 className="type-display mt-3 text-[1.75rem]">{pick(info.title, locale)}</h1>
           <p className="text-muted-foreground mt-2">{pick(info.brief, locale)}</p>
@@ -255,21 +271,23 @@ export function MissionScreen({
                   </span>
                 </p>
               </div>
-              <button
-                type="button"
-                aria-pressed={follow}
-                title={t('follow')}
-                onClick={() => setFollow((value) => !value)}
-                className={cn(
-                  'grid size-11 place-items-center rounded-md border transition-colors [&_svg]:size-5',
-                  follow
-                    ? 'border-transparent bg-[#ffb020] text-[#191b20]'
-                    : 'border-white/15 text-white hover:bg-white/10',
-                )}
-              >
-                <ScanSearch aria-hidden />
-                <span className="sr-only">{t('follow')}</span>
-              </button>
+              {serialView ? null : (
+                <button
+                  type="button"
+                  aria-pressed={follow}
+                  title={t('follow')}
+                  onClick={() => setFollow((value) => !value)}
+                  className={cn(
+                    'grid size-11 place-items-center rounded-md border transition-colors [&_svg]:size-5',
+                    follow
+                      ? 'border-transparent bg-[#ffb020] text-[#191b20]'
+                      : 'border-white/15 text-white hover:bg-white/10',
+                  )}
+                >
+                  <ScanSearch aria-hidden />
+                  <span className="sr-only">{t('follow')}</span>
+                </button>
+              )}
             </div>
           </div>
           {error ? (
@@ -277,21 +295,27 @@ export function MissionScreen({
               {error}
             </p>
           ) : null}
-          <ArenaCanvas
-            simulation={sim.simulation}
-            drawRef={sim.draw}
-            dark={dark}
-            label={t('arenaLabel')}
-            follow={follow}
-          />
+          {serialView ? (
+            <SerialMonitor lines={sim.panel.serial} />
+          ) : (
+            <ArenaCanvas
+              simulation={sim.simulation}
+              drawRef={sim.draw}
+              dark={dark}
+              label={t('arenaLabel')}
+              follow={follow}
+            />
+          )}
         </section>
-        <SensorPanel
-          robot={mission.robot}
-          panel={sim.panel}
-          free={Boolean(mission.free)}
-          onClap={sim.clap}
-          onEnvironment={sim.setEnvironment}
-        />
+        {serialView && !mission.envTimeline ? null : (
+          <SensorPanel
+            robot={mission.robot}
+            panel={sim.panel}
+            free={Boolean(mission.free)}
+            onClap={sim.clap}
+            onEnvironment={sim.setEnvironment}
+          />
+        )}
         {mission.wifi || sim.panel.telemetry.length > 0 || sim.panel.dropped > 0 ? (
           <DashboardPanel
             telemetry={sim.panel.telemetry}
@@ -317,7 +341,8 @@ export function MissionScreen({
                   className={actionClass('plain')}
                   onClick={() => {
                     setResult(null);
-                    sim.reset();
+                    // Keep the printed lines on screen so they can be compared with the goals.
+                    if (!serialView) sim.reset();
                   }}
                 >
                   {t('tryAgain')}
