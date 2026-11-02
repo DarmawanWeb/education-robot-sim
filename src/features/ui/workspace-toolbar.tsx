@@ -1,9 +1,9 @@
 'use client';
 
 import { cn } from '@dctedu/ui/lib/utils';
-import { Maximize2, Minus, Plus, Redo2, RotateCcw, Undo2 } from 'lucide-react';
+import { Maximize2, Minus, Plus, Redo2, RotateCcw, Trash2, Undo2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import type { ReactNode } from 'react';
+import type { ReactNode, Ref } from 'react';
 import type { History } from '../blocks/blockly-workspace';
 
 function ToolButton({
@@ -37,24 +37,30 @@ const group =
 
 /**
  * The workspace's own controls, floating over its bottom-right corner: undo and redo, zoom, show
- * every block, and back to the starter blocks. They replace Blockly's grey zoom buttons and bin;
- * blocks are deleted by dragging them back onto the categories, or with the Delete key.
+ * every block, back to the starter blocks, and the bin. Drop a block on the bin to throw it away,
+ * or select a block and press it.
  */
 export function WorkspaceToolbar({
   history,
+  canDelete,
+  binRef,
   onUndo,
   onRedo,
   onZoom,
   onFit,
   onRestore,
+  onDelete,
   className,
 }: {
   history: History;
+  canDelete: boolean;
+  binRef: Ref<HTMLButtonElement>;
   onUndo: () => void;
   onRedo: () => void;
   onZoom: (steps: number) => void;
   onFit: () => void;
   onRestore: () => void;
+  onDelete: () => void;
   className?: string;
 }) {
   const t = useTranslations('Sim.tools');
@@ -92,6 +98,26 @@ export function WorkspaceToolbar({
           <span className="max-sm:sr-only">{t('restore')}</span>
         </button>
       </div>
+      {/* While a block is dragged over it, the bin turns red to say "drop to delete". */}
+      <button
+        ref={binRef}
+        type="button"
+        title={t('binHint')}
+        aria-label={t('bin')}
+        onClick={onDelete}
+        aria-disabled={!canDelete}
+        className={cn(
+          group,
+          'group/bin size-11 justify-center p-0 transition-[background-color,color,border-color,transform] duration-150',
+          'text-foreground hover:bg-surface-muted aria-disabled:text-muted-foreground',
+          'data-[over]:scale-110 data-[over]:border-[#c2181f] data-[over]:bg-[#c2181f] data-[over]:text-white',
+        )}
+      >
+        <Trash2
+          aria-hidden
+          className="size-5 transition-transform group-data-[over]/bin:-rotate-12"
+        />
+      </button>
     </div>
   );
 }
