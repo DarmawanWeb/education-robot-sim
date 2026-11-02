@@ -11,8 +11,6 @@
     "robot": "Robot",
     "mission": "Misi",
     "step": "Langkah {n} dari {total}",
-    "stepOption": "{n}. {title}",
-    "finishedOption": "{title} (selesai)",
     "progress": "{done} dari {total} misi selesai",
     "inPath": "Lihat langkah ini di jalur belajar {robot}",
     "newTab": "(terbuka di tab baru)",
@@ -23,15 +21,14 @@
     "reset": "Ulang posisi",
     "speed": "Kecepatan simulasi",
     "example": "Muat contoh solusi",
-    "restore": "Kembalikan blok awal",
     "workspaceLabel": "Area menyusun blok",
     "arenaLabel": "Arena simulasi robot dilihat dari atas",
     "follow": "Ikuti robot",
     "loading": "Menyiapkan blok",
     "status": {
-      "idle": "Siap dijalankan",
-      "running": "Berjalan {time} detik",
-      "done": "Program selesai",
+      "idle": "Siap",
+      "running": "Berjalan",
+      "done": "Selesai",
       "free": "Mode bebas"
     },
     "panel": {
@@ -102,6 +99,19 @@
     },
     "errors": {
       "noStart": "Program butuh blok saat mulai. Ambil dari kategori Mulai."
+    },
+    "pickMission": "Pilih misi",
+    "missionsOf": "Misi {robot}",
+    "finished": "selesai",
+    "tools": {
+      "history": "Urungkan dan ulangi",
+      "view": "Tampilan",
+      "undo": "Urungkan",
+      "redo": "Ulangi",
+      "zoomOut": "Perkecil",
+      "zoomIn": "Perbesar",
+      "fit": "Tampilkan semua blok",
+      "restore": "Blok awal"
     }
   },
   "Blocks": {

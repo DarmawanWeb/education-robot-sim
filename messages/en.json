@@ -11,8 +11,6 @@
     "robot": "Robot",
     "mission": "Mission",
     "step": "Step {n} of {total}",
-    "stepOption": "{n}. {title}",
-    "finishedOption": "{title} (done)",
     "progress": "{done} of {total} missions done",
     "inPath": "See this step on {robot}’s learning path",
     "newTab": "(opens in a new tab)",
@@ -23,15 +21,14 @@
     "reset": "Reset position",
     "speed": "Simulation speed",
     "example": "Load the example solution",
-    "restore": "Restore starter blocks",
     "workspaceLabel": "Block workspace",
     "arenaLabel": "Robot simulation arena seen from above",
     "follow": "Follow the robot",
     "loading": "Preparing blocks",
     "status": {
-      "idle": "Ready to run",
-      "running": "Running {time} s",
-      "done": "Program finished",
+      "idle": "Ready",
+      "running": "Running",
+      "done": "Done",
       "free": "Free mode"
     },
     "panel": {
@@ -102,6 +99,19 @@
     },
     "errors": {
       "noStart": "The program needs a when-started block. Find it in Start."
+    },
+    "pickMission": "Choose a mission",
+    "missionsOf": "{robot} missions",
+    "finished": "finished",
+    "tools": {
+      "history": "Undo and redo",
+      "view": "View",
+      "undo": "Undo",
+      "redo": "Redo",
+      "zoomOut": "Zoom out",
+      "zoomIn": "Zoom in",
+      "fit": "Show all blocks",
+      "restore": "Starter blocks"
     }
   },
   "Blocks": {
