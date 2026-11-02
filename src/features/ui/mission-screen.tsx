@@ -10,7 +10,7 @@ import {
   DialogTitle,
 } from '@dctedu/ui/components/dialog';
 import { cn } from '@dctedu/ui/lib/utils';
-import { CheckCircle2, Circle, Play, RotateCcw, ScanSearch, Square } from 'lucide-react';
+import { CheckCircle2, Circle, Play, RotateCcw, ScanSearch, Square, Star } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useMessages, useTranslations } from 'next-intl';
 import { useCallback, useRef, useState } from 'react';
@@ -98,7 +98,8 @@ export function MissionScreen({
 
   return (
     <div className="grid gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
-      <section className="border-border relative h-[62vh] min-h-[26rem] overflow-hidden rounded-xl border xl:sticky xl:top-[5.25rem] xl:h-[calc(100dvh-6.75rem)]">
+      {/* isolate keeps Blockly's own layers (toolbox, toolbar) under the header and popovers. */}
+      <section className="border-border relative isolate h-[62vh] min-h-[26rem] overflow-hidden rounded-xl border xl:sticky xl:top-[5.25rem] xl:h-[calc(100dvh-6.75rem)]">
         <BlocklyWorkspace
           robot={mission.robot}
           locale={locale}
@@ -124,23 +125,26 @@ export function MissionScreen({
 
       <div className="flex min-w-0 flex-col gap-4">
         <section className={cn(panelClass, 'rounded-xl p-5')}>
-          {place ? (
-            <p className="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm font-bold">
-              <span
-                className={cn(
-                  'rounded-full px-2.5 py-0.5',
-                  mission.robot === 'ciko'
-                    ? 'bg-robot-ciko text-white'
-                    : 'bg-robot-momo text-black',
-                )}
-              >
-                {robotName}
-              </span>
+          <p className="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm font-bold">
+            <span
+              className={cn(
+                'rounded-full px-2.5 py-0.5',
+                mission.robot === 'ciko' ? 'bg-robot-ciko text-white' : 'bg-robot-momo text-black',
+              )}
+            >
+              {robotName}
+            </span>
+            {place ? (
               <span className="text-muted-foreground">
                 {t('step', { n: place.number, total: place.total })}
               </span>
-            </p>
-          ) : null}
+            ) : (
+              <span className="inline-flex items-center gap-1.5 text-[#b07400] dark:text-[#ffb020]">
+                <Star className="size-4" strokeWidth={2.5} aria-hidden />
+                {t('extras')}
+              </span>
+            )}
+          </p>
           <h1 className="type-display mt-3 text-[1.75rem]">{pick(info.title, locale)}</h1>
           <p className="text-muted-foreground mt-2">{pick(info.brief, locale)}</p>
           {mission.goals.length > 0 ? (

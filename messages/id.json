@@ -102,6 +102,8 @@
     },
     "pickMission": "Pilih misi",
     "missionsOf": "Misi {robot}",
+    "pathGroup": "Jalur belajar",
+    "extras": "Tantangan tambahan",
     "finished": "selesai",
     "tools": {
       "history": "Urungkan dan ulangi",
