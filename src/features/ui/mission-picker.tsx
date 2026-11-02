@@ -10,9 +10,10 @@ import {
 } from '@dctedu/catalog';
 import { Popover, PopoverContent, PopoverTrigger } from '@dctedu/ui/components/popover';
 import { cn } from '@dctedu/ui/lib/utils';
-import { Check, ChevronDown, Star } from 'lucide-react';
+import { Check, ChevronDown } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { type KeyboardEvent, useState } from 'react';
+import { GROUPS } from './groups';
 
 /** The robot's colour on the current mission's marker, like on its switch. */
 const CURRENT: Record<SimRobot, string> = {
@@ -23,7 +24,7 @@ const CURRENT: Record<SimRobot, string> = {
 const markerClass =
   'type-number grid size-7 shrink-0 place-items-center rounded-full border-2 text-xs';
 
-/** A path mission shows its step number; an extra challenge shows a star. */
+/** A path mission shows its step number; one off the path shows its group's icon. */
 function Marker({
   entry,
   state,
@@ -33,6 +34,7 @@ function Marker({
   state: 'current' | 'done' | 'open';
   robot: SimRobot;
 }) {
+  const group = entry.group ? GROUPS[entry.group] : undefined;
   return (
     <span
       className={cn(
@@ -41,15 +43,13 @@ function Marker({
           ? CURRENT[robot]
           : state === 'done'
             ? 'border-success bg-success text-white'
-            : entry.extra
-              ? 'border-[#ffb020] text-[#b07400] dark:text-[#ffb020]'
-              : 'border-border text-muted-foreground',
+            : (group?.tone ?? 'border-border text-muted-foreground'),
       )}
     >
       {state === 'done' ? (
         <Check className="size-3.5" strokeWidth={3} aria-hidden />
-      ) : entry.extra ? (
-        <Star className="size-3.5" strokeWidth={2.5} aria-hidden />
+      ) : group ? (
+        <group.icon className="size-3.5" strokeWidth={2.5} aria-hidden />
       ) : (
         missionStep(entry.id)?.number
       )}
@@ -59,7 +59,8 @@ function Marker({
 
 /**
  * Which mission is open, and every other one for this robot: the path missions by step number,
- * then the extra challenges, each with a check once it has been finished in this browser.
+ * then the extra challenges and the algorithm practice, each with a check once it has been
+ * finished in this browser.
  */
 export function MissionPicker({
   robot,
@@ -80,8 +81,9 @@ export function MissionPicker({
   const [open, setOpen] = useState(false);
   const done = list.filter((entry) => finished.has(entry.id)).length;
   const groups = [
-    { id: 'path', label: t('pathGroup'), items: list.filter((entry) => !entry.extra) },
-    { id: 'extra', label: t('extras'), items: list.filter((entry) => entry.extra) },
+    { id: 'path', label: t('pathGroup'), items: list.filter((entry) => !entry.group) },
+    { id: 'extra', label: t('extras'), items: list.filter((entry) => entry.group === 'extra') },
+    { id: 'algo', label: t('algoGroup'), items: list.filter((entry) => entry.group === 'algo') },
   ].filter((group) => group.items.length > 0);
 
   // Up and down move between missions, like in a list box.
