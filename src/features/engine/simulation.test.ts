@@ -113,6 +113,76 @@ describe('failure cases', () => {
     const result = run('ciko-garis', { body: [{ kind: 'forever', body: [] }] });
     expect(result.outcome).toEqual({ status: 'fail', reason: 'time' });
   });
+  describe('extra missions', () => {
+    const sensor = (name: 'distance' | 'sound') => ({ kind: 'sensor' as const, sensor: name });
+    const compare = (op: 'LT' | 'GT', a: ReturnType<typeof sensor>, value: number) => ({
+      kind: 'compare' as const,
+      op,
+      a,
+      b: num(value),
+    });
+
+    it('does not count a parking space entered nose first', () => {
+      const result = run('ciko-parkir', {
+        body: [drive('forward', 7.33), drive('right', 0.63), drive('forward', 3.6)],
+      });
+      expect(result.met.has('park')).toBe(false);
+      expect(result.outcome.status).toBe('fail');
+    });
+
+    it('catches a clap counter that counts one clap many times', () => {
+      const show = {
+        kind: 'oled' as const,
+        line: 1,
+        value: { kind: 'join' as const, parts: [{ kind: 'var' as const, name: 'n' }] },
+      };
+      const result = run('momo-tepuk', {
+        body: [
+          { kind: 'set', name: 'n', value: num(0) },
+          {
+            kind: 'forever',
+            body: [
+              {
+                kind: 'if',
+                branches: [
+                  {
+                    cond: compare('GT', sensor('sound'), 70),
+                    body: [{ kind: 'change', name: 'n', delta: num(1) }, show],
+                  },
+                ],
+                otherwise: [],
+              },
+            ],
+          },
+        ],
+      });
+      expect(result.met.has('count')).toBe(false);
+    });
+
+    it('bumps into the hand when Momo ignores the distance', () => {
+      const result = run('momo-ikuti', {
+        body: [{ kind: 'motors', left: num(50), right: num(53) }, wait(10)],
+      });
+      expect(result.outcome).toEqual({ status: 'fail', reason: 'bump' });
+    });
+
+    it('needs a happy face, not just a beep, to greet', () => {
+      const result = run('ciko-sapa', {
+        body: [
+          {
+            kind: 'forever',
+            body: [
+              { kind: 'waitUntil', cond: compare('LT', sensor('distance'), 20) },
+              { kind: 'beep', seconds: num(0.3) },
+              { kind: 'waitUntil', cond: compare('GT', sensor('distance'), 30) },
+            ],
+          },
+        ],
+      });
+      expect([...result.met]).toEqual(['beep']);
+      expect(result.outcome).toEqual({ status: 'fail', reason: 'time' });
+    });
+  });
 });
 
 describe('Wi-Fi telemetry', () => {
