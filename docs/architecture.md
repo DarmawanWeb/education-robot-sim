@@ -68,10 +68,19 @@ to `https://<store>/<locale>/learn/<robot>#<step>`.
 
 ## The screen
 
-`features/ui/sim-app.tsx` reads `?robot=` and `?mission=`, and switches robot and mission.
-`mission-screen.tsx` places the workspace next to the brief and goals, the controls (run, stop,
-reset, speed 1x, 2x, 4x, restore the starter), the arena canvas with a follow camera, the sensor
-panel, the dashboard panel when the mission uses Wi-Fi, and the C++ panel.
+`features/ui/sim-app.tsx` reads `?robot=` and `?mission=`, and switches robot and mission. The
+mission picker (`mission-picker.tsx`, a popover from `@dctedu/ui`) lists the robot's missions with
+their step numbers, marks the finished ones, and shows the progress.
+
+`mission-screen.tsx` places the workspace next to the brief and goals. The workspace has its own
+toolbar (`workspace-toolbar.tsx`): undo and redo, zoom, show every block, and back to the starter
+blocks, which can be undone. Blockly's own zoom buttons and bin are off; blocks are deleted by
+dragging them onto the categories or with the Delete key. The program is framed in the middle when
+it loads, and stays framed through layout changes until it is edited.
+
+The arena sits under a dark control bar: run or stop, reset, speed 1x, 2x, 4x, the clock against
+the mission's time limit, and the follow camera. Under it come the sensor panel, the dashboard
+panel when the mission uses Wi-Fi, and the C++ panel.
 
 ## Blockly and Tailwind
 

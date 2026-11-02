@@ -1,14 +1,6 @@
 'use client';
 
-import {
-  brand,
-  getRobot,
-  type Locale,
-  missionStep,
-  pick,
-  type SimRobot,
-  simMissions,
-} from '@dctedu/catalog';
+import { brand, getRobot, type Locale, type SimRobot, simMissions } from '@dctedu/catalog';
 import { ThemeToggle } from '@dctedu/ui/brand/theme-toggle';
 import { Wordmark } from '@dctedu/ui/brand/wordmark';
 import { cn } from '@dctedu/ui/lib/utils';
@@ -18,6 +10,7 @@ import { useSyncExternalStore } from 'react';
 import { useRouter } from '@/i18n/navigation';
 import { webUrl } from '@/lib/links';
 import { getMission } from '../engine/missions';
+import { MissionPicker } from './mission-picker';
 import { MissionScreen } from './mission-screen';
 import { useFinishedMissions } from './progress';
 import { segmentClass, segmentGroupClass } from './styles';
@@ -72,18 +65,20 @@ export function SimApp() {
 
   return (
     <div className="bg-background text-foreground min-h-dvh">
-      <header className="border-border bg-background/95 sticky top-0 z-20 border-b backdrop-blur">
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3 sm:px-6">
+      <header className="border-border bg-background/90 sticky top-0 z-20 border-b backdrop-blur-md">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2.5 px-4 py-2.5 sm:px-6">
           <a
             href={`${webUrl}/${locale}`}
             aria-label={t('backToSite', { brand: brand.name })}
             className="group flex shrink-0 items-baseline gap-2 rounded-sm"
           >
-            <Wordmark title="" className="h-6 translate-y-0.5" />
-            <span className="type-display text-muted-foreground text-lg">{t('title')}</span>
+            <Wordmark title="" className="h-5 translate-y-0.5 sm:h-6" />
+            <span className="type-display text-muted-foreground hidden text-base min-[440px]:inline sm:text-lg">
+              {t('title')}
+            </span>
           </a>
-          {/* Robot and mission take their own row until there is room for everything. */}
-          <div className="order-last flex min-w-0 basis-full items-center gap-3 xl:order-none xl:basis-auto">
+          {/* Robot and mission: their own row on phones, next to the brand once there is room. */}
+          <div className="order-last flex min-w-0 basis-full items-center gap-2.5 lg:order-none lg:flex-1 lg:basis-auto">
             <fieldset aria-label={t('robot')} className={segmentGroupClass}>
               {ROBOTS.map((id) => (
                 <button
@@ -97,32 +92,14 @@ export function SimApp() {
                 </button>
               ))}
             </fieldset>
-            <label className="flex min-w-0 flex-1 items-center gap-2 text-sm font-semibold sm:flex-none">
-              <span className="sr-only sm:not-sr-only">{t('mission')}</span>
-              <select
-                value={info.id}
-                onChange={(event) => open({ robot, mission: event.target.value })}
-                className="border-border bg-surface h-10 min-w-0 flex-1 rounded-md border px-3 font-semibold"
-              >
-                {list.map((entry) => {
-                  const title = t('stepOption', {
-                    n: missionStep(entry.id)?.number ?? 0,
-                    title: pick(entry.title, locale),
-                  });
-                  return (
-                    <option key={entry.id} value={entry.id}>
-                      {finished.has(entry.id) ? t('finishedOption', { title }) : title}
-                    </option>
-                  );
-                })}
-              </select>
-            </label>
-            <span className="text-muted-foreground hidden text-sm font-semibold whitespace-nowrap tabular-nums md:inline">
-              {t('progress', {
-                done: list.filter((entry) => finished.has(entry.id)).length,
-                total: list.length,
-              })}
-            </span>
+            <MissionPicker
+              robot={robot}
+              list={list}
+              current={info}
+              finished={finished}
+              locale={locale}
+              onPick={(id) => open({ robot, mission: id })}
+            />
           </div>
           <div className="ml-auto flex items-center gap-2">
             <fieldset aria-label={t('language')} className={segmentGroupClass}>
