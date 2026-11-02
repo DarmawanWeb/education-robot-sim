@@ -244,7 +244,7 @@ const range = (from: number, to: number, step = 1) =>
 /** A desk: Momo sits still and only its Serial Monitor is shown. */
 const desk: Mission['arena'] = { width: 120, height: 80, lines: [], boxes: [], zones: [] };
 const algo: Pick<Mission, 'robot' | 'arena' | 'start' | 'failOnBump' | 'view'> = {
-  robot: 'momo',
+  robot: 'board',
   arena: desk,
   start: { x: 60, y: 40, heading: 0 },
   failOnBump: false,
@@ -261,6 +261,26 @@ const countWith = (name: string, from: Expr, to: Expr, body: Statement[], by = 1
   body,
 });
 const mod = (a: Expr, b: Expr): Expr => ({ kind: 'math', op: 'MODULO', a, b });
+const div = (a: Expr, b: Expr): Expr => ({ kind: 'math', op: 'DIVIDE', a, b });
+/** Lines compared without spaces, so "3! = 6" and "3!=6" both count. */
+const compact = (line: string) => tidy(line).replace(/\s/g, '');
+/** A line holds exactly these numbers, in this order (units and words around them are free). */
+const sameNumbers = (line: string | undefined, expected: number[]) => {
+  const found = numbersIn(line ?? '');
+  return found.length === expected.length && expected.every((value, i) => found[i] === value);
+};
+/** The night light's words, in Indonesian or English. */
+const lampOn = (shown: string) => /nyala|light on|\bon\b/i.test(shown) && !/mati|off/i.test(shown);
+const lampOff = (shown: string) => /mati|off/i.test(shown) && !/nyala|light on/i.test(shown);
+/** How far the robot has turned one way since the run began, in radians (left is negative). */
+const spun = (s: Snapshot, memo: Record<string, unknown>, way: 'left' | 'right' = 'left') => {
+  const before = memo.heading as number | undefined;
+  memo.heading = s.pose.heading;
+  const step = before === undefined ? 0 : s.pose.heading - before;
+  const total = Number(memo.total ?? 0) + (way === 'left' ? Math.min(0, step) : Math.max(0, step));
+  memo.total = total;
+  return total;
+};
 const eq = (a: Expr, b: Expr): Expr => ({ kind: 'compare', op: 'EQ', a, b });
 const join = (...parts: Expr[]): Expr => ({ kind: 'join', parts });
 // Starter blocks for the algorithm practice.
@@ -278,13 +298,19 @@ const printBlock = (value: StarterBlock): StarterBlock => ({
   inputs: { VALUE: plug(value) },
 });
 const textBlock = (text: string): StarterBlock => ({ type: 'text', fields: { TEXT: text } });
-const countBlock = (name: string, from: number, to: number, body?: StarterBlock): StarterBlock => ({
+const countBlock = (
+  name: string,
+  from: number,
+  to: number,
+  body?: StarterBlock,
+  by = 1,
+): StarterBlock => ({
   type: 'controls_for',
   fields: { VAR: { name } },
   inputs: {
     FROM: shadowNum(from),
     TO: shadowNum(to),
-    BY: shadowNum(1),
+    BY: shadowNum(by),
     ...(body ? { DO: plug(body) } : {}),
   },
 });
@@ -1011,6 +1037,158 @@ export const missions: readonly Mission[] = [
             stop,
             { kind: 'beep', seconds: n(0.3) },
             drive('right', 50, 1.26),
+          ],
+        },
+      ],
+    },
+  },
+  {
+    id: 'ciko-ambulans',
+    robot: 'ciko',
+    arena: {
+      width: 200,
+      height: 100,
+      lines: [],
+      boxes: [],
+      zones: [zone('start', 'start', 25, 50, 26, 26), zone('hospital', 'finish', 165, 50, 30, 40)],
+    },
+    start: { x: 25, y: 50, heading: 0 },
+    timeLimit: 25,
+    failOnBump: true,
+    goals: [
+      {
+        id: 'hazard',
+        label: l('Lampu hazard menyala selama jalan', 'Hazard lights on while driving'),
+        check: (s) => s.signal === 'hazard' && s.speed > 1,
+      },
+      {
+        id: 'beeps',
+        label: l('Bip tiga kali', 'Beep three times'),
+        check: (s) => s.beeps >= 3,
+      },
+      stoppedIn('hospital', l('Berhenti di zona rumah sakit', 'Stop in the hospital zone')),
+    ],
+    hint: l(
+      'Urutannya: lampu hazard, bip tiga kali (pakai ulangi), lalu maju sekitar 140 cm. Di 50%, Ciko menempuh 15 cm per detik.',
+      'In order: hazard lights, three beeps (use repeat), then drive about 140 cm. At 50% Ciko covers 15 cm a second.',
+    ),
+    starter: starter({ type: 'sim_drive_for', fields: { DIR: 'forward', SPEED: 50, SECONDS: 2 } }),
+    solution: {
+      body: [
+        signal('hazard'),
+        {
+          kind: 'repeat',
+          times: n(3),
+          body: [{ kind: 'beep', seconds: n(0.2) }, wait(0.2)],
+        },
+        drive('forward', 50, 9.33),
+      ],
+    },
+  },
+  {
+    id: 'ciko-tarian',
+    robot: 'ciko',
+    arena: { width: 160, height: 120, lines: [], boxes: [], zones: [] },
+    start: { x: 80, y: 60, heading: 0 },
+    timeLimit: 20,
+    failOnBump: false,
+    goals: [
+      {
+        id: 'spin-left',
+        label: l('Satu putaran penuh ke kiri', 'One full turn to the left'),
+        check: (s, memo) => spun(s, memo) <= -Math.PI * 1.9,
+      },
+      {
+        id: 'spin-right',
+        label: l('Satu putaran penuh ke kanan', 'One full turn to the right'),
+        check: (s, memo) => spun(s, memo, 'right') >= Math.PI * 1.9,
+      },
+      {
+        id: 'faces',
+        label: l('Dua ekspresi wajah yang berbeda', 'Two different faces'),
+        check: (s, memo) => {
+          const seen = (memo.faces as Set<string> | undefined) ?? new Set<string>();
+          memo.faces = seen;
+          if (s.face !== 'normal') seen.add(s.face);
+          return seen.size >= 2;
+        },
+      },
+      {
+        id: 'bow',
+        label: l('Tutup dengan bip', 'Finish with a beep'),
+        check: (s, memo) =>
+          beepStarted(s, memo) && s.met.has('spin-left') && s.met.has('spin-right'),
+      },
+    ],
+    hint: l(
+      'Di 50%, satu putaran penuh butuh sekitar 2,5 detik. Ganti wajah di antara putaran supaya tariannya hidup.',
+      'At 50% a full turn takes about 2.5 seconds. Change the face between the spins to bring the dance to life.',
+    ),
+    starter: starter(
+      { type: 'sim_face', fields: { FACE: 'senang' } },
+      { type: 'sim_drive_for', fields: { DIR: 'left', SPEED: 50, SECONDS: 1 } },
+    ),
+    solution: {
+      body: [
+        { kind: 'face', face: 'senang' },
+        drive('left', 50, 2.52),
+        { kind: 'face', face: 'berhasil' },
+        drive('right', 50, 2.52),
+        { kind: 'beep', seconds: n(0.4) },
+      ],
+    },
+  },
+  {
+    id: 'ciko-labirin',
+    robot: 'ciko',
+    arena: {
+      width: 200,
+      height: 140,
+      lines: [],
+      // One block in the middle turns the floor into a corridor around it.
+      boxes: [{ x: 40, y: 40, w: 120, h: 55 }],
+      zones: [
+        zone('start', 'start', 25, 115, 26, 26),
+        zone('c1', 'checkpoint', 178, 115, 30, 30),
+        zone('c2', 'checkpoint', 178, 23, 30, 30),
+        zone('exit', 'finish', 25, 23, 30, 30),
+      ],
+    },
+    start: { x: 25, y: 115, heading: 0 },
+    timeLimit: 50,
+    failOnBump: true,
+    goals: [
+      visit('c1', l('Sudut kanan bawah', 'Bottom-right corner')),
+      visit('c2', l('Sudut kanan atas', 'Top-right corner'), 'c1'),
+      visit('exit', l('Sampai di pintu keluar', 'Reach the exit'), 'c2'),
+    ],
+    hint: l(
+      'Ulangi selamanya. Jika jarak kurang dari 15 cm: belok kiri 50% selama 0,63 detik, seperempat putaran. Jika tidak: maju.',
+      'Repeat forever. If the distance is under 15 cm: turn left at 50% for 0.63 seconds, a quarter turn. Otherwise: drive forward.',
+    ),
+    starter: starter({
+      type: 'sim_forever',
+      inputs: {
+        DO: plug({
+          type: 'controls_if',
+          extraState: { hasElse: true },
+          inputs: {
+            IF0: plug(distanceBelow(15)),
+            ELSE: plug({ type: 'sim_drive', fields: { DIR: 'forward', SPEED: 50 } }),
+          },
+        }),
+      },
+    }),
+    solution: {
+      body: [
+        {
+          kind: 'forever',
+          body: [
+            {
+              kind: 'if',
+              branches: [{ cond: lt(sensor('distance'), n(15)), body: [drive('left', 50, 0.63)] }],
+              otherwise: [drive('forward', 50)],
+            },
           ],
         },
       ],
@@ -2039,7 +2217,9 @@ export const missions: readonly Mission[] = [
   },
   {
     ...algo,
-    id: 'algo-rata',
+    // A sensor project on Momo, shown on the Serial Monitor like the algorithm practice.
+    robot: 'momo',
+    id: 'momo-rata',
     timeLimit: 12,
     // Readings change between the one-second reads, never on them.
     envTimeline: [
@@ -2091,6 +2271,367 @@ export const missions: readonly Mission[] = [
           ],
         },
         print(join(text('Rata-rata '), { kind: 'math', op: 'DIVIDE', a: v('total'), b: n(5) })),
+      ],
+    },
+  },
+  {
+    ...algo,
+    id: 'algo-ulang',
+    timeLimit: 10,
+    goals: [
+      {
+        id: 'five',
+        label: l('Lima baris "Aku bisa coding!"', 'Five lines of "I can code!"'),
+        final: true,
+        check: (s) =>
+          s.programDone &&
+          s.serial.length === 5 &&
+          s.serial.every((line) => /aku bisa coding|i can code/i.test(line)),
+      },
+    ],
+    hint: l(
+      'Ambil blok "ulangi 5 kali" dari kategori Kontrol, lalu masukkan blok cetak ke dalamnya.',
+      'Take the "repeat 5 times" block from Control, then put the print block inside it.',
+    ),
+    starter: starter(printBlock(textBlock('Aku bisa coding!'))),
+    solution: {
+      body: [{ kind: 'repeat', times: n(5), body: [print(text('Aku bisa coding!'))] }],
+    },
+  },
+  {
+    ...algo,
+    id: 'algo-besar',
+    timeLimit: 10,
+    goals: [
+      opensWith('first', [6], l('Baris pertama: 6', 'The first line: 6')),
+      printsExactly(range(6, 10), l('Cetak 6 sampai 10 saja', 'Print only 6 to 10')),
+    ],
+    hint: l(
+      'Bungkus blok cetak dengan blok "jika": jika i lebih dari 5, cetak i.',
+      'Wrap the print block in an "if" block: if i is more than 5, print i.',
+    ),
+    starter: starter(countBlock('i', 1, 10, printBlock(getVar('i')))),
+    solution: {
+      body: [
+        countWith('i', n(1), n(10), [
+          {
+            kind: 'if',
+            branches: [{ cond: gt(v('i'), n(5)), body: [print(v('i'))] }],
+            otherwise: [],
+          },
+        ]),
+      ],
+    },
+  },
+  {
+    ...algo,
+    id: 'algo-faktorial',
+    timeLimit: 10,
+    goals: [
+      opensWith('first', ['1! = 1'], l('Baris pertama: 1! = 1', 'The first line: 1! = 1'), compact),
+      printsExactly(
+        [1, 2, 6, 24, 120, 720].map((value, index) => `${index + 1}! = ${value}`),
+        l('Sampai 6! = 720', 'Through 6! = 720'),
+        compact,
+      ),
+    ],
+    hint: l(
+      'Mulai dengan hasil = 1. Untuk setiap i dari 1 sampai 6: hasil = hasil × i, lalu cetak i, "! = ", dan hasil.',
+      'Start with result = 1. For each i from 1 to 6: result = result × i, then print i, "! = ", and result.',
+    ),
+    starter: starter(setVar('hasil', 1), countBlock('i', 1, 6)),
+    solution: {
+      body: [
+        set('hasil', n(1)),
+        countWith('i', n(1), n(6), [
+          set('hasil', times(v('hasil'), v('i'))),
+          print(join(v('i'), text('! = '), v('hasil'))),
+        ]),
+      ],
+    },
+  },
+  {
+    ...algo,
+    id: 'algo-celsius',
+    timeLimit: 10,
+    goals: [
+      {
+        id: 'first',
+        label: l('Baris pertama: 0 °C = 32 °F', 'The first line: 0 °C = 32 °F'),
+        check: (s) => sameNumbers(s.serial[0], [0, 32]),
+      },
+      {
+        id: 'output',
+        label: l(
+          'Sampai 100 °C = 212 °F, setiap 10 derajat',
+          'Through 100 °C = 212 °F, every 10 degrees',
+        ),
+        final: true,
+        check: (s) =>
+          s.programDone &&
+          s.serial.length === 11 &&
+          range(0, 100, 10).every((c, index) =>
+            sameNumbers(s.serial[index], [c, (c * 9) / 5 + 32]),
+          ),
+      },
+    ],
+    hint: l(
+      'Hitung dengan c dari 0 sampai 100 setiap 10. Hitung f = c × 9 ÷ 5 + 32, lalu cetak c, " °C = ", f, dan " °F".',
+      'Count with c from 0 to 100 by 10. Work out f = c × 9 ÷ 5 + 32, then print c, " °C = ", f and " °F".',
+    ),
+    starter: starter(countBlock('c', 0, 100, undefined, 10)),
+    solution: {
+      body: [
+        countWith(
+          'c',
+          n(0),
+          n(100),
+          [
+            set('f', add(div(times(v('c'), n(9)), n(5)), n(32))),
+            print(join(v('c'), text(' °C = '), v('f'), text(' °F'))),
+          ],
+          10,
+        ),
+      ],
+    },
+  },
+  {
+    ...algo,
+    id: 'algo-fpb',
+    timeLimit: 10,
+    goals: [
+      {
+        id: 'start',
+        label: l('Langkah pertama: 84 dan 36', 'The first step: 84 and 36'),
+        check: (s) => sameNumbers(s.serial[0], [84, 36]),
+      },
+      {
+        id: 'result',
+        label: l('Setiap langkah, lalu FPB-nya', 'Every step, then the GCD'),
+        final: true,
+        check: (s) =>
+          s.programDone && s.serial.length >= 3 && numbersIn(s.serial.at(-1) ?? '').includes(12),
+      },
+    ],
+    hint: l(
+      'Selama b tidak sama dengan 0: cetak a dan b, simpan sisa a ÷ b di t, lalu a = b dan b = t. Setelah perulangan, a adalah FPB-nya.',
+      'While b is not 0: print a and b, keep the remainder of a ÷ b in t, then a = b and b = t. After the loop, a is the GCD.',
+    ),
+    starter: starter(setVar('a', 84), setVar('b', 36), {
+      type: 'controls_whileUntil',
+      fields: { MODE: 'WHILE' },
+      inputs: {
+        BOOL: plug({
+          type: 'logic_compare',
+          fields: { OP: 'NEQ' },
+          inputs: { A: plug(getVar('b')), B: plug({ type: 'math_number', fields: { NUM: 0 } }) },
+        }),
+      },
+    }),
+    solution: {
+      body: [
+        set('a', n(84)),
+        set('b', n(36)),
+        {
+          kind: 'loop',
+          until: false,
+          cond: { kind: 'compare', op: 'NEQ', a: v('b'), b: n(0) },
+          body: [
+            print(join(v('a'), text(' '), v('b'))),
+            set('t', mod(v('a'), v('b'))),
+            set('a', v('b')),
+            set('b', v('t')),
+          ],
+        },
+        print(join(text('FPB = '), v('a'))),
+      ],
+    },
+  },
+  {
+    ...algo,
+    id: 'algo-segitiga',
+    timeLimit: 10,
+    goals: [
+      opensWith('first', ['*', '**'], l('Mulai dengan * lalu **', 'Start with * then **')),
+      printsExactly(
+        range(1, 5).map((row) => '*'.repeat(row)),
+        l('Lima baris, sampai *****', 'Five rows, up to *****'),
+      ),
+    ],
+    hint: l(
+      'Untuk setiap baris dari 1 sampai 5: mulai dengan teks kosong, hitung j dari 1 sampai baris sambil menambah satu bintang, lalu cetak teksnya.',
+      'For each row from 1 to 5: start with empty text, count j from 1 to row adding one star each time, then print the text.',
+    ),
+    starter: starter(countBlock('baris', 1, 5, printBlock(textBlock('*')))),
+    solution: {
+      body: [
+        countWith('baris', n(1), n(5), [
+          set('t', text('')),
+          countWith('j', n(1), v('baris'), [set('t', join(v('t'), text('*')))]),
+          print(v('t')),
+        ]),
+      ],
+    },
+  },
+  {
+    id: 'momo-parkir',
+    robot: 'momo',
+    arena: {
+      width: 200,
+      height: 80,
+      lines: [],
+      // The garage wall.
+      boxes: [{ x: 180, y: 8, w: 12, h: 64 }],
+      zones: [zone('start', 'start', 30, 40, 26, 26)],
+    },
+    start: { x: 30, y: 40, heading: 0 },
+    timeLimit: 25,
+    failOnBump: true,
+    goals: [
+      {
+        id: 'faster',
+        label: l('Bip makin cepat saat makin dekat', 'Beeps get faster as the wall gets closer'),
+        check: (s, memo) => {
+          if (beepStarted(s, memo)) {
+            const last = memo.last as number | undefined;
+            memo.last = s.time;
+            if (last !== undefined) {
+              const gap = s.time - last;
+              if (s.distance > 60 && gap > 0.45) memo.slow = true;
+              if (s.distance < 30 && gap < 0.25 && memo.slow) memo.fast = true;
+            }
+          }
+          return Boolean(memo.fast);
+        },
+      },
+      {
+        id: 'stop',
+        label: l('Berhenti 5 sampai 15 cm dari dinding', 'Stop 5 to 15 cm from the wall'),
+        final: true,
+        check: (s) => !s.bumped && s.speed < 0.5 && s.distance >= 5 && s.distance <= 15,
+      },
+    ],
+    hint: l(
+      'Jalan pelan, lalu pakai jika-lainnya-jika. Kurang dari 12 cm: berhenti. Kurang dari 30 cm: bip lalu tunggu 0,1 detik. Kurang dari 60 cm: tunggu 0,3 detik. Selebihnya: tunggu 0,6 detik.',
+      'Drive slowly, then use if-else-if. Under 12 cm: stop. Under 30 cm: beep, then wait 0.1 seconds. Under 60 cm: wait 0.3 seconds. Otherwise: wait 0.6 seconds.',
+    ),
+    starter: starter(
+      { type: 'sim_motors', inputs: { LEFT: shadowNum(30), RIGHT: shadowNum(32) } },
+      {
+        type: 'sim_forever',
+        inputs: {
+          DO: plug({
+            type: 'controls_if',
+            inputs: { IF0: plug(distanceBelow(12)), DO0: plug({ type: 'sim_stop' }) },
+          }),
+        },
+      },
+    ),
+    solution: {
+      body: [
+        motors(n(30), n(32)),
+        {
+          kind: 'forever',
+          body: [
+            {
+              kind: 'if',
+              branches: [
+                {
+                  cond: lt(sensor('distance'), n(12)),
+                  body: [stop, { kind: 'tone', note: 'C6', seconds: n(0.4) }, wait(0.4)],
+                },
+                {
+                  cond: lt(sensor('distance'), n(30)),
+                  body: [{ kind: 'tone', note: 'A5', seconds: n(0.05) }, wait(0.1)],
+                },
+                {
+                  cond: lt(sensor('distance'), n(60)),
+                  body: [{ kind: 'tone', note: 'A5', seconds: n(0.05) }, wait(0.3)],
+                },
+              ],
+              otherwise: [{ kind: 'tone', note: 'A5', seconds: n(0.05) }, wait(0.6)],
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    id: 'momo-lampu',
+    robot: 'momo',
+    arena: { width: 120, height: 80, lines: [], boxes: [], zones: [] },
+    start: { x: 60, y: 40, heading: 0 },
+    timeLimit: 11,
+    failOnBump: false,
+    // Day, then the room goes dark, then morning.
+    envTimeline: [
+      { t: 0, light: 80 },
+      { t: 3, light: 12 },
+      { t: 7, light: 75 },
+    ],
+    goals: [
+      {
+        id: 'off',
+        label: l('Terang: tulis LAMPU MATI', 'Bright: write LIGHT OFF'),
+        check: (s) => s.env.light > 50 && lampOff(s.oledText),
+      },
+      {
+        id: 'on',
+        label: l('Gelap: tulis LAMPU NYALA', 'Dark: write LIGHT ON'),
+        check: (s) => s.env.light < 30 && lampOn(s.oledText),
+      },
+      {
+        id: 'morning',
+        label: l('Pagi lagi: kembali LAMPU MATI', 'Morning again: back to LIGHT OFF'),
+        check: (s) => s.met.has('on') && s.time >= 7 && s.env.light > 50 && lampOff(s.oledText),
+      },
+    ],
+    hint: l(
+      'Ulangi selamanya: jika tingkat cahaya kurang dari 30%, tulis LAMPU NYALA di OLED. Jika tidak, tulis LAMPU MATI. Blok tingkat cahaya ada di kategori Sensor.',
+      'Repeat forever: if the light level is under 30%, write LIGHT ON on the OLED. If not, write LIGHT OFF. The light level block is in Sensors.',
+    ),
+    starter: starter({
+      type: 'sim_forever',
+      inputs: {
+        DO: plug({
+          type: 'controls_if',
+          extraState: { hasElse: true },
+          inputs: {
+            IF0: plug({
+              type: 'logic_compare',
+              fields: { OP: 'LT' },
+              inputs: {
+                A: plug({ type: 'sim_light' }),
+                B: plug({ type: 'math_number', fields: { NUM: 30 } }),
+              },
+            }),
+            DO0: plug({
+              type: 'sim_oled',
+              fields: { LINE: '1' },
+              inputs: { VALUE: { shadow: { type: 'text', fields: { TEXT: 'LAMPU NYALA' } } } },
+            }),
+          },
+        }),
+      },
+    }),
+    solution: {
+      body: [
+        {
+          kind: 'forever',
+          body: [
+            {
+              kind: 'if',
+              branches: [
+                {
+                  cond: lt(sensor('light'), n(30)),
+                  body: [{ kind: 'oled', line: 1, value: text('LAMPU NYALA') }],
+                },
+              ],
+              otherwise: [{ kind: 'oled', line: 1, value: text('LAMPU MATI') }],
+            },
+            wait(0.2),
+          ],
+        },
       ],
     },
   },
