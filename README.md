@@ -19,9 +19,9 @@ with no account, in Indonesian and English.**
 ---
 
 Part of [DCTEdu](https://github.com/DarmawanWeb/DCTEdu), which builds it as `apps/simulator` next
-to the [store](https://github.com/DarmawanWeb/education-robot-web). Every mission is a step on a
-robot's learning path in the store and links back to it. Progress stays in the browser that made
-it.
+to the [store](https://github.com/DarmawanWeb/education-robot-web). The missions are steps on a
+robot's learning path in the store and link back to it; after the path come a few extra
+challenges. Progress stays in the browser that made it.
 
 ## Features
 
