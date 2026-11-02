@@ -1,6 +1,13 @@
 'use client';
 
-import { brand, getRobot, type Locale, type SimRobot, simMissions } from '@dctedu/catalog';
+import {
+  brand,
+  getRobot,
+  getSimMission,
+  type Locale,
+  type SimTrack,
+  simMissions,
+} from '@dctedu/catalog';
 import { ThemeToggle } from '@dctedu/ui/brand/theme-toggle';
 import { Wordmark } from '@dctedu/ui/brand/wordmark';
 import { cn } from '@dctedu/ui/lib/utils';
@@ -14,6 +21,7 @@ import { MissionPicker } from './mission-picker';
 import { MissionScreen } from './mission-screen';
 import { useFinishedMissions } from './progress';
 import { segmentClass, segmentGroupClass } from './styles';
+import { TRACK_FILL, TRACKS } from './tracks';
 
 function subscribeTheme(onChange: () => void) {
   const observer = new MutationObserver(onChange);
@@ -30,13 +38,10 @@ function useDarkMode(): boolean {
   );
 }
 
-const ROBOTS: readonly SimRobot[] = ['ciko', 'momo'];
-
-/** Each robot's own colour on its switch: Ciko red, Momo yellow. */
-const ROBOT_FILL: Record<SimRobot, string> = {
-  ciko: 'bg-robot-ciko text-white',
-  momo: 'bg-robot-momo text-black',
-};
+/** `?track=` (or the older `?robot=`) when no mission is named. */
+function trackFrom(value: string | null): SimTrack {
+  return value === 'algo' || value === 'momo' ? value : 'ciko';
+}
 
 export function SimApp() {
   const t = useTranslations('Sim');
@@ -46,17 +51,17 @@ export function SimApp() {
   const dark = useDarkMode();
   const finished = useFinishedMissions();
 
-  const requested = getMission(searchParams.get('mission') ?? '');
-  const robot: SimRobot =
-    requested?.robot ?? (searchParams.get('robot') === 'momo' ? 'momo' : 'ciko');
-  const list = simMissions.filter((entry) => entry.robot === robot);
+  const requested = getSimMission(searchParams.get('mission') ?? '');
+  const track: SimTrack =
+    requested?.track ?? trackFrom(searchParams.get('track') ?? searchParams.get('robot'));
+  const list = simMissions.filter((entry) => entry.track === track);
   const info = (requested && list.find((entry) => entry.id === requested.id)) ?? list[0];
   const mission = info ? getMission(info.id) : undefined;
   const index = info ? list.indexOf(info) : -1;
   const next = list[index + 1];
 
-  const open = (target: { robot: SimRobot; mission?: string }, nextLocale: Locale = locale) => {
-    const query: Record<string, string> = { robot: target.robot };
+  const open = (target: { track: SimTrack; mission?: string }, nextLocale: Locale = locale) => {
+    const query: Record<string, string> = { track: target.track };
     if (target.mission) query.mission = target.mission;
     router.replace({ pathname: '/', query }, { locale: nextLocale, scroll: false });
   };
@@ -79,26 +84,26 @@ export function SimApp() {
           </a>
           {/* Robot and mission: their own row on phones, next to the brand once there is room. */}
           <div className="order-last flex min-w-0 basis-full items-center gap-2.5 lg:order-none lg:flex-1 lg:basis-auto">
-            <fieldset aria-label={t('robot')} className={segmentGroupClass}>
-              {ROBOTS.map((id) => (
+            <fieldset aria-label={t('track')} className={segmentGroupClass}>
+              {TRACKS.map((id) => (
                 <button
                   key={id}
                   type="button"
-                  aria-pressed={robot === id}
-                  onClick={() => open({ robot: id })}
-                  className={segmentClass(robot === id, ROBOT_FILL[id])}
+                  aria-pressed={track === id}
+                  onClick={() => open({ track: id })}
+                  className={segmentClass(track === id, TRACK_FILL[id])}
                 >
-                  {getRobot(id)?.name}
+                  {id === 'algo' ? t('algoTrack') : getRobot(id)?.name}
                 </button>
               ))}
             </fieldset>
             <MissionPicker
-              robot={robot}
+              track={track}
               list={list}
               current={info}
               finished={finished}
               locale={locale}
-              onPick={(id) => open({ robot, mission: id })}
+              onPick={(id) => open({ track, mission: id })}
             />
           </div>
           <div className="ml-auto flex items-center gap-2">
@@ -108,7 +113,7 @@ export function SimApp() {
                   key={code}
                   type="button"
                   aria-pressed={locale === code}
-                  onClick={() => open({ robot, mission: info.id }, code)}
+                  onClick={() => open({ track, mission: info.id }, code)}
                   lang={code}
                   className={cn(segmentClass(locale === code), 'uppercase')}
                 >
@@ -128,7 +133,7 @@ export function SimApp() {
           locale={locale}
           dark={dark}
           hasNext={Boolean(next)}
-          onNext={() => (next ? open({ robot, mission: next.id }) : undefined)}
+          onNext={() => (next ? open({ track, mission: next.id }) : undefined)}
         />
       </main>
     </div>

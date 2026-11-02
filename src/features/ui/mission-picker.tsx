@@ -1,76 +1,65 @@
 'use client';
 
-import {
-  getRobot,
-  type Locale,
-  missionStep,
-  pick,
-  type SimMissionInfo,
-  type SimRobot,
-} from '@dctedu/catalog';
+import { getRobot, type Locale, pick, type SimMissionInfo, type SimTrack } from '@dctedu/catalog';
 import { Popover, PopoverContent, PopoverTrigger } from '@dctedu/ui/components/popover';
 import { cn } from '@dctedu/ui/lib/utils';
 import { Check, ChevronDown } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { type KeyboardEvent, useState } from 'react';
-import { GROUPS } from './groups';
-
-/** The robot's colour on the current mission's marker, like on its switch. */
-const CURRENT: Record<SimRobot, string> = {
-  ciko: 'bg-robot-ciko text-white border-robot-ciko',
-  momo: 'bg-robot-momo text-black border-robot-momo',
-};
+import { EXTRA, missionNumber, TRACK_FILL } from './tracks';
 
 const markerClass =
   'type-number grid size-7 shrink-0 place-items-center rounded-full border-2 text-xs';
 
-/** A path mission shows its step number; one off the path shows its group's icon. */
+/** A path step or exercise shows its number; an extra challenge shows a star. */
 function Marker({
   entry,
+  list,
   state,
-  robot,
 }: {
   entry: SimMissionInfo;
+  list: readonly SimMissionInfo[];
   state: 'current' | 'done' | 'open';
-  robot: SimRobot;
 }) {
-  const group = entry.group ? GROUPS[entry.group] : undefined;
+  const extra = entry.group === 'extra';
   return (
     <span
       className={cn(
         markerClass,
         state === 'current'
-          ? CURRENT[robot]
+          ? TRACK_FILL[entry.track]
           : state === 'done'
             ? 'border-success bg-success text-white'
-            : (group?.tone ?? 'border-border text-muted-foreground'),
+            : extra
+              ? EXTRA.tone
+              : 'border-border text-muted-foreground',
       )}
     >
       {state === 'done' ? (
         <Check className="size-3.5" strokeWidth={3} aria-hidden />
-      ) : group ? (
-        <group.icon className="size-3.5" strokeWidth={2.5} aria-hidden />
+      ) : extra ? (
+        <EXTRA.icon className="size-3.5" strokeWidth={2.5} aria-hidden />
       ) : (
-        missionStep(entry.id)?.number
+        missionNumber(entry, list)?.n
       )}
     </span>
   );
 }
 
 /**
- * Which mission is open, and every other one for this robot: the path missions by step number,
- * then the extra challenges and the algorithm practice, each with a check once it has been
- * finished in this browser.
+ * Which mission is open, and every other one on this track: a robot's path missions by step
+ * number and then its extra challenges, or the algorithm exercises by school level. Each gets a
+ * check once it has been finished in this browser.
  */
 export function MissionPicker({
-  robot,
+  track,
   list,
   current,
   finished,
   locale,
   onPick,
 }: {
-  robot: SimRobot;
+  track: SimTrack;
   list: readonly SimMissionInfo[];
   current: SimMissionInfo;
   finished: ReadonlySet<string>;
@@ -80,11 +69,23 @@ export function MissionPicker({
   const t = useTranslations('Sim');
   const [open, setOpen] = useState(false);
   const done = list.filter((entry) => finished.has(entry.id)).length;
-  const groups = [
-    { id: 'path', label: t('pathGroup'), items: list.filter((entry) => !entry.group) },
-    { id: 'extra', label: t('extras'), items: list.filter((entry) => entry.group === 'extra') },
-    { id: 'algo', label: t('algoGroup'), items: list.filter((entry) => entry.group === 'algo') },
-  ].filter((group) => group.items.length > 0);
+  const groups = (
+    track === 'algo'
+      ? [
+          { id: 'sd', label: t('levelSd'), items: list.filter((entry) => entry.level === 'sd') },
+          { id: 'smp', label: t('levelSmp'), items: list.filter((entry) => entry.level === 'smp') },
+        ]
+      : [
+          { id: 'path', label: t('pathGroup'), items: list.filter((entry) => !entry.group) },
+          {
+            id: 'extra',
+            label: t('extras'),
+            items: list.filter((entry) => entry.group === 'extra'),
+          },
+        ]
+  ).filter((group) => group.items.length > 0);
+  const title =
+    track === 'algo' ? t('algoMissions') : t('missionsOf', { robot: getRobot(track)?.name ?? '' });
 
   // Up and down move between missions, like in a list box.
   const onKeyDown = (event: KeyboardEvent<HTMLUListElement>) => {
@@ -106,7 +107,7 @@ export function MissionPicker({
           aria-label={t('pickMission')}
           className="border-border bg-surface hover:bg-surface-muted data-[state=open]:border-foreground flex h-10 min-w-0 flex-1 items-center gap-2.5 rounded-md border pr-2.5 pl-1.5 text-left transition-colors sm:max-w-[22rem]"
         >
-          <Marker entry={current} state="current" robot={robot} />
+          <Marker entry={current} list={list} state="current" />
           <span className="min-w-0 flex-1 truncate font-bold">{pick(current.title, locale)}</span>
           <span className="text-muted-foreground shrink-0 text-xs font-bold tabular-nums">
             {done}/{list.length}
@@ -116,9 +117,7 @@ export function MissionPicker({
       </PopoverTrigger>
       <PopoverContent className="w-[min(24rem,calc(100vw-1.5rem))] p-0">
         <div className="border-border border-b px-4 pt-3.5 pb-3">
-          <p className="text-sm font-bold">
-            {t('missionsOf', { robot: getRobot(robot)?.name ?? '' })}
-          </p>
+          <p className="text-sm font-bold">{title}</p>
           <div className="mt-2 flex items-center gap-3">
             <div
               className="bg-surface-muted h-1.5 flex-1 overflow-hidden rounded-full"
@@ -173,8 +172,8 @@ export function MissionPicker({
                       >
                         <Marker
                           entry={entry}
+                          list={list}
                           state={active ? 'current' : isDone ? 'done' : 'open'}
-                          robot={robot}
                         />
                         <span className="min-w-0 flex-1">
                           <span

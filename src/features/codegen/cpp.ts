@@ -24,6 +24,7 @@ const SENSOR: Record<SensorId, (index?: number) => string> = {
   temperature: () => 'robot.temperature()',
   humidity: () => 'robot.humidity()',
   sound: () => 'robot.soundLevel()',
+  light: () => 'robot.lightLevel()',
   wifi: () => 'robot.wifiConnected()',
   time: () => '(millis() / 1000.0)',
 };
@@ -268,6 +269,17 @@ export function toCpp(program: Program, robot: RobotId): string {
       `${type} ${identifier(name)}${{ String: '', bool: ' = false', long: ' = 0', float: ' = 0' }[type]};`,
   );
   const prints = [...walk(program.body)].some((s) => s.kind === 'print');
+  if (robot === 'board')
+    // Algorithm practice runs on any Arduino-compatible board, with no robot library.
+    return [
+      ...(declared.length ? [...declared, ''] : []),
+      'void setup() {',
+      '  Serial.begin(115200);',
+      ...lines(program.body, 1, ctx),
+      '}',
+      '',
+      'void loop() {}',
+    ].join('\n');
   return [
     '#include <RobotKit.h>',
     '',

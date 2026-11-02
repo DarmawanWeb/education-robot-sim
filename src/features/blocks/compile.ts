@@ -20,6 +20,7 @@ const SENSOR_BLOCKS: Record<string, SensorId> = {
   sim_temperature: 'temperature',
   sim_humidity: 'humidity',
   sim_sound: 'sound',
+  sim_light: 'light',
   sim_timer: 'time',
   sim_wifi: 'wifi',
 };

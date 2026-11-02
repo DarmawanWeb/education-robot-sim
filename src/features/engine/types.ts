@@ -10,7 +10,8 @@ export interface Pose extends Vec {
   heading: number;
 }
 
-export type RobotId = 'ciko' | 'momo';
+/** The two robots, and a plain board (Serial Monitor only) for algorithm practice. */
+export type RobotId = 'ciko' | 'momo' | 'board';
 export type Face = 'normal' | 'senang' | 'bingung' | 'waspada' | 'berhasil';
 export type Note = 'C5' | 'D5' | 'E5' | 'F5' | 'G5' | 'A5' | 'B5' | 'C6';
 /** Which turn-signal lamps blink: one side, both (hazard), or none. */
@@ -75,6 +76,8 @@ export interface Environment {
   temperature: number;
   humidity: number;
   sound: number;
+  /** Light level in percent, from the Sensor Pack's light sensor. */
+  light: number;
 }
 
 export type SensorId =
@@ -86,6 +89,7 @@ export type SensorId =
   | 'temperature'
   | 'humidity'
   | 'sound'
+  | 'light'
   | 'wifi'
   | 'time';
 
@@ -186,6 +190,7 @@ export interface EnvironmentKey {
   t: number;
   temperature?: number;
   humidity?: number;
+  light?: number;
 }
 
 export interface Mission {

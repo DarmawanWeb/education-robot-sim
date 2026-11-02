@@ -21,7 +21,9 @@ describe('mission catalogue', () => {
     expect(missions.map((mission) => mission.id).sort()).toEqual(
       simMissions.map((mission) => mission.id).sort(),
     );
-    for (const info of simMissions) expect(getMission(info.id)?.robot).toBe(info.robot);
+    // Algorithm practice runs on the plain board; everything else on its own robot.
+    for (const info of simMissions)
+      expect(getMission(info.id)?.robot).toBe(info.track === 'algo' ? 'board' : info.track);
   });
 });
 
@@ -147,6 +149,49 @@ describe('failure cases', () => {
         body: [{ ...count([print('i')]), from: num(3), to: num(1) }],
       });
       expect(result.serial).toEqual(['3', '2', '1']);
+    });
+  });
+
+  describe('more extra missions', () => {
+    it('bumps the maze wall when Ciko turns the wrong way', () => {
+      const result = run('ciko-labirin', {
+        body: [
+          {
+            kind: 'forever',
+            body: [
+              {
+                kind: 'if',
+                branches: [
+                  {
+                    cond: {
+                      kind: 'compare',
+                      op: 'LT',
+                      a: { kind: 'sensor', sensor: 'distance' },
+                      b: num(15),
+                    },
+                    body: [drive('right', 0.63)],
+                  },
+                ],
+                otherwise: [{ kind: 'drive', dir: 'forward', speed: num(50), seconds: null }],
+              },
+            ],
+          },
+        ],
+      });
+      expect(result.met.has('exit')).toBe(false);
+      expect(result.outcome.status).toBe('fail');
+    });
+
+    it('keeps the night light off in the dark when the program never checks the light', () => {
+      const result = run('momo-lampu', {
+        body: [
+          {
+            kind: 'forever',
+            body: [{ kind: 'oled', line: 1, value: { kind: 'text', value: 'LAMPU MATI' } }],
+          },
+        ],
+      });
+      expect([...result.met]).toEqual(['off']);
     });
   });
 

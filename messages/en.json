@@ -9,6 +9,7 @@
     "theme": "Switch light or dark theme",
     "language": "Language",
     "robot": "Robot",
+    "track": "Choose a track",
     "mission": "Mission",
     "step": "Step {n} of {total}",
     "progress": "{done} of {total} missions done",
@@ -60,7 +61,8 @@
       "yes": "yes",
       "no": "no",
       "clap": "Clap",
-      "freeNote": "Set temperature and humidity, or clap, to test your program."
+      "freeNote": "Set temperature and humidity, or clap, to test your program.",
+      "light": "Light"
     },
     "dashboard": {
       "title": "Local dashboard",
@@ -112,7 +114,12 @@
     "missionsOf": "{robot} missions",
     "pathGroup": "Learning path",
     "extras": "Extra challenges",
-    "algoGroup": "Algorithm practice",
+    "algoTrack": "Algorithms",
+    "algoMissions": "Algorithm practice",
+    "levelSd": "Primary school",
+    "levelSmp": "Junior high",
+    "exercise": "exercise {n} of {total}",
+    "parts": "Fit first",
     "finished": "finished",
     "tools": {
       "history": "Undo and redo",
@@ -165,6 +172,7 @@
     "SIM_TEMPERATURE": "temperature (°C)",
     "SIM_HUMIDITY": "humidity (%%)",
     "SIM_SOUND": "sound level (dB)",
+    "SIM_LIGHT": "light level (%)",
     "SIM_TIMER": "time (seconds)",
     "SIM_MOTORS": "set motors left %1 right %2",
     "SIM_SERVO": "turn servo to %1 °",

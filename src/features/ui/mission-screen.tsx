@@ -1,6 +1,13 @@
 'use client';
 
-import { getRobot, type Locale, missionStep, pick, type SimMissionInfo } from '@dctedu/catalog';
+import {
+  getRobot,
+  type Locale,
+  missionStep,
+  pick,
+  type SimMissionInfo,
+  simMissions,
+} from '@dctedu/catalog';
 import {
   Dialog,
   DialogContent,
@@ -10,7 +17,7 @@ import {
   DialogTitle,
 } from '@dctedu/ui/components/dialog';
 import { cn } from '@dctedu/ui/lib/utils';
-import { CheckCircle2, Circle, Play, RotateCcw, ScanSearch, Square } from 'lucide-react';
+import { CheckCircle2, Circle, Play, Plug, RotateCcw, ScanSearch, Square } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useMessages, useTranslations } from 'next-intl';
 import { useCallback, useRef, useState } from 'react';
@@ -21,11 +28,11 @@ import type { Mission, Outcome } from '../engine/types';
 import { ArenaCanvas } from './arena-canvas';
 import { CodePanel } from './code-panel';
 import { DashboardPanel } from './dashboard-panel';
-import { GROUPS } from './groups';
 import { markFinished } from './progress';
 import { SensorPanel } from './sensor-panel';
 import { SerialMonitor } from './serial-monitor';
 import { actionClass, panelClass } from './styles';
+import { EXTRA, missionNumber, TRACK_FILL } from './tracks';
 import { useSimulation } from './use-simulation';
 import { WorkspaceToolbar } from './workspace-toolbar';
 
@@ -92,9 +99,9 @@ export function MissionScreen({
         : t('status.idle');
   const metCount = mission.goals.filter((goal) => sim.panel.met.includes(goal.id)).length;
   const place = missionStep(info.id);
-  const group = info.group ? GROUPS[info.group] : undefined;
+  const exercise = info.track === 'algo' ? missionNumber(info, simMissions) : undefined;
   const serialView = mission.view === 'serial';
-  const robotName = getRobot(mission.robot)?.name ?? '';
+  const robotName = info.track === 'algo' ? '' : (getRobot(info.track)?.name ?? '');
   const outcomeKey =
     result && result.status !== 'running'
       ? result.status === 'success'
@@ -142,27 +149,43 @@ export function MissionScreen({
       <div className="flex min-w-0 flex-col gap-4">
         <section className={cn(panelClass, 'rounded-xl p-5')}>
           <p className="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm font-bold">
-            <span
-              className={cn(
-                'rounded-full px-2.5 py-0.5',
-                mission.robot === 'ciko' ? 'bg-robot-ciko text-white' : 'bg-robot-momo text-black',
-              )}
-            >
-              {robotName}
+            <span className={cn('rounded-full border px-2.5 py-0.5', TRACK_FILL[info.track])}>
+              {info.track === 'algo' ? t('algoTrack') : robotName}
             </span>
-            {place ? (
+            {exercise ? (
+              <span className="text-muted-foreground">
+                {t(info.level === 'smp' ? 'levelSmp' : 'levelSd')},{' '}
+                {t('exercise', { n: exercise.n, total: exercise.total })}
+              </span>
+            ) : place ? (
               <span className="text-muted-foreground">
                 {t('step', { n: place.number, total: place.total })}
               </span>
-            ) : group ? (
-              <span className={cn('inline-flex items-center gap-1.5', group.tone)}>
-                <group.icon className="size-4" strokeWidth={2.5} aria-hidden />
-                {t(group.label)}
+            ) : info.group === 'extra' ? (
+              <span className={cn('inline-flex items-center gap-1.5', EXTRA.tone)}>
+                <EXTRA.icon className="size-4" strokeWidth={2.5} aria-hidden />
+                {t('extras')}
               </span>
             ) : null}
           </p>
           <h1 className="type-display mt-3 text-[1.75rem]">{pick(info.title, locale)}</h1>
           <p className="text-muted-foreground mt-2">{pick(info.brief, locale)}</p>
+          {info.parts?.length ? (
+            <p className="mt-3 flex flex-wrap items-center gap-2 text-sm">
+              <span className="inline-flex items-center gap-1.5 font-bold">
+                <Plug className="size-4" aria-hidden />
+                {t('parts')}
+              </span>
+              {info.parts.map((part) => (
+                <span
+                  key={part.en}
+                  className="bg-surface-muted rounded-full px-2.5 py-0.5 font-semibold"
+                >
+                  {pick(part, locale)}
+                </span>
+              ))}
+            </p>
+          ) : null}
           {mission.goals.length > 0 ? (
             <>
               <h2 className="mt-5 flex items-center justify-between text-sm font-bold">
@@ -197,7 +220,7 @@ export function MissionScreen({
           </details>
           {place ? (
             <a
-              href={learnStepUrl(locale, mission.robot, place.step.id)}
+              href={learnStepUrl(locale, place.robot, place.step.id)}
               target="_blank"
               rel="noopener"
               className="decoration-primary mt-3 inline-block text-sm font-semibold underline decoration-2 underline-offset-4"

@@ -9,6 +9,7 @@
     "theme": "Ganti tema terang atau gelap",
     "language": "Bahasa",
     "robot": "Robot",
+    "track": "Pilih jalur",
     "mission": "Misi",
     "step": "Langkah {n} dari {total}",
     "progress": "{done} dari {total} misi selesai",
@@ -60,7 +61,8 @@
       "yes": "ya",
       "no": "tidak",
       "clap": "Tepuk tangan",
-      "freeNote": "Atur suhu dan kelembapan, atau tepuk tangan, untuk menguji program."
+      "freeNote": "Atur suhu dan kelembapan, atau tepuk tangan, untuk menguji program.",
+      "light": "Cahaya"
     },
     "dashboard": {
       "title": "Dasbor lokal",
@@ -112,7 +114,12 @@
     "missionsOf": "Misi {robot}",
     "pathGroup": "Jalur belajar",
     "extras": "Tantangan tambahan",
-    "algoGroup": "Latihan algoritma",
+    "algoTrack": "Algoritma",
+    "algoMissions": "Latihan algoritma",
+    "levelSd": "Tingkat SD",
+    "levelSmp": "Tingkat SMP",
+    "exercise": "latihan {n} dari {total}",
+    "parts": "Pasang dulu",
     "finished": "selesai",
     "tools": {
       "history": "Urungkan dan ulangi",
@@ -165,6 +172,7 @@
     "SIM_TEMPERATURE": "suhu (°C)",
     "SIM_HUMIDITY": "kelembapan (%%)",
     "SIM_SOUND": "tingkat suara (dB)",
+    "SIM_LIGHT": "tingkat cahaya (%)",
     "SIM_TIMER": "waktu (detik)",
     "SIM_MOTORS": "atur motor kiri %1 kanan %2",
     "SIM_SERVO": "putar servo ke %1 °",
