@@ -70,7 +70,7 @@ export class Simulation {
   linePosition = 0;
   distance = 0;
   env: Environment;
-  manualEnv: Partial<Pick<Environment, 'temperature' | 'humidity'>> = {};
+  manualEnv: Partial<Pick<Environment, 'temperature' | 'humidity' | 'light'>> = {};
   activeBlock: string | undefined;
   trail: Vec[] = [];
   visited = new Set<string>();
@@ -235,7 +235,9 @@ export class Simulation {
   }
 
   /** Free-play sliders override the scripted temperature and humidity. */
-  setManualEnvironment(patch: Partial<Pick<Environment, 'temperature' | 'humidity'>>): void {
+  setManualEnvironment(
+    patch: Partial<Pick<Environment, 'temperature' | 'humidity' | 'light'>>,
+  ): void {
     this.manualEnv = { ...this.manualEnv, ...patch };
     this.env = this.environmentAt(this.time);
   }
@@ -384,6 +386,8 @@ export class Simulation {
         return this.env.humidity;
       case 'sound':
         return this.env.sound;
+      case 'light':
+        return this.env.light;
       case 'wifi':
         return this.online;
       case 'time':
@@ -394,10 +398,12 @@ export class Simulation {
   environmentAt(time: number): Environment {
     let temperature = 28;
     let humidity = 65;
+    let light = 70;
     for (const key of this.mission.envTimeline ?? []) {
       if (key.t > time) continue;
       if (key.temperature !== undefined) temperature = key.temperature;
       if (key.humidity !== undefined) humidity = key.humidity;
+      if (key.light !== undefined) light = key.light;
     }
     const claps = [...(this.mission.claps ?? []), ...this.manualClaps];
     const loud = claps.some((clap) => time >= clap && time - clap < CLAP_SECONDS);
@@ -405,6 +411,7 @@ export class Simulation {
       temperature: this.manualEnv.temperature ?? temperature,
       humidity: this.manualEnv.humidity ?? humidity,
       sound: loud ? 85 : 38,
+      light: this.manualEnv.light ?? light,
     };
   }
 

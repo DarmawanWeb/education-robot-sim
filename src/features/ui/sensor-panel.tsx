@@ -43,7 +43,7 @@ export function SensorPanel({
   panel: PanelState;
   free: boolean;
   onClap: () => void;
-  onEnvironment: (patch: { temperature?: number; humidity?: number }) => void;
+  onEnvironment: (patch: { temperature?: number; humidity?: number; light?: number }) => void;
 }) {
   const t = useTranslations('Sim.panel');
   const yesNo = (on: boolean) => (on ? t('yes') : t('no'));
@@ -131,6 +131,7 @@ export function SensorPanel({
               />
               <Readout label={t('humidity')} part="AHT10" value={`${panel.env.humidity} %`} />
               <Readout label={t('sound')} part={t('microphone')} value={`${panel.env.sound} dB`} />
+              <Readout label={t('light')} part="Sensor Pack" value={`${panel.env.light} %`} />
               <Readout
                 label={t('wifi')}
                 part="ESP32"
@@ -147,7 +148,7 @@ export function SensorPanel({
         </dl>
       </div>
       {free ? (
-        <div className="border-border mt-4 grid gap-4 border-t pt-4 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
+        <div className="border-border mt-4 grid gap-4 border-t pt-4 sm:grid-cols-[1fr_1fr_1fr_auto] sm:items-end">
           <label className="flex flex-col gap-1 text-sm font-semibold">
             {t('temperature')}: {panel.env.temperature} °C
             <input
@@ -170,6 +171,17 @@ export function SensorPanel({
               onChange={(event) => onEnvironment({ humidity: Number(event.target.value) })}
             />
           </label>
+          <label className="flex flex-col gap-1 text-sm font-semibold">
+            {t('light')}: {panel.env.light} %
+            <input
+              type="range"
+              min={0}
+              max={100}
+              step={1}
+              value={panel.env.light}
+              onChange={(event) => onEnvironment({ light: Number(event.target.value) })}
+            />
+          </label>
           <button
             type="button"
             onClick={onClap}
@@ -178,7 +190,7 @@ export function SensorPanel({
             <Hand className="size-4" aria-hidden />
             {t('clap')}
           </button>
-          <p className="text-muted-foreground text-xs sm:col-span-3">{t('freeNote')}</p>
+          <p className="text-muted-foreground text-xs sm:col-span-4">{t('freeNote')}</p>
         </div>
       ) : null}
     </section>

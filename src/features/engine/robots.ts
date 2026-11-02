@@ -42,4 +42,19 @@ const momo: RobotModel = {
   hasSignals: false,
 };
 
-export const robotModels: Record<RobotId, RobotModel> = { ciko, momo };
+/** A bare microcontroller on the desk: nothing moves, nothing senses, it only prints. */
+const board: RobotModel = {
+  id: 'board',
+  length: 6,
+  width: 4,
+  radius: 3,
+  wheelBase: 4,
+  maxSpeed: 0,
+  motorBias: { left: 1, right: 1 },
+  lineSensors: [],
+  sonar: { forward: 0, range: 0, halfCone: 0 },
+  hasServo: false,
+  hasSignals: false,
+};
+
+export const robotModels: Record<RobotId, RobotModel> = { ciko, momo, board };

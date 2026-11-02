@@ -107,12 +107,27 @@ describe('toCpp', () => {
     expect(sum).toContain('    jumlah += i;');
 
     expect(toCpp(getMission('algo-prima')!.solution, 'momo')).toContain('bool prima = false;');
-    const average = toCpp(getMission('algo-rata')!.solution, 'momo');
+    const average = toCpp(getMission('momo-rata')!.solution, 'momo');
     expect(average).toContain('float total = 0;');
     expect(average).toContain('  Serial.println(String("Rata-rata ") + String((total / 5)));');
   });
 
   it('leaves Serial out of programs that never print', () => {
     expect(toCpp(getMission('ciko-rintangan')!.solution, 'ciko')).not.toContain('Serial');
+  });
+
+  it('writes algorithm practice as a plain Arduino sketch, without the robot library', () => {
+    const cpp = toCpp(getMission('algo-fpb')!.solution, 'board');
+    expect(cpp).not.toContain('RobotKit');
+    expect(cpp.split('\n').slice(0, 5)).toEqual([
+      'long a = 0;',
+      'long b = 0;',
+      'long t = 0;',
+      '',
+      'void setup() {',
+    ]);
+    expect(cpp).toContain('  Serial.begin(115200);');
+    expect(cpp).toContain('  while ((b != 0)) {');
+    expect(cpp).toContain('    t = (a % b);');
   });
 });

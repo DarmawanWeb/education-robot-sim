@@ -165,7 +165,7 @@ export function useSimulation(
   }, [simulation, stopLoop]);
 
   const setEnvironment = useCallback(
-    (patch: Partial<Pick<Environment, 'temperature' | 'humidity'>>) => {
+    (patch: Partial<Pick<Environment, 'temperature' | 'humidity' | 'light'>>) => {
       simulation.setManualEnvironment(patch);
       setPanel(panelOf(simulation));
     },

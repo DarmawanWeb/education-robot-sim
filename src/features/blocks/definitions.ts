@@ -88,6 +88,7 @@ const definitions: Record<string, () => object> = {
   sim_temperature: sensor('SIM_TEMPERATURE', 'Number'),
   sim_humidity: sensor('SIM_HUMIDITY', 'Number'),
   sim_sound: sensor('SIM_SOUND', 'Number'),
+  sim_light: sensor('SIM_LIGHT', 'Number'),
   sim_timer: sensor('SIM_TIMER', 'Number'),
   sim_line_value: () => ({
     message0: msg('SIM_LINE_VALUE'),
@@ -204,8 +205,12 @@ const shadowNumber = (value: number) => ({
 });
 const shadowText = (value: string) => ({ shadow: { type: 'text', fields: { TEXT: value } } });
 
-/** Per-robot toolbox: Ciko keeps to the beginner blocks; Momo adds motors, servo, OLED, and data. */
+/**
+ * Per-robot toolbox: Ciko keeps to the beginner blocks; Momo adds motors, servo, OLED, and data;
+ * the plain board for algorithm practice has only logic, numbers, text, variables and printing.
+ */
 export function buildToolbox(robot: RobotId): Blockly.utils.toolbox.ToolboxDefinition {
+  const full = robot !== 'ciko';
   const control = [
     block('sim_wait'),
     block('sim_wait_until'),
@@ -214,7 +219,7 @@ export function buildToolbox(robot: RobotId): Blockly.utils.toolbox.ToolboxDefin
     block('controls_if'),
     block('controls_if', { extraState: { hasElse: true } }),
     block('controls_whileUntil'),
-    ...(robot === 'momo'
+    ...(full
       ? [
           block('controls_for', {
             inputs: { FROM: shadowNumber(1), TO: shadowNumber(10), BY: shadowNumber(1) },
@@ -228,7 +233,7 @@ export function buildToolbox(robot: RobotId): Blockly.utils.toolbox.ToolboxDefin
     block('logic_negate'),
     block('logic_boolean'),
     block('math_number'),
-    ...(robot === 'momo'
+    ...(full
       ? [
           block('math_arithmetic', { inputs: { A: shadowNumber(1), B: shadowNumber(1) } }),
           block('math_modulo', {
@@ -257,6 +262,7 @@ export function buildToolbox(robot: RobotId): Blockly.utils.toolbox.ToolboxDefin
           block('sim_temperature'),
           block('sim_humidity'),
           block('sim_sound'),
+          block('sim_light'),
           block('sim_timer'),
         ]
       : [block('sim_line_left'), block('sim_line_right'), block('sim_distance')];
@@ -270,69 +276,55 @@ export function buildToolbox(robot: RobotId): Blockly.utils.toolbox.ToolboxDefin
           block('sim_face'),
         ]
       : [block('sim_face'), block('sim_beep'), block('sim_signal'), block('sim_signal_off')];
+  const category = (name: string, style: string, contents: object[]) => ({
+    kind: 'category',
+    name: msg(name),
+    categorystyle: style,
+    contents,
+  });
+  const variables = {
+    kind: 'category',
+    name: msg('SIM_CAT_VARIABLES'),
+    categorystyle: 'variable_category',
+    custom: 'VARIABLE',
+  };
+  const serial = category('SIM_CAT_SERIAL', 'serial_category', [
+    block('sim_print', { inputs: { VALUE: shadowText('Halo') } }),
+  ]);
+
+  if (robot === 'board')
+    return {
+      kind: 'categoryToolbox',
+      contents: [
+        category('SIM_CAT_START', 'event_category', [block('sim_start')]),
+        category('SIM_CAT_CONTROL', 'control_category', control),
+        category('SIM_CAT_LOGIC', 'logic_category', logic),
+        variables,
+        serial,
+      ],
+    };
 
   return {
     kind: 'categoryToolbox',
     contents: [
-      {
-        kind: 'category',
-        name: msg('SIM_CAT_START'),
-        categorystyle: 'event_category',
-        contents: [block('sim_start')],
-      },
-      {
-        kind: 'category',
-        name: msg('SIM_CAT_MOTION'),
-        categorystyle: 'motion_category',
-        contents: motion,
-      },
-      {
-        kind: 'category',
-        name: msg('SIM_CAT_CONTROL'),
-        categorystyle: 'control_category',
-        contents: control,
-      },
-      {
-        kind: 'category',
-        name: msg('SIM_CAT_SENSORS'),
-        categorystyle: 'sensor_category',
-        contents: sensors,
-      },
-      {
-        kind: 'category',
-        name: msg('SIM_CAT_LOGIC'),
-        categorystyle: 'logic_category',
-        contents: logic,
-      },
-      {
-        kind: 'category',
-        name: msg(robot === 'momo' ? 'SIM_CAT_OUTPUT_MOMO' : 'SIM_CAT_OUTPUT'),
-        categorystyle: 'output_category',
-        contents: output,
-      },
+      category('SIM_CAT_START', 'event_category', [block('sim_start')]),
+      category('SIM_CAT_MOTION', 'motion_category', motion),
+      category('SIM_CAT_CONTROL', 'control_category', control),
+      category('SIM_CAT_SENSORS', 'sensor_category', sensors),
+      category('SIM_CAT_LOGIC', 'logic_category', logic),
+      category(
+        robot === 'momo' ? 'SIM_CAT_OUTPUT_MOMO' : 'SIM_CAT_OUTPUT',
+        'output_category',
+        output,
+      ),
       ...(robot === 'momo'
         ? [
-            {
-              kind: 'category',
-              name: msg('SIM_CAT_SERIAL'),
-              categorystyle: 'serial_category',
-              contents: [block('sim_print', { inputs: { VALUE: shadowText('Halo') } })],
-            },
-            {
-              kind: 'category',
-              name: msg('SIM_CAT_WIFI'),
-              categorystyle: 'network_category',
-              contents: [
-                block('sim_send', { inputs: { VALUE: shadowNumber(0) } }),
-                block('sim_wifi'),
-              ],
-            },
-            {
-              kind: 'category',
-              name: msg('SIM_CAT_VARIABLES'),
-              categorystyle: 'variable_category',
-              custom: 'VARIABLE',
-            },
+            serial,
+            category('SIM_CAT_WIFI', 'network_category', [
+              block('sim_send', { inputs: { VALUE: shadowNumber(0) } }),
+              block('sim_wifi'),
+            ]),
+            variables,
           ]
         : []),
     ],
