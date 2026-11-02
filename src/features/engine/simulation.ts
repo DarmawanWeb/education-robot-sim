@@ -81,6 +81,8 @@ export class Simulation {
   /** Readings that reached the dashboard, and how many were lost while offline. */
   telemetry: TelemetryPoint[] = [];
   dropped = 0;
+  /** Lines printed to the Serial Monitor; the oldest drop off past a few hundred. */
+  serial: string[] = [];
   private manualClaps: number[] = [];
   private signalWasLit = false;
   private runner: Runner | null = null;
@@ -137,6 +139,10 @@ export class Simulation {
       });
       if (this.telemetry.length > 2000) this.telemetry.shift();
     },
+    print: (text) => {
+      this.serial.push(text);
+      if (this.serial.length > 500) this.serial.shift();
+    },
     highlight: (blockId) => {
       this.activeBlock = blockId;
     },
@@ -168,6 +174,7 @@ export class Simulation {
     this.buzzerEvents = [];
     this.telemetry = [];
     this.dropped = 0;
+    this.serial = [];
     this.outcome = { status: 'running' };
     this.runner = null;
     this.env = this.environmentAt(0);
@@ -419,6 +426,7 @@ export class Simulation {
       env: this.env,
       online: this.online,
       telemetry: this.telemetry,
+      serial: this.serial,
       visited: this.visited,
       met: this.met,
       inZone: (id) => {

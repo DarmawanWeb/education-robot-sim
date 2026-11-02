@@ -90,4 +90,29 @@ describe('toCpp', () => {
     expect(identifier('jarak kiri')).toBe('jarak_kiri');
     expect(identifier('2x')).toBe('v_2x');
   });
+
+  it('writes algorithm practice for the Serial Monitor with whole-number variables', () => {
+    const fizz = toCpp(getMission('algo-fizzbuzz')!.solution, 'momo');
+    expect(fizz).toContain('long i = 0;');
+    expect(fizz).toContain('  Serial.begin(115200);');
+    expect(fizz).toContain('  for (i = 1; i <= 15; i++) {');
+    expect(fizz).toContain('    if (((i % 15) == 0)) {');
+    expect(fizz).toContain('      Serial.println("FizzBuzz");');
+
+    const countdown = toCpp(getMission('algo-mundur')!.solution, 'momo');
+    expect(countdown).toContain('  for (i = 10; i >= 1; i--) {');
+
+    const sum = toCpp(getMission('algo-jumlah')!.solution, 'momo');
+    expect(sum).toContain('long jumlah = 0;');
+    expect(sum).toContain('    jumlah += i;');
+
+    expect(toCpp(getMission('algo-prima')!.solution, 'momo')).toContain('bool prima = false;');
+    const average = toCpp(getMission('algo-rata')!.solution, 'momo');
+    expect(average).toContain('float total = 0;');
+    expect(average).toContain('  Serial.println(String("Rata-rata ") + String((total / 5)));');
+  });
+
+  it('leaves Serial out of programs that never print', () => {
+    expect(toCpp(getMission('ciko-rintangan')!.solution, 'ciko')).not.toContain('Serial');
+  });
 });

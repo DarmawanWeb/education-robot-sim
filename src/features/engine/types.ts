@@ -100,7 +100,12 @@ export type Expr =
   | { kind: 'compare'; op: 'EQ' | 'NEQ' | 'LT' | 'LTE' | 'GT' | 'GTE'; a: Expr; b: Expr }
   | { kind: 'logic'; op: 'AND' | 'OR'; a: Expr; b: Expr }
   | { kind: 'not'; value: Expr }
-  | { kind: 'math'; op: 'ADD' | 'MINUS' | 'MULTIPLY' | 'DIVIDE' | 'POWER'; a: Expr; b: Expr }
+  | {
+      kind: 'math';
+      op: 'ADD' | 'MINUS' | 'MULTIPLY' | 'DIVIDE' | 'POWER' | 'MODULO';
+      a: Expr;
+      b: Expr;
+    }
   | { kind: 'join'; parts: Expr[] };
 
 export type DriveDirection = 'forward' | 'backward' | 'left' | 'right';
@@ -114,6 +119,8 @@ export type Statement = { blockId?: string } & (
   | { kind: 'repeat'; times: Expr; body: Statement[] }
   | { kind: 'forever'; body: Statement[] }
   | { kind: 'loop'; until: boolean; cond: Expr; body: Statement[] }
+  /** Count with a variable from one number to another, like Blockly's "count with": down when from > to. */
+  | { kind: 'for'; name: string; from: Expr; to: Expr; by: Expr; body: Statement[] }
   | { kind: 'if'; branches: { cond: Expr; body: Statement[] }[]; otherwise: Statement[] }
   | { kind: 'face'; face: Face }
   | { kind: 'beep'; seconds: Expr }
@@ -123,6 +130,8 @@ export type Statement = { blockId?: string } & (
   | { kind: 'signal'; side: Signal; tick: boolean }
   | { kind: 'servo'; angle: Expr }
   | { kind: 'send'; key: string; value: Expr }
+  /** One line on the Serial Monitor, like Arduino's Serial.println. */
+  | { kind: 'print'; value: Expr }
   | { kind: 'set'; name: string; value: Expr }
   | { kind: 'change'; name: string; delta: Expr }
 );
@@ -158,6 +167,8 @@ export interface Snapshot {
   env: Environment;
   online: boolean;
   telemetry: readonly TelemetryPoint[];
+  /** Lines printed to the Serial Monitor, oldest first. */
+  serial: readonly string[];
   visited: ReadonlySet<string>;
   met: ReadonlySet<string>;
   inZone: (id: string) => boolean;
@@ -193,6 +204,8 @@ export interface Mission {
   claps?: number[];
   /** Free play enables manual sliders and the clap button. */
   free?: boolean;
+  /** What the screen shows beside the blocks: the arena (default), or only the Serial Monitor. */
+  view?: 'arena' | 'serial';
   hint: Localized;
   /** Blockly serialization loaded when the mission first opens. */
   starter: object;

@@ -179,6 +179,13 @@ const definitions: Record<string, () => object> = {
     style: 'network_blocks',
   }),
   sim_wifi: () => ({ message0: msg('SIM_WIFI'), output: 'Boolean', style: 'network_blocks' }),
+  sim_print: () => ({
+    message0: msg('SIM_PRINT'),
+    args0: [{ type: 'input_value', name: 'VALUE' }],
+    inputsInline: true,
+    ...statement,
+    style: 'serial_blocks',
+  }),
 };
 
 export function registerBlocks(): void {
@@ -207,6 +214,13 @@ export function buildToolbox(robot: RobotId): Blockly.utils.toolbox.ToolboxDefin
     block('controls_if'),
     block('controls_if', { extraState: { hasElse: true } }),
     block('controls_whileUntil'),
+    ...(robot === 'momo'
+      ? [
+          block('controls_for', {
+            inputs: { FROM: shadowNumber(1), TO: shadowNumber(10), BY: shadowNumber(1) },
+          }),
+        ]
+      : []),
   ];
   const logic = [
     block('logic_compare'),
@@ -214,7 +228,16 @@ export function buildToolbox(robot: RobotId): Blockly.utils.toolbox.ToolboxDefin
     block('logic_negate'),
     block('logic_boolean'),
     block('math_number'),
-    ...(robot === 'momo' ? [block('math_arithmetic'), block('text'), block('text_join')] : []),
+    ...(robot === 'momo'
+      ? [
+          block('math_arithmetic', { inputs: { A: shadowNumber(1), B: shadowNumber(1) } }),
+          block('math_modulo', {
+            inputs: { DIVIDEND: shadowNumber(10), DIVISOR: shadowNumber(3) },
+          }),
+          block('text'),
+          block('text_join'),
+        ]
+      : []),
   ];
   const motion =
     robot === 'momo'
@@ -291,6 +314,12 @@ export function buildToolbox(robot: RobotId): Blockly.utils.toolbox.ToolboxDefin
         ? [
             {
               kind: 'category',
+              name: msg('SIM_CAT_SERIAL'),
+              categorystyle: 'serial_category',
+              contents: [block('sim_print', { inputs: { VALUE: shadowText('Halo') } })],
+            },
+            {
+              kind: 'category',
               name: msg('SIM_CAT_WIFI'),
               categorystyle: 'network_category',
               contents: [
@@ -318,6 +347,7 @@ const palette = {
   sensor: '#d4471a',
   output: '#7c5cc4',
   network: '#0f7c99',
+  serial: '#47556b',
 };
 
 const blockStyles = {
@@ -352,6 +382,11 @@ const blockStyles = {
     colourSecondary: '#3fa5bf',
     colourTertiary: '#09566b',
   },
+  serial_blocks: {
+    colourPrimary: palette.serial,
+    colourSecondary: '#7a879c',
+    colourTertiary: '#2c3647',
+  },
 };
 
 const categoryStyles = {
@@ -361,6 +396,7 @@ const categoryStyles = {
   sensor_category: { colour: palette.sensor },
   output_category: { colour: palette.output },
   network_category: { colour: palette.network },
+  serial_category: { colour: palette.serial },
 };
 
 const fontStyle = {
