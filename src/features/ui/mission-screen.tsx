@@ -10,12 +10,12 @@ import {
   DialogTitle,
 } from '@dctedu/ui/components/dialog';
 import { cn } from '@dctedu/ui/lib/utils';
-import { CheckCircle2, Circle, Play, RotateCcw, Square, Undo2 } from 'lucide-react';
+import { CheckCircle2, Circle, Play, RotateCcw, ScanSearch, Square } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useMessages, useTranslations } from 'next-intl';
 import { useCallback, useRef, useState } from 'react';
 import { learnStepUrl } from '@/lib/links';
-import type { WorkspaceApi } from '../blocks/blockly-workspace';
+import type { History, WorkspaceApi } from '../blocks/blockly-workspace';
 import type { CompileResult } from '../blocks/compile';
 import type { Mission, Outcome } from '../engine/types';
 import { ArenaCanvas } from './arena-canvas';
@@ -23,8 +23,9 @@ import { CodePanel } from './code-panel';
 import { DashboardPanel } from './dashboard-panel';
 import { markFinished } from './progress';
 import { SensorPanel } from './sensor-panel';
-import { actionClass, panelClass, segmentClass, segmentGroupClass } from './styles';
+import { actionClass, panelClass } from './styles';
 import { useSimulation } from './use-simulation';
+import { WorkspaceToolbar } from './workspace-toolbar';
 
 const BlocklyWorkspace = dynamic(() => import('../blocks/blockly-workspace'), {
   ssr: false,
@@ -55,6 +56,8 @@ export function MissionScreen({
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<Outcome | null>(null);
   const [speed, setSpeed] = useState<(typeof SPEEDS)[number]>(1);
+  const [history, setHistory] = useState<History>({ undo: false, redo: false });
+  const [follow, setFollow] = useState(false);
 
   const sim = useSimulation(mission, {
     onFinish: (outcome) => {
@@ -77,12 +80,13 @@ export function MissionScreen({
   }, [sim, t]);
 
   const status = sim.running
-    ? t('status.running', { time: sim.panel.time.toFixed(1) })
+    ? t('status.running')
     : sim.panel.programDone
       ? t('status.done')
       : mission.free
         ? t('status.free')
         : t('status.idle');
+  const metCount = mission.goals.filter((goal) => sim.panel.met.includes(goal.id)).length;
   const place = missionStep(info.id);
   const robotName = getRobot(mission.robot)?.name ?? '';
   const outcomeKey =
@@ -94,7 +98,7 @@ export function MissionScreen({
 
   return (
     <div className="grid gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
-      <section className="border-border h-[60vh] min-h-[26rem] overflow-hidden rounded-lg border xl:sticky xl:top-[5.5rem] xl:h-[calc(100dvh-7.5rem)]">
+      <section className="border-border relative h-[62vh] min-h-[26rem] overflow-hidden rounded-xl border xl:sticky xl:top-[5.25rem] xl:h-[calc(100dvh-6.75rem)]">
         <BlocklyWorkspace
           robot={mission.robot}
           locale={locale}
@@ -104,12 +108,22 @@ export function MissionScreen({
           starter={mission.starter}
           apiRef={apiRef}
           onProgramChange={setProgram}
+          onHistory={setHistory}
           label={t('workspaceLabel')}
+        />
+        <WorkspaceToolbar
+          className="absolute right-3 bottom-3"
+          history={history}
+          onUndo={() => apiRef.current?.undo()}
+          onRedo={() => apiRef.current?.redo()}
+          onZoom={(steps) => apiRef.current?.zoom(steps)}
+          onFit={() => apiRef.current?.fit()}
+          onRestore={() => apiRef.current?.load(mission.starter)}
         />
       </section>
 
       <div className="flex min-w-0 flex-col gap-4">
-        <section className={cn(panelClass, 'p-5')}>
+        <section className={cn(panelClass, 'rounded-xl p-5')}>
           {place ? (
             <p className="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm font-bold">
               <span
@@ -131,7 +145,12 @@ export function MissionScreen({
           <p className="text-muted-foreground mt-2">{pick(info.brief, locale)}</p>
           {mission.goals.length > 0 ? (
             <>
-              <h2 className="mt-5 text-sm font-bold">{t('goals')}</h2>
+              <h2 className="mt-5 flex items-center justify-between text-sm font-bold">
+                {t('goals')}
+                <span className="text-muted-foreground tabular-nums">
+                  {metCount}/{mission.goals.length}
+                </span>
+              </h2>
               <ul className="mt-2 flex flex-col gap-1.5">
                 {mission.goals.map((goal) => {
                   const met = sim.panel.met.includes(goal.id);
@@ -169,66 +188,99 @@ export function MissionScreen({
           ) : null}
         </section>
 
-        <div className="flex flex-wrap items-center gap-2">
-          {sim.running ? (
-            <button type="button" className={actionClass('plain', 'min-w-36')} onClick={sim.stop}>
-              <Square aria-hidden />
-              {t('stop')}
-            </button>
-          ) : (
-            <button type="button" className={actionClass('signal', 'min-w-36')} onClick={run}>
-              <Play aria-hidden />
-              {t('run')}
-            </button>
-          )}
-          <button type="button" className={actionClass('quiet')} onClick={sim.reset}>
-            <RotateCcw aria-hidden />
-            {t('reset')}
-          </button>
-          <fieldset aria-label={t('speed')} className={segmentGroupClass}>
-            {SPEEDS.map((value) => (
+        <section className="border-border @container overflow-hidden rounded-xl border">
+          <div className="asphalt flex flex-wrap items-center gap-2 px-3 py-3 sm:px-4">
+            {sim.running ? (
               <button
-                key={value}
                 type="button"
-                aria-pressed={speed === value}
-                onClick={() => {
-                  setSpeed(value);
-                  sim.setSpeed(value);
-                }}
-                className={segmentClass(speed === value)}
+                className={actionClass(
+                  'plain',
+                  'min-w-32 border-white/30 bg-transparent text-white hover:bg-white/10',
+                )}
+                onClick={sim.stop}
               >
-                {value}×
+                <Square aria-hidden />
+                {t('stop')}
               </button>
-            ))}
-          </fieldset>
-          <button
-            type="button"
-            className={actionClass('quiet', 'min-h-9 px-3 text-sm [&_svg]:size-4')}
-            onClick={() => apiRef.current?.load(mission.starter)}
-          >
-            <Undo2 aria-hidden />
-            {t('restore')}
-          </button>
-          <p
-            aria-live="polite"
-            className="text-muted-foreground ml-auto text-sm font-bold tabular-nums"
-          >
-            {status}
-          </p>
-        </div>
-        {error ? (
-          <p role="alert" className="text-danger text-sm font-semibold">
-            {error}
-          </p>
-        ) : null}
-
-        <ArenaCanvas
-          simulation={sim.simulation}
-          drawRef={sim.draw}
-          dark={dark}
-          label={t('arenaLabel')}
-          followLabel={t('follow')}
-        />
+            ) : (
+              <button type="button" className={actionClass('signal', 'min-w-32')} onClick={run}>
+                <Play aria-hidden />
+                {t('run')}
+              </button>
+            )}
+            <button
+              type="button"
+              title={t('reset')}
+              className="inline-flex min-h-11 items-center gap-2 rounded-md px-3 font-bold text-white transition-colors hover:bg-white/10 [&_svg]:size-5"
+              onClick={sim.reset}
+            >
+              <RotateCcw aria-hidden />
+              <span className="hidden @2xl:inline">{t('reset')}</span>
+            </button>
+            <fieldset
+              aria-label={t('speed')}
+              className="flex shrink-0 rounded-md border border-white/15 bg-white/5 p-0.5"
+            >
+              {SPEEDS.map((value) => (
+                <button
+                  key={value}
+                  type="button"
+                  aria-pressed={speed === value}
+                  onClick={() => {
+                    setSpeed(value);
+                    sim.setSpeed(value);
+                  }}
+                  className={cn(
+                    'h-9 min-w-10 rounded-sm px-2 text-sm font-bold tabular-nums transition-colors',
+                    speed === value ? 'bg-white text-[#191b20]' : 'text-white/80 hover:bg-white/10',
+                  )}
+                >
+                  {value}×
+                </button>
+              ))}
+            </fieldset>
+            <div className="ml-auto flex items-center gap-3">
+              <div className="text-right leading-none">
+                <p aria-live="polite" className="text-xs font-bold text-white/60">
+                  {status}
+                </p>
+                <p className="type-number mt-1 text-[1.75rem] text-white tabular-nums">
+                  {sim.panel.time.toFixed(1)}
+                  <span className="ml-1 text-sm text-white/55">
+                    {mission.free ? 's' : `/ ${mission.timeLimit} s`}
+                  </span>
+                </p>
+              </div>
+              <button
+                type="button"
+                aria-pressed={follow}
+                title={t('follow')}
+                onClick={() => setFollow((value) => !value)}
+                className={cn(
+                  'grid size-11 place-items-center rounded-md border transition-colors [&_svg]:size-5',
+                  follow
+                    ? 'border-transparent bg-[#ffb020] text-[#191b20]'
+                    : 'border-white/15 text-white hover:bg-white/10',
+                )}
+              >
+                <ScanSearch aria-hidden />
+                <span className="sr-only">{t('follow')}</span>
+              </button>
+            </div>
+          </div>
+          {error ? (
+            <p role="alert" className="bg-[#c2181f] px-4 py-2 text-sm font-bold text-white">
+              {error}
+            </p>
+          ) : null}
+          <ArenaCanvas
+            simulation={sim.simulation}
+            drawRef={sim.draw}
+            dark={dark}
+            label={t('arenaLabel')}
+            follow={follow}
+          />
+        </section>
         <SensorPanel
           robot={mission.robot}
           panel={sim.panel}

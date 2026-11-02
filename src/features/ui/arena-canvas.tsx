@@ -1,8 +1,5 @@
 'use client';
-
-import { cn } from '@dctedu/ui/lib/utils';
-import { ScanSearch } from 'lucide-react';
-import { type RefObject, useEffect, useRef, useState } from 'react';
+import { type RefObject, useEffect, useRef } from 'react';
 import { moverBox } from '../engine/geometry';
 import type { Simulation } from '../engine/simulation';
 import type { Box } from '../engine/types';
@@ -270,16 +267,16 @@ export function ArenaCanvas({
   drawRef,
   dark,
   label,
-  followLabel,
+  follow,
 }: {
   simulation: Simulation;
   drawRef: RefObject<() => void>;
   dark: boolean;
   label: string;
-  followLabel: string;
+  /** Zoom in on the robot and move with it. */
+  follow: boolean;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [follow, setFollow] = useState(false);
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -296,26 +293,12 @@ export function ArenaCanvas({
 
   const { width, height } = simulation.mission.arena;
   return (
-    <div className="relative">
-      <canvas
-        ref={canvasRef}
-        role="img"
-        aria-label={label}
-        className="border-border block w-full rounded-lg border"
-        style={{ aspectRatio: `${width} / ${height}` }}
-      />
-      <button
-        type="button"
-        aria-pressed={follow}
-        onClick={() => setFollow((value) => !value)}
-        className={cn(
-          'border-border absolute top-3 right-3 inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs font-bold shadow-sm',
-          follow ? 'bg-accent text-black' : 'bg-surface text-foreground hover:bg-surface-muted',
-        )}
-      >
-        <ScanSearch className="size-3.5" aria-hidden />
-        {followLabel}
-      </button>
-    </div>
+    <canvas
+      ref={canvasRef}
+      role="img"
+      aria-label={label}
+      className="block w-full"
+      style={{ aspectRatio: `${width} / ${height}` }}
+    />
   );
 }
