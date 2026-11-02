@@ -20,8 +20,9 @@ with no account, in Indonesian and English.**
 
 Part of [DCTEdu](https://github.com/DarmawanWeb/DCTEdu), which builds it as `apps/simulator` next
 to the [store](https://github.com/DarmawanWeb/education-robot-web). The missions are steps on a
-robot's learning path in the store and link back to it; after the path come a few extra
-challenges. Progress stays in the browser that made it.
+robot's learning path in the store and link back to it; after the path come extra challenges.
+General algorithm practice, for primary and junior high, sits on its own track. Progress stays in
+the browser that made it.
 
 ## Features
 
@@ -30,12 +31,13 @@ challenges. Progress stays in the browser that made it.
   C++ for the RobotKit library, live.
 - **Simulate**: two-wheel differential drive at 120 steps a second with each robot's size, speed,
   and motor mismatch; Ciko's two IR line sensors and bumper sonar; Momo's five-sensor line array,
-  sonar on a servo, temperature, humidity, sound, and Wi-Fi.
-- **Missions**: each robot's learning path, ending in an arena challenge printed as a banner, then
-  extra challenges, and algorithm practice for junior high on a Serial Monitor (counting,
-  FizzBuzz, Fibonacci, primes, averages). Every mission has live goals, a hint, a starter program,
-  and a reference solution the tests run, so it can be finished.
-- **Use**: deep links (`?robot=momo&mission=momo-radar`) from the learning paths, speed 1x, 2x,
+  sonar on a servo, temperature, humidity, sound, light, and Wi-Fi.
+- **Missions**: algorithm practice on a Serial Monitor in two levels, SD (counting, repeat, a
+  first `if`) and SMP (FizzBuzz, Fibonacci, Euclid's GCD, primes, nested loops); then each
+  robot's learning path, ending in an arena challenge printed as a banner, and its extra
+  challenges. Momo's are sensor projects that name the module to plug in. Every mission has live
+  goals, a hint, a starter program, and a reference solution the tests run, so it can be finished.
+- **Use**: deep links (`?mission=momo-radar`, `?track=algo`) from the learning paths, speed 1x, 2x,
   4x, a follow camera, and dark mode for projectors in class.
 
 ## Structure

@@ -55,17 +55,25 @@ flowchart LR
 | Line sensors | 2 IR, straddling the tape | 5-in-1 array |
 | Distance | Sonar in the bumper, 2 m | Sonar on a servo, 3 m |
 | Motors | Matched | Right motor 6 % weaker until calibrated |
-| Extras | Turn signals ticking on the buzzer, OLED face | Servo, temperature, humidity, sound, Wi-Fi telemetry |
+| Extras | Turn signals ticking on the buzzer, OLED face | Servo, temperature, humidity, sound, light (Sensor Pack), Wi-Fi telemetry |
 
 ## Missions
 
-`engine/missions.ts` defines every mission: the steps on each robot's learning path, then a few
-extra challenges per robot that sit off the path (a greeter, reverse parking, and a corridor patrol
-for Ciko; a temperature alarm, a clap counter, and following a hand for Momo), then Momo's
-algorithm practice for junior high: printing, counting up and down, even numbers, a running total,
-a times table, FizzBuzz, Fibonacci, primes, and an average of sensor readings. Those use
-`view: 'serial'`: the screen shows the Serial Monitor instead of the arena, and their goals check
-the printed lines. A mission has an arena (size, taped
+`engine/missions.ts` defines every mission, in three tracks:
+
+- **Algorithms**, general practice that needs no robot, in two levels. SD (primary school):
+  printing, repeat, counting up and down, steps, a first `if`, and a times table. SMP (junior
+  high): a running total, factorials, a temperature table, FizzBuzz, Fibonacci, Euclid's GCD,
+  primes, and a star triangle with nested loops. They run on `robot: 'board'`, a plain
+  microcontroller with only the Serial Monitor, and use `view: 'serial'`: the screen shows the
+  Serial Monitor instead of the arena, and their goals check the printed lines.
+- **Ciko**: the learning path, then six extra challenges: a greeter, reverse parking, a corridor
+  patrol, ambulance mode, a dance, and a maze solved with one rule.
+- **Momo**: the learning path, then six sensor projects, each naming the module to plug in: a
+  temperature alarm and a temperature logger (AHT10), a clap counter (microphone), following a
+  hand and a parking sensor (HC-SR04), and a night light (the Sensor Pack's light sensor).
+
+A mission has an arena (size, taped
 lines, boxes, zones, moving hands), a start pose, a time limit, whether a bump fails it, goals, a
 hint, a starter program, and a reference `solution`. A goal is a check over a snapshot of the run
 (pose, sensors, face, beeps, signals, telemetry, zones visited); final goals are judged once the
@@ -74,15 +82,17 @@ goals left unfinished), shown in the result dialog.
 
 Titles, briefs, and the order of missions come from `packages/catalog/src/sim-missions.ts`; each
 mission's place on a learning path (`missionStep`) gives the "step n of N" label and the link back
-to `https://<store>/<locale>/learn/<robot>#<step>`. Missions with a `group` (`extra` or `algo`)
-have no step; they are labelled with their group instead.
+to `https://<store>/<locale>/learn/<robot>#<step>`. Extra challenges (`group: 'extra'`) have no
+step and carry a star. Algorithm exercises have a `level` (`sd` or `smp`) and are numbered within
+it. Sensor projects list their modules in `parts`, shown on the mission card as "Pasang dulu".
 
 ## The screen
 
-`features/ui/sim-app.tsx` reads `?robot=` and `?mission=`, and switches robot and mission. The
-mission picker (`mission-picker.tsx`, a popover from `@dctedu/ui`) lists the robot's path missions
-with their step numbers, then its extra challenges (a star) and algorithm practice (braces), marks
-the finished ones, and shows the progress.
+`features/ui/sim-app.tsx` reads `?track=` (or the older `?robot=`) and `?mission=`. The switch in
+the header goes Algoritma, Ciko, Momo. The mission picker (`mission-picker.tsx`, a popover from
+`@dctedu/ui`) lists the track's missions: a robot's path steps by number and then its extra
+challenges, or the algorithm exercises under SD and SMP. It marks the finished ones and shows the
+progress.
 
 `mission-screen.tsx` places the workspace next to the brief and goals. The workspace has its own
 toolbar (`workspace-toolbar.tsx`): undo and redo, zoom, show every block, back to the starter
