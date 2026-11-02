@@ -8,7 +8,9 @@ import type {
   Mission,
   SensorId,
   Signal,
+  Snapshot,
   Statement,
+  Vec,
   Zone,
 } from './types';
 
@@ -184,6 +186,27 @@ const momoArena = cornerTrack(
 
 const lineLeft = sensor('lineLeft');
 const lineRight = sensor('lineRight');
+/** Moving backward on this tick: the step since the last one points against the heading. */
+const reversing = (s: Snapshot, memo: Record<string, unknown>) => {
+  const before = memo.pose as Vec | undefined;
+  memo.pose = { x: s.pose.x, y: s.pose.y };
+  if (!before) return false;
+  const along =
+    (s.pose.x - before.x) * Math.cos(s.pose.heading) +
+    (s.pose.y - before.y) * Math.sin(s.pose.heading);
+  return along < -0.02;
+};
+/** A hand that reaches in front of the robot, waits, and pulls back. Keys are seconds and left edges. */
+const hand = (y: number, keys: [number, number][]) => ({
+  id: 'hand',
+  kind: 'hand' as const,
+  w: 7,
+  h: 13,
+  keys: keys.map(([t, x]) => ({ t, x, y: y - 6.5 })),
+});
+/** Scripted claps for the clap counter; the goal checks the count against them. */
+const counterClaps = [1.5, 3.5, 5.5];
+
 const followSd = (speed: number): Statement => ({
   kind: 'if',
   branches: [
@@ -701,6 +724,214 @@ export const missions: readonly Mission[] = [
     solution: { body: [{ kind: 'forever', body: [followSd(35)] }] },
   },
   {
+    id: 'ciko-sapa',
+    robot: 'ciko',
+    arena: {
+      width: 160,
+      height: 100,
+      lines: [],
+      boxes: [],
+      zones: [zone('start', 'start', 40, 50, 26, 26)],
+      movers: [
+        hand(50, [
+          [0, 150],
+          [1.5, 150],
+          [2.8, 60],
+          [5, 60],
+          [6.2, 150],
+          [8.5, 150],
+          [9.8, 62],
+          [12, 62],
+          [13.2, 150],
+        ]),
+      ],
+    },
+    start: { x: 40, y: 50, heading: 0 },
+    timeLimit: 16,
+    failOnBump: true,
+    goals: [
+      {
+        id: 'hello',
+        label: l('Wajah senang saat tangan mendekat', 'Happy face when the hand comes close'),
+        check: (s) => s.distance < 20 && s.face === 'senang',
+      },
+      {
+        id: 'beep',
+        label: l('Bip untuk menyapa', 'Beep to say hello'),
+        check: (s, memo) => beepStarted(s, memo) && s.distance < 25,
+      },
+      {
+        id: 'rest',
+        label: l(
+          'Kembali ke wajah biasa saat tangan pergi',
+          'Back to the normal face once the hand leaves',
+        ),
+        check: (s) => s.met.has('hello') && s.distance > 50 && s.face === 'normal',
+      },
+      {
+        id: 'again',
+        label: l('Menyapa lagi saat tangan datang kembali', 'Greet again when the hand comes back'),
+        check: (s) => s.met.has('rest') && s.distance < 20 && s.face === 'senang',
+      },
+    ],
+    hint: l(
+      'Ulangi selamanya. Jika jarak kurang dari 20 cm: wajah senang lalu bip. Jika tidak: wajah biasa.',
+      'Repeat forever. If the distance is under 20 cm: happy face, then beep. Otherwise: normal face.',
+    ),
+    starter: starter({
+      type: 'sim_forever',
+      inputs: {
+        DO: plug({
+          type: 'controls_if',
+          extraState: { hasElse: true },
+          inputs: {
+            IF0: plug(distanceBelow(20)),
+            DO0: plug({ type: 'sim_face', fields: { FACE: 'senang' } }),
+          },
+        }),
+      },
+    }),
+    solution: {
+      body: [
+        {
+          kind: 'forever',
+          body: [
+            {
+              kind: 'if',
+              branches: [
+                {
+                  cond: lt(sensor('distance'), n(20)),
+                  body: [
+                    { kind: 'face', face: 'senang' },
+                    { kind: 'beep', seconds: n(0.3) },
+                    { kind: 'waitUntil', cond: gt(sensor('distance'), n(30)) },
+                  ],
+                },
+              ],
+              otherwise: [{ kind: 'face', face: 'normal' }],
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    id: 'ciko-parkir',
+    robot: 'ciko',
+    arena: {
+      width: 200,
+      height: 120,
+      lines: [],
+      // Two boxes with one free parking space between them.
+      boxes: [
+        { x: 85, y: 70, w: 32, h: 42 },
+        { x: 153, y: 70, w: 32, h: 42 },
+      ],
+      zones: [
+        zone('start', 'start', 25, 38, 26, 26),
+        zone('pass', 'checkpoint', 135, 38, 26, 26),
+        zone('bay', 'finish', 135, 92, 30, 30),
+      ],
+    },
+    start: { x: 25, y: 38, heading: 0 },
+    timeLimit: 30,
+    failOnBump: true,
+    goals: [
+      visit('pass', l('Maju sampai sejajar tempat parkir', 'Drive level with the space')),
+      {
+        id: 'hazard',
+        label: l('Lampu hazard menyala saat mundur', 'Hazard lights on while reversing'),
+        check: (s, memo) => reversing(s, memo) && s.signal === 'hazard',
+      },
+      {
+        id: 'park',
+        label: l(
+          'Berhenti di tempat parkir, moncong menghadap jalan',
+          'Stop in the space, nose facing the road',
+        ),
+        final: true,
+        check: (s) =>
+          s.met.has('pass') && s.inZone('bay') && s.speed < 0.5 && Math.sin(s.pose.heading) < -0.95,
+      },
+    ],
+    hint: l(
+      'Di 50%, Ciko menempuh 15 cm per detik dan belok 90° dalam sekitar 0,63 detik. Tempat parkir ada sekitar 110 cm di depan, lalu 54 cm ke bawah.',
+      'At 50% Ciko covers 15 cm a second and turns 90° in about 0.63 seconds. The space is about 110 cm ahead, then 54 cm down.',
+    ),
+    starter: starter(
+      { type: 'sim_drive_for', fields: { DIR: 'forward', SPEED: 50, SECONDS: 5 } },
+      { type: 'sim_drive_for', fields: { DIR: 'left', SPEED: 50, SECONDS: 0.63 } },
+    ),
+    solution: {
+      body: [
+        drive('forward', 50, 7.33),
+        drive('left', 50, 0.63),
+        signal('hazard'),
+        drive('backward', 50, 3.6),
+        signal('off'),
+      ],
+    },
+  },
+  {
+    id: 'ciko-patroli',
+    robot: 'ciko',
+    arena: {
+      width: 200,
+      height: 80,
+      lines: [],
+      boxes: [],
+      zones: [
+        zone('start', 'start', 100, 40, 26, 26),
+        zone('east', 'checkpoint', 178, 40, 24, 40),
+        zone('west', 'checkpoint', 22, 40, 24, 40),
+      ],
+    },
+    start: { x: 100, y: 40, heading: 0 },
+    timeLimit: 45,
+    failOnBump: true,
+    goals: [
+      visit('east', l('Sampai di ujung kanan', 'Reach the right end')),
+      visit('west', l('Lalu ujung kiri', 'Then the left end'), 'east'),
+      {
+        id: 'east-again',
+        label: l('Kembali ke ujung kanan', 'Back to the right end'),
+        check: (s) => s.met.has('west') && s.inZone('east'),
+      },
+      {
+        id: 'beeps',
+        label: l('Bip di setiap ujung', 'Beep at every end'),
+        check: (s, memo) => {
+          if (beepStarted(s, memo) && s.distance < 20) memo.count = Number(memo.count ?? 0) + 1;
+          return Number(memo.count ?? 0) >= 3;
+        },
+      },
+    ],
+    hint: l(
+      'Ulangi 3 kali: maju, tunggu sampai jarak kurang dari 15 cm, berhenti, bip, lalu belok 50% sekitar 1,26 detik untuk putar balik.',
+      'Repeat 3 times: drive forward, wait until the distance is under 15 cm, stop, beep, then turn at 50% for about 1.26 seconds to face the other way.',
+    ),
+    starter: starter({
+      type: 'sim_repeat',
+      fields: { TIMES: 3 },
+      inputs: { DO: plug({ type: 'sim_drive', fields: { DIR: 'forward', SPEED: 50 } }) },
+    }),
+    solution: {
+      body: [
+        {
+          kind: 'repeat',
+          times: n(3),
+          body: [
+            drive('forward', 50),
+            { kind: 'waitUntil', cond: lt(sensor('distance'), n(15)) },
+            stop,
+            { kind: 'beep', seconds: n(0.3) },
+            drive('right', 50, 1.26),
+          ],
+        },
+      ],
+    },
+  },
+  {
     id: 'momo-sistem',
     robot: 'momo',
     arena: {
@@ -1186,6 +1417,224 @@ export const missions: readonly Mission[] = [
     ),
     starter: starter(),
     solution: { body: [motors(n(40), n(42)), wait(1), stop] },
+  },
+  {
+    id: 'momo-alarm',
+    robot: 'momo',
+    arena: { width: 120, height: 80, lines: [], boxes: [], zones: [] },
+    start: { x: 60, y: 40, heading: 0 },
+    timeLimit: 13,
+    failOnBump: false,
+    envTimeline: [
+      { t: 0, temperature: 27, humidity: 60 },
+      { t: 4, temperature: 31.5 },
+      { t: 9, temperature: 28 },
+    ],
+    goals: [
+      {
+        id: 'normal',
+        label: l('Tulis NORMAL saat suhu di bawah 30 °C', 'Write NORMAL while it is under 30 °C'),
+        check: (s) => s.time < 4 && /normal/i.test(s.oledText) && !/panas|hot/i.test(s.oledText),
+      },
+      {
+        id: 'alarm',
+        label: l(
+          'Lewat 30 °C: tulis PANAS dan bunyikan nada',
+          'Over 30 °C: write HOT and play a tone',
+        ),
+        check: (s, memo) =>
+          beepStarted(s, memo) && s.env.temperature > 30 && /panas|hot/i.test(s.oledText),
+      },
+      {
+        id: 'calm',
+        label: l('Kembali NORMAL setelah dingin', 'Back to NORMAL once it cools down'),
+        check: (s) =>
+          s.met.has('alarm') &&
+          s.time >= 9 &&
+          /normal/i.test(s.oledText) &&
+          !/panas|hot/i.test(s.oledText),
+      },
+      {
+        id: 'quiet',
+        label: l('Diam selama suhu normal', 'Stay quiet while the temperature is normal'),
+        check: (s, memo) => {
+          if (beepStarted(s, memo) && s.env.temperature <= 30) memo.noisy = true;
+          return !memo.noisy && s.time >= 11;
+        },
+      },
+    ],
+    hint: l(
+      'Ulangi selamanya: tulis suhu di baris 1. Jika suhu lebih dari 30, tulis PANAS di baris 2 lalu mainkan nada. Jika tidak, tulis NORMAL. Tunggu 0,5 detik.',
+      'Repeat forever: write the temperature on line 1. If it is over 30, write HOT on line 2 and play a tone. If not, write NORMAL. Wait 0.5 seconds.',
+    ),
+    starter: starter({
+      type: 'sim_forever',
+      inputs: {
+        DO: plug({
+          type: 'controls_if',
+          extraState: { hasElse: true },
+          inputs: {
+            IF0: plug({
+              type: 'logic_compare',
+              fields: { OP: 'GT' },
+              inputs: {
+                A: plug({ type: 'sim_temperature' }),
+                B: plug({ type: 'math_number', fields: { NUM: 30 } }),
+              },
+            }),
+          },
+        }),
+      },
+    }),
+    solution: {
+      body: [
+        {
+          kind: 'forever',
+          body: [
+            {
+              kind: 'oled',
+              line: 1,
+              value: { kind: 'join', parts: [text('Suhu '), sensor('temperature')] },
+            },
+            {
+              kind: 'if',
+              branches: [
+                {
+                  cond: gt(sensor('temperature'), n(30)),
+                  body: [
+                    { kind: 'oled', line: 2, value: text('PANAS') },
+                    { kind: 'tone', note: 'A5', seconds: n(0.2) },
+                  ],
+                },
+              ],
+              otherwise: [{ kind: 'oled', line: 2, value: text('NORMAL') }],
+            },
+            wait(0.5),
+          ],
+        },
+      ],
+    },
+  },
+  {
+    id: 'momo-tepuk',
+    robot: 'momo',
+    arena: { width: 120, height: 80, lines: [], boxes: [], zones: [] },
+    start: { x: 60, y: 40, heading: 0 },
+    timeLimit: 10,
+    failOnBump: false,
+    claps: counterClaps,
+    goals: [
+      {
+        id: 'count',
+        label: l(
+          'Tampilkan jumlah tepukan: 1, 2, lalu 3',
+          'Show the number of claps: 1, 2, then 3',
+        ),
+        // The count may never run ahead of the claps heard so far, so one clap must add one.
+        check: (s, memo) => {
+          const heard = counterClaps.filter((clap) => clap <= s.time).length;
+          const shown = numbersIn(s.oledText);
+          if (shown.some((value) => value > heard)) memo.ahead = true;
+          const next = Number(memo.next ?? 1);
+          if (shown.includes(next)) memo.next = next + 1;
+          return !memo.ahead && Number(memo.next ?? 1) > 3;
+        },
+      },
+      {
+        id: 'tone',
+        label: l('Bunyikan nada setelah tepukan ketiga', 'Play a tone after the third clap'),
+        check: (s, memo) => {
+          const started = beepStarted(s, memo);
+          if (started && s.time < counterClaps[2]!) memo.early = true;
+          return started && !memo.early;
+        },
+      },
+    ],
+    hint: l(
+      'Buat variabel tepuk = 0. Ulangi 3 kali: tunggu sampai suara lebih dari 70, tambah tepuk 1, tulis di OLED, lalu tunggu sampai suara kurang dari 50 agar satu tepukan tidak terhitung dua kali.',
+      'Make a variable claps = 0. Repeat 3 times: wait until the sound is over 70, add 1 to claps, write it on the OLED, then wait until the sound is under 50 so one clap is not counted twice.',
+    ),
+    starter: starter({ type: 'sim_repeat', fields: { TIMES: 3 } }),
+    solution: {
+      body: [
+        { kind: 'set', name: 'tepuk', value: n(0) },
+        { kind: 'oled', line: 1, value: { kind: 'join', parts: [text('Tepuk '), v('tepuk')] } },
+        {
+          kind: 'repeat',
+          times: n(3),
+          body: [
+            { kind: 'waitUntil', cond: gt(sensor('sound'), n(70)) },
+            { kind: 'change', name: 'tepuk', delta: n(1) },
+            { kind: 'oled', line: 1, value: { kind: 'join', parts: [text('Tepuk '), v('tepuk')] } },
+            { kind: 'waitUntil', cond: lt(sensor('sound'), n(50)) },
+          ],
+        },
+        { kind: 'tone', note: 'C6', seconds: n(0.5) },
+      ],
+    },
+  },
+  {
+    id: 'momo-ikuti',
+    robot: 'momo',
+    arena: {
+      width: 220,
+      height: 80,
+      lines: [],
+      boxes: [],
+      zones: [zone('start', 'start', 25, 40, 26, 26), zone('end', 'finish', 165, 40, 30, 36)],
+      movers: [
+        hand(40, [
+          [0, 60],
+          [2, 60],
+          [5, 120],
+          [7, 120],
+          [10, 190],
+        ]),
+      ],
+    },
+    start: { x: 25, y: 40, heading: 0 },
+    timeLimit: 20,
+    failOnBump: true,
+    goals: [
+      {
+        id: 'keep',
+        label: l(
+          'Jaga jarak 8 sampai 45 cm selama tangan bergerak',
+          'Keep 8 to 45 cm away while the hand moves',
+        ),
+        check: (s, memo) => {
+          if (s.time > 1 && (s.distance > 45 || s.distance < 8)) memo.lost = true;
+          return !memo.lost && s.time >= 10.5;
+        },
+      },
+      stoppedIn(
+        'end',
+        l('Berhenti di belakang tangan di ujung arena', 'Stop behind the hand at the far end'),
+      ),
+    ],
+    hint: l(
+      'Ulangi selamanya: selisih = jarak − 20. Motor kiri = selisih × 4, motor kanan sedikit lebih besar karena motornya lebih lemah. Tangan jauh, Momo cepat; tangan dekat, Momo pelan lalu berhenti.',
+      'Repeat forever: gap = distance − 20. Left motor = gap × 4, right motor a little more because that motor is weaker. Hand far away, Momo is fast; hand close, Momo slows down and stops.',
+    ),
+    starter: starter({
+      type: 'sim_forever',
+      inputs: {
+        DO: plug({ type: 'sim_motors', inputs: { LEFT: shadowNum(50), RIGHT: shadowNum(53) } }),
+      },
+    }),
+    solution: {
+      body: [
+        {
+          kind: 'forever',
+          body: [
+            motors(
+              times(n(4), minus(sensor('distance'), n(20))),
+              times(n(4.25), minus(sensor('distance'), n(20))),
+            ),
+          ],
+        },
+      ],
+    },
   },
 ];
 

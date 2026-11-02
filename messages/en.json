@@ -102,6 +102,8 @@
     },
     "pickMission": "Choose a mission",
     "missionsOf": "{robot} missions",
+    "pathGroup": "Learning path",
+    "extras": "Extra challenges",
     "finished": "finished",
     "tools": {
       "history": "Undo and redo",

@@ -55,7 +55,9 @@ flowchart LR
 
 ## Missions
 
-`engine/missions.ts` defines 20 missions (11 Ciko, 9 Momo). A mission has an arena (size, taped
+`engine/missions.ts` defines every mission: the steps on each robot's learning path, then a few
+extra challenges per robot that sit off the path (a greeter, reverse parking, and a corridor patrol
+for Ciko; a temperature alarm, a clap counter, and following a hand for Momo). A mission has an arena (size, taped
 lines, boxes, zones, moving hands), a start pose, a time limit, whether a bump fails it, goals, a
 hint, a starter program, and a reference `solution`. A goal is a check over a snapshot of the run
 (pose, sensors, face, beeps, signals, telemetry, zones visited); final goals are judged once the
@@ -64,13 +66,15 @@ goals left unfinished), shown in the result dialog.
 
 Titles, briefs, and the order of missions come from `packages/catalog/src/sim-missions.ts`; each
 mission's place on a learning path (`missionStep`) gives the "step n of N" label and the link back
-to `https://<store>/<locale>/learn/<robot>#<step>`.
+to `https://<store>/<locale>/learn/<robot>#<step>`. Missions marked `extra` have no step; they are
+labelled as extra challenges instead.
 
 ## The screen
 
 `features/ui/sim-app.tsx` reads `?robot=` and `?mission=`, and switches robot and mission. The
-mission picker (`mission-picker.tsx`, a popover from `@dctedu/ui`) lists the robot's missions with
-their step numbers, marks the finished ones, and shows the progress.
+mission picker (`mission-picker.tsx`, a popover from `@dctedu/ui`) lists the robot's path missions
+with their step numbers, then its extra challenges with a star, marks the finished ones, and shows
+the progress.
 
 `mission-screen.tsx` places the workspace next to the brief and goals. The workspace has its own
 toolbar (`workspace-toolbar.tsx`): undo and redo, zoom, show every block, and back to the starter
